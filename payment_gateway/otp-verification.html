@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Verification - SecurePay Gateway</title>
+    <!-- Using Alpine.js for interactivity -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.10.5/cdn.min.js" defer></script>
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f3f4f6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Hide Alpine.js elements until Alpine initializes */
+        [x-cloak] {
+            display: none !important;
+        }
+        
+        /* Header styles */
+        header {
+            background: linear-gradient(to right, #1a56db, #3b82f6);
+            color: white;
+            padding: 1.5rem 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo-container svg {
+            height: 2.5rem;
+            width: 2.5rem;
+            margin-right: 0.5rem;
+        }
+        
+        .logo-text {
+            font-size: 1.875rem;
+            font-weight: bold;
+        }
+        
+        .demo-badge {
+            background-color: #10b981;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        
+        /* Main content */
+        main {
+            flex-grow: 1;
+            padding: 3rem 1rem;
+        }
+        
+        .main-container {
+            max-width: 42rem;
+            margin: 0 auto;
+        }
+        
+        /* Progress steps */
+        .progress-steps {
+            margin-bottom: 2.5rem;
+        }
+        
+        .progress-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .step-circle {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .step-active {
+            background-color: #2563eb;
+        }
+        
+        .step-inactive {
+            background-color: #d1d5db;
+            color: #4b5563;
+        }
+        
+        .step-label {
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            font-weight: 500;
+        }
+        
+        .step-label-inactive {
+            color: #4b5563;
+        }
+        
+        .progress-line {
+            flex-grow: 1;
+            height: 0.25rem;
+            margin: 0 0.5rem;
+        }
+        
+        .progress-line-active {
+            background-color: #2563eb;
+        }
+        
+        .progress-line-inactive {
+            background-color: #d1d5db;
+        }
+        
+        /* OTP Verification Card */
+        .card {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background: linear-gradient(to right, #1e40af, #4f46e5);
+            padding: 1.5rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card-bubble-1 {
+            position: absolute;
+            right: -1.5rem;
+            top: -1.5rem;
+            width: 6rem;
+            height: 6rem;
+            border-radius: 50%;
+            background-color: rgba(96, 165, 250, 0.5);
+        }
+        
+        .card-bubble-2 {
+            position: absolute;
+            right: -0.5rem;
+            bottom: -2rem;
+            width: 4rem;
+            height: 4rem;
+            border-radius: 50%;
+            background-color: rgba(129, 140, 248, 0.4);
+        }
+        
+        .header-content {
+            position: relative;
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .header-icon {
+            height: 3rem;
+            width: 3rem;
+            margin-right: 0.75rem;
+            padding: 0.5rem;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 0.5rem;
+        }
+        
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .header-subtitle {
+            color: #bfdbfe;
+        }
+        
+        .timer-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .timer-circle {
+            width: 3.5rem;
+            height: 3.5rem;
+            background-color: rgba(37, 99, 235, 0.25);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+        }
+        
+        .timer-text {
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+        
+        .timer-info {
+            font-size: 0.875rem;
+            color: #bfdbfe;
+        }
+        
+        .timer-info-amount {
+            margin-top: 0.25rem;
+        }
+        
+        .timer-amount {
+            font-weight: bold;
+        }
+        
+        /* OTP Input Section */
+        .card-body {
+            padding: 2rem;
+        }
+        
+        .card-message {
+            color: #4b5563;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        
+        .mobile-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        
+        .mobile-display {
+            padding: 0.5rem 1rem;
+            background-color: #f3f4f6;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .mobile-icon {
+            height: 1.25rem;
+            width: 1.25rem;
+            color: #6b7280;
+            margin-right: 0.5rem;
+        }
+        
+        .mobile-number {
+            color: #374151;
+        }
+        
+        .mobile-highlight {
+            font-weight: 500;
+        }
+        
+        /* OTP Input Boxes */
+        .otp-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        
+        .otp-input {
+            width: 3rem;
+            height: 3.5rem;
+            margin: 0 0.5rem;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border: 2px solid #d1d5db;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+        }
+        
+        .otp-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+            outline: none;
+        }
+        
+        .otp-input-error {
+            border-color: #ef4444;
+        }
+        
+        .error-message {
+            color: #ef4444;
+            font-weight: 500;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Verify Button */
+        .verify-button {
+            width: 100%;
+            background: linear-gradient(to right, #2563eb, #1d4ed8);
+            color: white;
+            font-weight: bold;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: none;
+            cursor: pointer;
+            transform: scale(1);
+            transition: all 0.2s;
+            margin-bottom: 1.5rem;
+        }
+        
+        .verify-button:hover {
+            background: linear-gradient(to right, #1d4ed8, #1e40af);
+            transform: scale(1.05);
+        }
+        
+        .verify-button:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+        }
+        
+        /* Help Links */
+        .help-links {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+        }
+        
+        .help-link {
+            color: #2563eb;
+            font-weight: 500;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .help-link:hover {
+            color: #1d4ed8;
+        }
+        
+        .help-link-disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* Success State */
+        .success-container {
+            text-align: center;
+            padding: 2rem 0;
+        }
+        
+        .success-icon-container {
+            width: 5rem;
+            height: 5rem;
+            background-color: #ecfdf5;
+            border-radius: 50%;
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .success-icon {
+            height: 3rem;
+            width: 3rem;
+            color: #10b981;
+        }
+        
+        .success-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+        
+        .success-message {
+            color: #4b5563;
+            margin-bottom: 1.5rem;
+        }
+        
+        .loading-dots {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .dot {
+            width: 0.5rem;
+            height: 0.5rem;
+            background-color: #2563eb;
+            border-radius: 50%;
+            margin: 0 0.25rem;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .dot:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+        
+        .dot:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+        }
+        
+        /* Security Info Box */
+        .security-box {
+            margin-top: 2rem;
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+        }
+        
+        .security-content {
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .security-icon {
+            height: 2rem;
+            width: 2rem;
+            color: #3b82f6;
+            flex-shrink: 0;
+        }
+        
+        .security-text {
+            margin-left: 1rem;
+        }
+        
+        .security-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .security-message {
+            margin-top: 0.25rem;
+            font-size: 0.875rem;
+            color: #4b5563;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: #1f2937;
+            color: white;
+            padding: 1.5rem 0;
+            margin-top: 3rem;
+        }
+        
+        .footer-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .footer-content {
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        .footer-text {
+            font-size: 0.875rem;
+            color: #9ca3af;
+        }
+        
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #2563eb;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        
+        /* Media Queries */
+        @media (min-width: 640px) {
+            .otp-input {
+                width: 3.5rem;
+                height: 4rem;
+                font-size: 1.5rem;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .logo-text {
+                font-size: 1.5rem;
+            }
+            
+            .otp-input {
+                width: 3rem;
+                height: 3.5rem;
+                margin: 0 0.25rem;
+            }
+        }
+    </style>
+</head>
+<body x-data="otpVerification()">
+    <div class="page-container">
+        <!-- Header -->
+        <header>
+            <div class="header-container">
+                <div class="logo-container">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="logo-icon" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
+                        <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd" />
+                    </svg>
+                    <h1 class="logo-text">SecurePay Gateway</h1>
+                </div>
+                <div>
+                    <span class="demo-badge">Demo Version</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main>
+            <div class="main-container">
+                <!-- Progress Steps -->
+                <div class="progress-steps">
+                    <div class="progress-container">
+                        <div class="step">
+                            <div class="step-circle step-active">1</div>
+                            <span class="step-label">Payment</span>
+                        </div>
+                        <div class="progress-line progress-line-active"></div>
+                        <div class="step">
+                            <div class="step-circle step-active" style="animation: pulse 2s infinite;">2</div>
+                            <span class="step-label">Verification</span>
+                        </div>
+                        <div class="progress-line progress-line-inactive"></div>
+                        <div class="step">
+                            <div class="step-circle step-inactive">3</div>
+                            <span class="step-label step-label-inactive">Confirmation</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OTP Verification Card -->
+                <div class="card">
+                    <!-- Card Header -->
+                    <div class="card-header">
+                        <div class="card-bubble-1"></div>
+                        <div class="card-bubble-2"></div>
+                        
+                        <div class="header-content">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="header-icon" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                            </svg>
+                            <div>
+                                <h2 class="header-title">Secure Verification</h2>
+                                <p class="header-subtitle">Enter the OTP sent to your phone</p>
+                            </div>
+                        </div>
+                        
+                        <div class="timer-container">
+                            <div class="timer-circle">
+                                <span class="timer-text" x-text="timeLeft"></span>
+                            </div>
+                            <div>
+                                <p class="timer-info">For security purposes, this code will expire in <span x-text="timeLeft"></span> seconds</p>
+                                <p class="timer-info timer-info-amount">Transaction Amount: <span class="timer-amount">Rs. 94.98</span></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- OTP Input Section -->
+                    <div class="card-body">
+                        <div x-show="!otpVerified">
+                            <p class="card-message">We've sent a 6-digit verification code to your registered mobile number. Please enter the code below.</p>
+                            
+                            <!-- Mobile Number Display -->
+                            <div class="mobile-container">
+                                <div class="mobile-display">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="mobile-icon" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                                    </svg>
+                                    <span class="mobile-number">+94 ●●●● ●●● <span class="mobile-highlight">123</span></span>
+                                </div>
+                            </div>
+                            
+                            <!-- OTP Input Boxes -->
+                            <div class="otp-container">
+                                <template x-for="(digit, index) in digitInputs" :key="index">
+                                    <input 
+                                        type="text" 
+                                        maxlength="1" 
+                                        x-model="digit.value"
+                                        @input="handleInput(index, $event)"
+                                        @keydown="handleKeyDown(index, $event)"
+                                        @focus="currentFocusIndex = index"
+                                        :id="'digit-' + index"
+                                        class="otp-input"
+                                        :class="{'otp-input-error': otpError}"
+                                        inputmode="numeric"
+                                        pattern="[0-9]*"
+                                    >
+                                </template>
+                            </div>
+                            
+                            <!-- Error Message -->
+                            <div x-show="otpError" class="error-message">
+                                <p>Invalid verification code. Please try again.</p>
+                            </div>
+                            
+                            <!-- Verify Button -->
+                            <div>
+                                <button 
+                                    @click="verifyOTP"
+                                    class="verify-button"
+                                >
+                                    Verify & Proceed
+                                </button>
+                            </div>
+                            
+                            <!-- Help Links -->
+                            <div class="help-links">
+                                <button 
+                                    @click="resendOTP"
+                                    class="help-link"
+                                    :class="{'help-link-disabled': resendDisabled}"
+                                    :disabled="resendDisabled"
+                                >
+                                    <span x-show="!resendDisabled">Resend OTP</span>
+                                    <span x-show="resendDisabled" x-text="'Resend in ' + resendTimeLeft + 's'"></span>
+                                </button>
+                                <button class="help-link">
+                                    Need Help?
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Success State (Initially Hidden) -->
+                        <div x-show="otpVerified" class="success-container">
+                            <div class="success-icon-container">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="success-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <h3 class="success-title">OTP Verified!</h3>
+                            <p class="success-message">Your payment is being processed securely.</p>
+                            <div class="loading-dots">
+                                <div class="dot"></div>
+                                <div class="dot"></div>
+                                <div class="dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Security Info Box -->
+                <div class="security-box">
+                    <div class="security-content">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="security-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div class="security-text">
+                            <h3 class="security-title">Security Information</h3>
+                            <p class="security-message">We will never call you asking for your OTP. Do not share your verification code with anyone, including SecurePay representatives.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Footer -->
+        <footer>
+            <div class="footer-container">
+                <div class="footer-content">
+                    <p class="footer-text">© 2025 SecurePay Demo. All rights reserved.</p>
+                    <p class="footer-text">Created by ©<b>THIWANKA IMALSHAN</b></p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        function otpVerification() {
+            return {
+                digitInputs: [
+                    { value: '' },
+                    { value: '' },
+                    { value: '' },
+                    { value: '' },
+                    { value: '' },
+                    { value: '' }
+                ],
+                currentFocusIndex: 0,
+                otpError: false,
+                otpVerified: false,
+                timeLeft: 60,
+                resendTimeLeft: 30,
+                resendDisabled: true,
+                correctOTP: "123456", // In a real application, this would be generated and sent to the user
+                
+                init() {
+                    // Focus on first input
+                    setTimeout(() => {
+                        document.getElementById('digit-0').focus();
+                    }, 500);
+                    
+                    // Start countdown
+                    this.startCountdown();
+                    
+                    // Start resend countdown
+                    this.startResendCountdown();
+                },
+                
+                startCountdown() {
+                    const timer = setInterval(() => {
+                        this.timeLeft--;
+                        if (this.timeLeft <= 0) {
+                            clearInterval(timer);
+                            // Handle OTP expiration
+                            if (!this.otpVerified) {
+                                this.otpError = true;
+                            }
+                        }
+                    }, 1000);
+                },
+                
+                startResendCountdown() {
+                    const timer = setInterval(() => {
+                        this.resendTimeLeft--;
+                        if (this.resendTimeLeft <= 0) {
+                            clearInterval(timer);
+                            this.resendDisabled = false;
+                        }
+                    }, 1000);
+                },
+                
+                handleInput(index, event) {
+                    const input = event.target;
+                    this.otpError = false;
+                    
+                    // Allow only numeric input
+                    this.digitInputs[index].value = this.digitInputs[index].value.replace(/[^0-9]/g, '');
+                    
+                    // Auto advance to next input
+                    if (this.digitInputs[index].value && index < 5) {
+                        document.getElementById(`digit-${index + 1}`).focus();
+                        this.currentFocusIndex = index + 1;
+                    }
+                    
+                    // Check if all digits are filled
+                    if (this.allDigitsFilled()) {
+                        // Auto-verify after a brief delay
+                        setTimeout(() => {
+                            this.verifyOTP();
+                        }, 500);
+                    }
+                },
+                
+                handleKeyDown(index, event) {
+                    // Handle backspace
+                    if (event.key === 'Backspace') {
+                        if (this.digitInputs[index].value === '') {
+                            // If current input is empty and backspace is pressed, go to previous input
+                            if (index > 0) {
+                                event.preventDefault();
+                                document.getElementById(`digit-${index - 1}`).focus();
+                                this.currentFocusIndex = index - 1;
+                            }
+                        }
+                    }
+                    
+                    // Handle left arrow
+                    if (event.key === 'ArrowLeft' && index > 0) {
+                        event.preventDefault();
+                        document.getElementById(`digit-${index - 1}`).focus();
+                        this.currentFocusIndex = index - 1;
+                    }
+                    
+                    // Handle right arrow
+                    if (event.key === 'ArrowRight' && index < 5) {
+                        event.preventDefault();
+                        document.getElementById(`digit-${index + 1}`).focus();
+                        this.currentFocusIndex = index + 1;
+                    }
+                },
+                
+                allDigitsFilled() {
+                    return this.digitInputs.every(digit => digit.value !== '');
+                },
+                
+                getEnteredOTP() {
+                    return this.digitInputs.map(digit => digit.value).join('');
+                },
+                
+                verifyOTP() {
+                    if (!this.allDigitsFilled()) {
+                        this.otpError = true;
+                        return;
+                    }
+                    
+                    const enteredOTP = this.getEnteredOTP();
+                    
+                    // For demo purposes, we're using a hardcoded OTP
+                    // In a real app, this would verify against a server
+                    if (enteredOTP === this.correctOTP) {
+                        this.otpError = false;
+                        this.otpVerified = true;
+                        
+                        // Redirect to success page after brief delay
+                        setTimeout(() => {
+                            window.location.href = "payment-confirmation.html?verified=true";
+                        }, 2000);
+                    } else {
+                        this.otpError = true;
+                        
+                        // Clear inputs for retry
+                        this.digitInputs.forEach((digit, index) => {
+                            digit.value = '';
+                        });
+                        
+                        // Focus on first input
+                        setTimeout(() => {
+                            document.getElementById('digit-0').focus();
+                            this.currentFocusIndex = 0;
+                        }, 100);
+                    }
+                },
+                
+                resendOTP() {
+                    if (this.resendDisabled) return;
+                    
+                    // Simulate OTP resend
+                    this.timeLeft = 60;
+                    this.resendTimeLeft = 30;
+                    this.resendDisabled = true;
+                    this.otpError = false;
+                    
+                    // Clear inputs
+                    this.digitInputs.forEach((digit, index) => {
+                        digit.value = '';
+                    });
+                    
+                    // Focus on first input
+                    setTimeout(() => {
+                        document.getElementById('digit-0').focus();
+                        this.currentFocusIndex = 0;
+                    }, 100);
+                    
+                    // Restart countdown
+                    this.startCountdown();
+                    this.startResendCountdown();
+                    
+                    // Show toast notification
+                    this.showToast("New OTP has been sent to your phone");
+                },
+                
+                showToast(message) {
+                    // Create toast element
+                    const toast = document.createElement('div');
+                    toast.className = 'fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                    toast.style.opacity = '0';
+                    toast.style.transition = 'opacity 0.3s ease-in-out';
+                    toast.textContent = message;
+                    
+                    // Add to body
+                    document.body.appendChild(toast);
+                    
+                    // Fade in
+                    setTimeout(() => {
+                        toast.style.opacity = '1';
+                    }, 10);
+                    
+                    // Remove after 3 seconds
+                    setTimeout(() => {
+                        toast.style.opacity = '0';
+                        setTimeout(() => {
+                            document.body.removeChild(toast);
+                        }, 300);
+                    }, 3000);
+                }
+            };
+        }
+    </script>
+</body>
+</html>

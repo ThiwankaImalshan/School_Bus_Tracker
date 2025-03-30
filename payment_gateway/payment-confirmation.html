@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Confirmation - SecurePay Gateway</title>
+    <!-- Load Tailwind directly via CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
+    <style>
+                /* Progress steps */
+                .progress-steps {
+            margin-bottom: 2.5rem;
+        }
+        
+        .progress-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .step-circle {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .step-active {
+            background-color: #2563eb;
+        }
+        
+        .step-inactive {
+            background-color: #d1d5db;
+            color: #4b5563;
+        }
+        
+        .step-label {
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            font-weight: 500;
+        }
+        
+        .step-label-inactive {
+            color: #4b5563;
+        }
+        
+        .progress-line {
+            flex-grow: 1;
+            height: 0.25rem;
+            margin: 0 0.5rem;
+        }
+        
+        .progress-line-active {
+            background-color: #2563eb;
+        }
+        
+        .progress-line-inactive {
+            background-color: #d1d5db;
+        }
+        
+        /* Card Animation */
+        .payment-card {
+            perspective: 1000px;
+            transition: all 0.3s;
+        }
+        
+        .payment-card:hover {
+            transform: scale(1.03);
+            transition: all 0.2s;
+        }
+        
+        /* Card Shine Effect */
+        .card-shine {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.25) 50%, rgba(255,255,255,0) 100%);
+            pointer-events: none;
+        }
+        
+        /* Animation */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translate3d(0, 100%, 0);
+            }
+            to {
+                opacity: 1;
+                transform: translate3d(0, 0, 0);
+            }
+        }
+        
+        .animate-fadeInUp {
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        /* Checkmark animation */
+        @keyframes checkmarkDraw {
+            0% {
+                stroke-dashoffset: 100;
+            }
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+        
+        .checkmark {
+            stroke-dasharray: 100;
+            stroke-dashoffset: 100;
+            animation: checkmarkDraw 1s ease-in-out forwards;
+        }
+
+        /* Progress steps */
+        .progress-step {
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* .progress-line {
+            position: absolute;
+            height: 4px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: -1;
+        } */
+        /* Add this style section to the head of your document, after your existing styles */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            header, .payment-details, .payment-details * {
+                visibility: visible;
+            }
+            .payment-details {
+                position: absolute;
+                left: 5rem;
+                top: 10rem;
+                width: 100%;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="flex flex-col min-h-screen">
+        <!-- Header -->
+        <header style="background: linear-gradient(to right, #1d4ed8, #4338ca); color: white; padding: 1.5rem 0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+            <div style="max-width: 1280px; margin: 0 auto; padding: 0 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div style="display: flex; align-items: center;">
+                        <svg xmlns="http://www.w3.org/2000/svg" style="height: 2.5rem; width: 2.5rem; margin-right: 0.5rem;" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
+                            <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd" />
+                        </svg>
+                        <h1 style="font-size: clamp(1.2rem, 4vw, 1.5rem); font-weight: 700;">SecurePay Gateway</h1>
+                    </div>
+                    <div>
+                        <span style="background-color: #10b981; color: white; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: clamp(0.75rem, 2.5vw, 0.875rem); font-weight: 600; display: inline-block;">Demo Version</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main style="flex-grow: 1; max-width: 1280px; margin: 0 auto; padding: 2rem 1rem;">
+            <div style="max-width: 1024px; margin: 0 auto;">
+                <!-- Progress Steps -->
+                <div class="progress-steps">
+                    <div class="progress-container">
+                        <div class="step">
+                            <div class="step-circle step-active">1</div>
+                            <span class="step-label">Payment</span>
+                        </div>
+                        <div class="progress-line progress-line-active"></div>
+                        <div class="step">
+                            <div class="step-circle step-active" >2</div>
+                            <span class="step-label">Verification</span>
+                        </div>
+                        <div class="progress-line progress-line-active"></div>
+                        <div class="step">
+                            <div class="step-circle step-active" style="animation: pulse 2s infinite;">3</div>
+                            <span class="step-label step-label-inactive">Confirmation</span>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Confirmation Card -->
+                <div class="animate-fadeInUp" style="max-width: 800px; margin: 0 auto; background-color: white; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); padding: 2rem; text-align: center;">
+                    <!-- Success Icon -->
+                    <div style="margin: 0 auto; display: flex; align-items: center; justify-content: center; height: 6rem; width: 6rem; border-radius: 9999px; background-color: #dcfce7; margin-bottom: 1.5rem;">
+                        <svg class="checkmark" style="height: 4rem; width: 4rem; color: #10b981;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+
+                    <!-- Confirmation Title and Text -->
+                    <h2 style="font-size: 1.875rem; font-weight: 700; color: #111827; margin-bottom: 0.75rem;">Payment Successful!</h2>
+                    <p style="color: #4b5563; font-size: 1.125rem; max-width: 36rem; margin: 0 auto 2rem;">Your transaction has been processed successfully. A confirmation email has been sent to your email address.</p>
+
+                    <!-- Payment Details -->
+                    <div style="background-color: #f3f4f6; border-radius: 0.75rem; padding: 1.5rem; max-width: 32rem; margin: 0 auto 2rem; text-align: left;">
+                        <h3 style="font-size: 1.25rem; font-weight: 600; color: #1f2937; margin-bottom: 1rem;">Payment Details</h3>
+                        
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem; font-size: 1rem;">
+                            <span style="color: #4b5563;">Transaction ID:</span>
+                            <span style="font-weight: 500; color: #111827;">TXN384926</span>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem; font-size: 1rem;">
+                            <span style="color: #4b5563;">Date:</span>
+                            <span style="font-weight: 500; color: #111827;">March 30, 2025</span>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem; font-size: 1rem;">
+                            <span style="color: #4b5563;">Payment Method:</span>
+                            <span style="font-weight: 500; color: #111827;">Credit Card (**** 3456)</span>
+                        </div>
+                        
+                        <div style="border-top: 1px solid #e5e7eb; margin: 1rem 0; padding-top: 1rem;"></div>
+                        
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 1rem;">
+                            <span style="color: #4b5563;">Monthly Fee:</span>
+                            <span style="font-weight: 500;">Rs. 89.99</span>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 1rem;">
+                            <span style="color: #4b5563;">Transaction Fee:</span>
+                            <span style="font-weight: 500;">Rs. 4.99</span>
+                        </div>
+                        
+                        <div style="border-top: 1px solid #e5e7eb; margin: 1rem 0; padding-top: 1rem;"></div>
+                        
+                        <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 1.125rem;">
+                            <span>Total</span>
+                            <span style="color: #2563eb;">Rs. 94.98</span>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div style="display: flex; flex-direction: column; gap: 1rem; max-width: 24rem; margin: 0 auto;">
+                        <button 
+                            style="width: 100%; padding: 1rem; background: linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #60a5fa 100%); color: white; font-size: 1.125rem; font-weight: 600; border-radius: 0.75rem; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); transform: translateY(0); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);"
+                            onmouseover="this.style.background='linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%)'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(37, 99, 235, 0.4), 0 0 15px rgba(37, 99, 235, 0.3)'; this.style.border='1px solid rgba(255, 255, 255, 0.2)'"
+                            onmouseout="this.style.background='linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #60a5fa 100%)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(37, 99, 235, 0.3)'; this.style.border='1px solid rgba(255, 255, 255, 0.1)'"
+                            onclick="window.location.href='payment_gateway.html'">
+                            Return to Home
+                        </button>
+                        
+                        <button 
+                            style="width: 100%; padding: 1rem; background: transparent; color: #4b5563; font-size: 1.125rem; font-weight: 500; border: 1px solid #d1d5db; border-radius: 0.75rem; transition: all 0.2s;"
+                            onmouseover="this.style.backgroundColor='#f3f4f6'; this.style.color='#111827';"
+                            onmouseout="this.style.backgroundColor='transparent'; this.style.color='#4b5563';"
+                            onclick="printReceipt();">
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                                <svg xmlns="http://www.w3.org/2000/svg" style="height: 1.25rem; width: 1.25rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                </svg>
+                                Print Receipt
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Support Info -->
+                <div style="text-align: center; margin-top: 2rem;">
+                    <p style="color: #6b7280; font-size: 0.875rem;">If you have any questions about your payment, please contact us at</p>
+                    <a href="mailto:support@securepay.com" style="color: #2563eb; font-weight: 500; text-decoration: none; font-size: 0.875rem;">support@securepay.com</a>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer style="background-color: #1f2937; color: white; padding: 1.5rem 0; margin-top: 3rem;">
+            <div style="max-width: 1280px; margin: 0 auto; padding: 0 1rem;">
+                <div style="display: flex; flex-direction: column; justify-content: space-between; align-items: center;">
+                    <div style="margin-bottom: 1rem; text-align: center;">
+                        <p style="font-size: 0.875rem; color: #9ca3af;">© 2025 SecurePay Demo. All rights reserved.</p>
+                        <p style="font-size: 0.875rem; color: #9ca3af;">Created by ©<b>THIWANKA IMALSHAN</b></p>
+                    </div>
+                    <div style="display: flex; gap: 1.5rem;">
+                        <!-- <a href="#" style="color: #9ca3af; transition: color 0.2s; text-decoration: none;">Privacy Policy</a>
+                        <a href="#" style="color: #9ca3af; transition: color 0.2s; text-decoration: none;">Terms of Service</a>
+                        <a href="#" style="color: #9ca3af; transition: color 0.2s; text-decoration: none;">Contact</a> -->
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+    <script>
+        // Update your onclick handler for the Print Receipt button
+        function printReceipt() {
+            // Add a class to the payment details div for targeting in print styles
+            const paymentDetails = document.querySelector('div[style*="background-color: #f3f4f6; border-radius: 0.75rem;"]');
+            paymentDetails.classList.add('payment-details');
+            
+            // Print the page (only header and payment details will be visible)
+            window.print();
+            
+            // Remove the class after printing
+            setTimeout(() => {
+                paymentDetails.classList.remove('payment-details');
+            }, 500);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Gateway Demo</title>
+    <!-- Load Tailwind directly via CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.10.5/cdn.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cleave.js/1.6.0/cleave.min.js"></script>
+    <!-- Inline styles to ensure they're applied -->
+    <style>
+                /* Progress steps */
+                .progress-steps {
+            margin-bottom: 2.5rem;
+        }
+        
+        .progress-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .step-circle {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .step-active {
+            background-color: #2563eb;
+        }
+        
+        .step-inactive {
+            background-color: #d1d5db;
+            color: #4b5563;
+        }
+        
+        .step-label {
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            font-weight: 500;
+        }
+        
+        .step-label-inactive {
+            color: #4b5563;
+        }
+        
+        .progress-line {
+            flex-grow: 1;
+            height: 0.25rem;
+            margin: 0 0.5rem;
+        }
+        
+        .progress-line-active {
+            background-color: #2563eb;
+        }
+        
+        .progress-line-inactive {
+            background-color: #d1d5db;
+        }
+        
+        /* Card Input Shadow */
+        .card-input-shadow:focus {
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+        }
+        
+        /* Card Animation */
+        .payment-card {
+            perspective: 1000px;
+            transition: all 0.3s;
+        }
+        
+        .payment-card:hover {
+            transform: scale(1.03);
+            transition: all 0.2s;
+        }
+        
+        /* Card Shine Effect */
+        .card-shine {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.25) 50%, rgba(255,255,255,0) 100%);
+            pointer-events: none;
+        }
+        
+        /* Animation */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translate3d(0, 100%, 0);
+            }
+            to {
+                opacity: 1;
+                transform: translate3d(0, 0, 0);
+            }
+        }
+        
+        .animate-fadeInUp {
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        /* Form Styling */
+        input {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+            width: 100%;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+        
+        button {
+            transition: all 0.2s;
+        }
+        
+        button:hover {
+            transform: scale(1.02);
+        }
+        
+        /* Ensure Alpine cloak works */
+        [x-cloak] { 
+            display: none !important; 
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen" x-data="paymentApp()">
+    <div class="flex flex-col min-h-screen">
+        <!-- Header -->
+        <header style="background: linear-gradient(to right, #1d4ed8, #4338ca); color: white; padding: 1.5rem 0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+            <div style="max-width: 1280px; margin: 0 auto; padding: 0 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div style="display: flex; align-items: center;">
+                        <svg xmlns="http://www.w3.org/2000/svg" style="height: 2.5rem; width: 2.5rem; margin-right: 0.5rem;" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
+                            <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd" />
+                        </svg>
+                        <h1 style="font-size: clamp(1.2rem, 4vw, 1.5rem); font-weight: 700;">SecurePay Gateway</h1>
+                    </div>
+                    <div>
+                        <span style="background-color: #10b981; color: white; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: clamp(0.75rem, 2.5vw, 0.875rem); font-weight: 600; display: inline-block;">Demo Version</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main style="flex-grow: 1; max-width: 1280px; margin: 0 auto; padding: 2rem 1rem;">
+            <div style="max-width: 1024px; margin: 0 auto;">
+              
+                <!-- Progress Steps -->
+                <div class="progress-steps">
+                    <div class="progress-container">
+                        <div class="step">
+                            <div class="step-circle step-active" style="animation: pulse 2s infinite;">1</div>
+                            <span class="step-label">Payment</span>
+                        </div>
+                        <div class="progress-line progress-line-active"></div>
+                        <div class="step">
+                            <div class="step-circle step-inactive" >2</div>
+                            <span class="step-label">Verification</span>
+                        </div>
+                        <div class="progress-line progress-line-inactive"></div>
+                        <div class="step">
+                            <div class="step-circle step-inactive">3</div>
+                            <span class="step-label step-label-inactive">Confirmation</span>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div style="display: grid; grid-template-columns: 1fr; gap: 2rem;">
+                    <style>
+                        @media (min-width: 768px) {
+                            .desktop-grid {
+                                grid-template-columns: 1fr 2fr !important;
+                            }
+                        }
+                    </style>
+                    <div class="desktop-grid" style="display: grid; grid-template-columns: 1fr; gap: 2rem;">
+                        <!-- Order Summary -->
+                        <div>
+                            <div style="background-color: white; border-radius: 0.75rem; box-shadow: 0 1px 3px rgba(0,0,0,0.12); padding: 1.5rem; margin-bottom: 1.5rem;">
+                                <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: #1f2937;">Payment Summary</h2>
+                                <div style="border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem; margin-bottom: 1rem;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                        <span style="color: #4b5563;">Monthly Fee</span>
+                                        <span style="font-weight: 500;" x-text="'Rs. ' + formatPrice(productTotal)"></span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                        <span style="color: #4b5563;">Transaction Fee</span>
+                                        <span style="font-weight: 500;" x-text="'Rs. ' + formatPrice(shipping)"></span>
+                                    </div>
+                                    <!-- <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                        <span style="color: #4b5563;">Tax</span>
+                                        <span style="font-weight: 500;" x-text="'Rs. ' + formatPrice(tax)"></span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;" x-show="transactionFee > 0">
+                                        <span style="color: #4b5563;">Transaction Fee</span>
+                                        <span style="font-weight: 500;" x-text="'Rs. ' + formatPrice(transactionFee)"></span>
+                                    </div> -->
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 1.125rem;">
+                                    <span>Total</span>
+                                    <span style="color: #2563eb;" x-text="'Rs. ' + formatPrice(total)"></span>
+                                </div>
+                            </div>
+
+                            <div style="background-color: white; border-radius: 0.75rem; box-shadow: 0 1px 3px rgba(0,0,0,0.12); padding: 1.5rem;">
+                                <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: #1f2937;">We Accept</h2>
+                                <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                                    <div style="background-color: #f3f4f6; border-radius: 0.375rem; padding: 0.5rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                        <img src="img/visa.png" alt="Visa" style="height: 4rem;"/>
+                                    </div>
+                                    <div style="background-color: #f3f4f6; border-radius: 0.375rem; padding: 0.5rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                        <img src="img/master.png" alt="Mastercard" style="height: 4rem;"/>
+                                    </div>
+                                    <div style="background-color: #f3f4f6; border-radius: 0.375rem; padding: 0.5rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                        <img src="img/amex.png" alt="Amex" style="height: 4rem;"/>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; border-top: 1px solid #e5e7eb; padding-top: 1rem;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" style="height: 1.25rem; width: 1.25rem; color: #10b981; margin-right: 0.5rem;" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                                    </svg>
+                                    <span style="font-size: 0.875rem; color: #4b5563;">Secure Payment</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Form -->
+                        <div>
+                            <div style="background-color: white; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); padding: 1.5rem;">
+                                <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; color: #1f2937;">Card Details</h2>
+                                
+                                <form id="payment-form" @submit.prevent="processPayment">
+                                    <!-- Transaction Fee -->
+                                    <div style="margin-bottom: 1.5rem;">
+                                        <label style="display: block; color: #374151; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; margin-left: 1rem;">Transaction Fee</label>
+                                        <div style="position: relative;">
+                                            <div style="position: absolute; top: 0; bottom: 0; left: 1rem; padding-left: 0.75rem; display: flex; align-items: center; pointer-events: none;">
+                                                <span style="color: #6b7280; padding-bottom: 0.28rem;"><small>Rs.</small></span>
+                                            </div>
+                                            <input type="number" 
+                                                step="0.01" 
+                                                x-model="transactionFeeInput" 
+                                                @input="updateTotal"
+                                                @blur="transactionFeeInput = Number(transactionFeeInput).toFixed(2)"
+                                                style="padding-left: 2rem; border: 1px solid #d1d5db; border-radius: 0.375rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-size: 0.875rem; padding: 0.75rem; padding-left: 2rem; width: 85%; margin-left: 1rem; margin-right: 1rem;" 
+                                                placeholder="0.00">
+                                        </div>
+                                        <p style="margin-top: 0.25rem; font-size: 0.875rem; color: #6b7280; margin-left: 1rem;">Optional processing fee for your transaction</p>
+                                    </div>
+                                    
+                                    <!-- Card Preview -->
+                                    <div style="margin-bottom: 2rem; position: relative;" class="payment-card">
+                                        <div style="height: 12rem; background: linear-gradient(to bottom right, #2563eb, #4f46e5); border-radius: 0.75rem; padding: 1.5rem; color: white; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); overflow: hidden;">
+                                            <div class="card-shine"></div>
+                                            <div style="display: flex; justify-content: space-between; margin-bottom: 2.5rem;">
+                                                <div>
+                                                    <div style="font-size: 0.75rem; opacity: 0.75; margin-bottom: 0.25rem;">Card Number</div>
+                                                    <div style="letter-spacing: 0.05em; font-size: 1.125rem; font-weight: 500;" x-text="cardNumberDisplay || '•••• •••• •••• ••••'"></div>
+                                                </div>
+                                                <div style="display: flex; gap: 0.5rem;">
+                                                    <div style="background-color: rgba(255, 255, 255, 0.5); border-radius: 0.375rem; padding: 0.75rem; display: flex; align-items: center; justify-content: center; height: 2rem; width: 3rem;">
+                                                        <img x-show="cardType === 'visa'" src="img/Visa-logo.png" alt="Visa" style="height: 4rem; width: auto;"/>
+                                                        <img x-show="cardType === 'mastercard'" src="img/master.png" alt="Mastercard" style="height: 4rem; width: auto;"/>
+                                                        <span x-show="cardType === ''" style="color: white; font-weight: 700; font-size: 0.75rem;"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                                                <div>
+                                                    <div style="font-size: 0.75rem; opacity: 0.75; margin-bottom: 0.25rem;">Card Holder</div>
+                                                    <div style="font-weight: 500;" x-text="cardName.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ') || 'CARDHOLDER NAME'"></div>
+                                                </div>
+                                                <div>
+                                                    <div style="font-size: 0.75rem; opacity: 0.75; margin-bottom: 0.25rem;">Expires</div>
+                                                    <div style="font-weight: 500;" x-text="cardExpiry || 'MM/YY'"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Card Information -->
+                                    <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                                        <div>
+                                            <label for="card-number" style="display: block; color: #374151; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Card Number</label>
+                                            <div style="position: relative;">
+                                                <input 
+                                                    id="card-number" 
+                                                    type="text" 
+                                                    x-model="cardNumber" 
+                                                    @input="updateCardType"
+                                                    style="border: 1px solid #d1d5db; border-radius: 0.375rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-size: 0.875rem; padding: 0.75rem; width: 90%; margin-left: 1rem; margin-right: 1rem;" 
+                                                    placeholder="1234 5678 9012 3456"
+                                                    autocomplete="cc-number">
+                                                <div style="position: absolute; top: 50%; right: 2rem; transform: translateY(-50%); display: flex; align-items: center;">
+                                                    <svg x-show="cardType === 'visa'" xmlns="http://www.w3.org/2000/svg" style="height: auto; width: 2rem; max-height: 100%; color: #2563eb;" viewBox="0 0 24 24" fill="currentColor">
+                                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                                                    </svg>
+                                                    <svg x-show="cardType === 'mastercard'" xmlns="http://www.w3.org/2000/svg" style="height: auto; width: 2rem; max-height: 100%; color: #ef4444;" viewBox="0 0 24 24" fill="currentColor">
+                                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div>
+                                            <label for="card-name" style="display: block; color: #374151; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Cardholder Name</label>
+                                            <input 
+                                                id="card-name" 
+                                                type="text" 
+                                                x-model="cardName"
+                                                @input="cardName = cardName.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')"
+                                                style="border: 1px solid #d1d5db; border-radius: 0.375rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-size: 0.875rem; padding: 0.75rem; width: 90%; margin-left: 1rem; margin-right: 1rem;" 
+                                                placeholder="Name on card"
+                                                autocomplete="cc-name">
+                                        </div>
+                                        
+                                        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem;">
+                                            <div>
+                                                <label for="expiry" style="display: block; color: #374151; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Expiry Date</label>
+                                                <input 
+                                                    id="expiry" 
+                                                    type="text" 
+                                                    x-model="cardExpiry"
+                                                    @input="cardExpiry = cardExpiry.replace(/\D/g,'').replace(/^(\d{2})(\d)/,'$1/$2').replace(/^(\d{2})(?:\/?)(\d{2}).*/,'$1/$2').replace(/^(1[3-9]|[2-9]\d)/,'12')"
+                                                    maxlength="5"
+                                                    style="border: 1px solid #d1d5db; border-radius: 0.375rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-size: 0.875rem; padding: 0.75rem; width: 80%; margin-left: 1rem; margin-right: 1rem;" 
+                                                    placeholder="MM/YY"
+                                                    autocomplete="cc-exp">
+                                            </div>
+                                            <div>
+                                                <label for="cvv" style="display: block; color: #374151; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">CVV</label>
+                                                <input 
+                                                    id="cvv" 
+                                                    type="text" 
+                                                    x-model="cardCVV"
+                                                    @input="cardCVV = cardCVV.replace(/\D/g,'').substring(0,3)"
+                                                    maxlength="3"
+                                                    style="border: 1px solid #d1d5db; border-radius: 0.375rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-size: 0.875rem; padding: 0.75rem; width: 80%; margin-left: 1rem; margin-right: 1rem;" 
+                                                    placeholder="123"
+                                                    autocomplete="cc-csc">
+                                            </div>
+                                        </div>
+                                        
+                                        <div>
+                                            <label for="email" style="display: block; color: #374151; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Email</label>
+                                            <input 
+                                                id="email" 
+                                                type="email" 
+                                                x-model="email"
+                                                style="border: 1px solid #d1d5db; border-radius: 0.375rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-size: 0.875rem; padding: 0.75rem; width: 90%; margin-left: 1rem; margin-right: 1rem;" 
+                                                placeholder="youremail@email.com"
+                                                autocomplete="email">
+                                        </div>
+                                    </div>
+
+                                    
+                                    <div style="margin-top: 2rem;">
+                                        <button
+                                            type="submit"
+                                            style="width: 100%; padding: 1rem 2rem; background: linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #60a5fa 100%); color: white; font-size: 1.125rem; font-weight: 600; border-radius: 0.75rem; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); transform: translateY(0); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);"
+                                            onmouseover="this.style.background='linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%)'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(37, 99, 235, 0.4), 0 0 15px rgba(37, 99, 235, 0.3)'; this.style.border='1px solid rgba(255, 255, 255, 0.2)'"
+                                            onmouseout="this.style.background='linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #60a5fa 100%)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(37, 99, 235, 0.3)'; this.style.border='1px solid rgba(255, 255, 255, 0.1)'"
+                                            x-on:click="if(validateForm()) processing = true"
+                                        >
+                                            <span x-show="!processing" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                                                <span>Pay Now </span>
+                                                <!-- <span x-text="formatPrice(total)" style="text-shadow: 0 0 10px rgba(255,255,255,0.5)"></span> -->
+                                            </span>
+                                        </button>
+
+                                        <!-- <button 
+                                            type="submit"
+                                            style="width: 100%; padding: 1rem 2rem; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; border: none; border-radius: 8px; font-size: 1.125rem; font-weight: 600; letter-spacing: 0.025em; box-shadow: 0 4px 6px rgba(37, 99, 235, 0.25); transform: translateY(0); transition: all 0.2s ease;"
+                                            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(37, 99, 235, 0.3)'"
+                                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(37, 99, 235, 0.25)'"
+                                            :style="processing ? 'opacity: 0.75; cursor: not-allowed;' : ''"
+                                            @click="processing = true">
+                                            <span x-show="!processing">Pay Now $<span x-text="formatPrice(total)"></span></span>
+                                        </button> -->
+
+                                        <!-- Processing Popup Box -->
+                                        <div x-show="processing" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 9999; padding-top: 15vh;">
+                                            <div style="background: white; width: 90%; max-width: 400px; padding: 2rem; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); position: relative; margin: auto; animation: slideIn 0.3s ease-out;">
+                                                <div style="text-align: center;">
+                                                    <!-- Animated Processing Icon -->
+                                                    <div style="margin-bottom: 1.5rem;">
+                                                        <svg class="animate-spin" style="height: 3rem; width: 3rem; margin: 0 auto; color: #2563eb;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                            <circle style="opacity: 0.25;" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                            <path style="opacity: 0.75;" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                        </svg>
+                                                    </div>
+                                                    
+                                                    <!-- Processing Text -->
+                                                    <h3 style="color: #1f2937; font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem;">
+                                                        Processing Your Payment
+                                                    </h3>
+                                                    
+                                                    <!-- Processing Message -->
+                                                    <p style="color: #6b7280; font-size: 1rem; line-height: 1.5; margin-bottom: 1.5rem;">
+                                                        Please wait while we securely process your payment. This may take a few moments.
+                                                    </p>
+                                                    
+                                                    <!-- Progress Bar -->
+                                                    <div style="width: 100%; height: 4px; background: #e5e7eb; border-radius: 2px; overflow: hidden;">
+                                                        <div style="width: 75%; height: 100%; background: linear-gradient(90deg, #2563eb, #3b82f6); animation: progress 2s ease-in-out infinite;"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <style>
+                                            @keyframes slideIn {
+                                                from {
+                                                    transform: translateY(20px);
+                                                    opacity: 0;
+                                                }
+                                                to {
+                                                    transform: translateY(0);
+                                                    opacity: 1;
+                                                }
+                                            }
+                                            
+                                            @keyframes progress {
+                                                0% { transform: translateX(-100%); }
+                                                50% { transform: translateX(0); }
+                                                100% { transform: translateX(100%); }
+                                            }
+                                        </style>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer style="background-color: #1f2937; color: white; padding: 1.5rem 0; margin-top: 3rem;">
+            <div style="max-width: 1280px; margin: 0 auto; padding: 0 1rem;">
+                <div style="display: flex; flex-direction: column; justify-content: space-between; align-items: center;">
+                    <div style="margin-bottom: 1rem; text-align: center;">
+                        <p style="font-size: 0.875rem; color: #9ca3af;">© 2025 SecurePay Demo. All rights reserved.</p>
+                        <p style="font-size: 0.875rem; color: #9ca3af;">Created by ©<b>THIWANKA IMALSHAN</b></p>
+                    </div>
+                    <div style="display: flex; gap: 1.5rem;">
+                        <!-- <a href="#" style="color: #9ca3af; transition: color 0.2s; text-decoration: none;">Privacy Policy</a>
+                        <a href="#" style="color: #9ca3af; transition: color 0.2s; text-decoration: none;">Terms of Service</a>
+                        <a href="#" style="color: #9ca3af; transition: color 0.2s; text-decoration: none;">Contact</a> -->
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Success Modal -->
+    <div x-show="showSuccessModal" style="position: fixed; inset: 0; background-color: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 50; padding-top: 10vh;" x-cloak>
+        <div x-show="showSuccessModal" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-90" x-transition:enter-end="opacity-100 transform scale-100" style="background-color: white; border-radius: 0.75rem; padding: 1.5rem; max-width: 28rem; width: 90%; margin: auto; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);" class="animate-fadeInUp">
+            <div style="text-align: center;">
+                <div style="margin: 0 auto; display: flex; align-items: center; justify-content: center; height: 4rem; width: 4rem; border-radius: 9999px; background-color: #dcfce7; margin-bottom: 1rem;">
+                    <svg style="height: 2.5rem; width: 2.5rem; color: #10b981;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <h3 style="font-size: 1.5rem; font-weight: 700; color: #111827; margin-bottom: 0.5rem;">Payment Successful!</h3>
+                <p style="color: #4b5563; margin-bottom: 1.5rem;">Your transaction has been processed successfully. A confirmation email has been sent to <span style="font-weight: 500;" x-text="email"></span></p>
+                <div style="background-color: #f3f4f6; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span style="color: #4b5563;">Amount Paid:</span>
+                        <span style="font-weight: 700; color: #111827;" x-text="'Rs.' + formatPrice(total)"></span>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span style="color: #4b5563;">Transaction ID:</span>
+                        <span style="font-weight: 500; color: #111827;" x-text="transactionId"></span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: #4b5563;">Date:</span>
+                        <span style="font-weight: 500; color: #111827;" x-text="new Date().toLocaleDateString()"></span>
+                    </div>
+                </div>
+                <button @click="closeSuccessModal" style="width: 100%; padding: 0.75rem; border: none; border-radius: 0.375rem; background-color: #2563eb; color: white; font-weight: 500; cursor: pointer; transition: all 0.2s;">
+                    Back to Home
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript for the application -->
+    <script>
+        function paymentApp() {
+            return {
+                // Payment details
+                productTotal: 89.99,
+                shipping: 4.99,
+                tax: 0.00,
+                transactionFee: 0,
+                transactionFeeInput: '',
+                total: 0,
+                
+                // Card details
+                cardNumber: '',
+                cardNumberDisplay: '',
+                cardName: '',
+                cardExpiry: '',
+                cardCVV: '',
+                cardType: '',
+                email: '',
+                
+                // UI state
+                processing: false,
+                showSuccessModal: false,
+                transactionId: '',
+                
+                // Initialize
+                init() {
+                    this.updateTotal();
+                    
+                    // Initialize Cleave.js for card formatting
+                    new Cleave('#card-number', {
+                        creditCard: true,
+                        onCreditCardTypeChanged: (type) => {
+                            this.cardType = type;
+                        }
+                    });
+                    
+                    new Cleave('#expiry', {
+                        date: true,
+                        datePattern: ['m', 'y']
+                    });
+                    
+                    new Cleave('#cvv', {
+                        numeral: true,
+                        numeralPositiveOnly: true,
+                        blocks: [3]
+                    });
+                    
+                    // Watch for card number changes to update the display
+                    this.$watch('cardNumber', (value) => {
+                        if (!value) {
+                            this.cardNumberDisplay = '';
+                            return;
+                        }
+                        
+                        // Format for display - show last 4 digits only
+                        const parts = value.replace(/\s+/g, '');
+                        if (parts.length > 4) {
+                            this.cardNumberDisplay = '•••• •••• •••• ' + parts.slice(-4);
+                        } else {
+                            this.cardNumberDisplay = parts;
+                        }
+                    });
+                },
+                
+                // Format price to 2 decimal places
+                formatPrice(price) {
+                    return price.toFixed(2);
+                },
+                
+                // Update total when transaction fee changes
+                updateTotal() {
+                    const fee = parseFloat(this.transactionFeeInput) || 0;
+                    this.transactionFee = fee;
+                    this.total = this.productTotal + this.shipping + this.tax + this.transactionFee;
+                },
+                
+                // Determine card type from number
+                updateCardType() {
+                    // Logic handled by Cleave.js
+                },
+                
+                // Process the payment
+                processPayment() {
+                    if (this.validateForm()) {
+                        this.processing = true;
+                        
+                        // Simulate API call
+                        setTimeout(() => {
+                            this.processing = false;
+                            this.transactionId = 'TXN' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+                            
+                            // Store payment details in sessionStorage for OTP page
+                            sessionStorage.setItem('paymentDetails', JSON.stringify({
+                                amount: this.total,
+                                transactionId: this.transactionId,
+                                email: this.email,
+                                date: new Date().toLocaleDateString()
+                            }));
+                            
+                            // Navigate to OTP verification page
+                            window.location.href = 'otp-verification.html';
+                        }, 2000);
+                    }
+                },
+                
+                // Validate the form
+                validateForm() {
+                    // Basic validation - in a real app, this would be more robust
+                    if (!this.cardNumber || !this.cardName || !this.cardExpiry || !this.cardCVV || !this.email) {
+                        alert('Please fill in all required fields');
+                        return false;
+                    }
+                    
+                    // Email validation
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(this.email)) {
+                        alert('Please enter a valid email address');
+                        return false;
+                    }
+                    
+                    return true;
+                },
+                
+                // Close the success modal
+                closeSuccessModal() {
+                    this.showSuccessModal = false;
+                    
+                    // Reset form for demo purposes
+                    this.cardNumber = '';
+                    this.cardNumberDisplay = '';
+                    this.cardName = '';
+                    this.cardExpiry = '';
+                    this.cardCVV = '';
+                    this.email = '';
+                    this.transactionFeeInput = '';
+                    this.transactionFee = 0;
+                    this.updateTotal();
+                }
+            };
+        }
+    </script>
+</body>
+</html>

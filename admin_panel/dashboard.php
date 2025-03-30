@@ -167,6 +167,97 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
         .content-area {
             background-color: rgba(255, 205, 141, 0.1); /* Lightest orange with 10% opacity */
         }
+        /* Custom scrollbar styling */
+        .overflow-y-auto::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .overflow-y-auto::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .overflow-y-auto::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+            background: #666;
+        }
+
+        /* For Firefox */
+        .overflow-y-auto {
+            scrollbar-width: thin;
+            scrollbar-color: #888 #f1f1f1;
+        }
+
+        /* Ensure sticky header works properly */
+        thead.sticky {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        /* Add shadow to sticky header */
+        thead.sticky::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -1px;
+            height: 1px;
+            background: #e5e7eb;
+        }
+
+        /* Button hover effects */
+        .button-hover-effect {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .button-hover-effect::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to right,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transition: left 0.5s;
+        }
+
+        .button-hover-effect:hover::after {
+            left: 100%;
+        }
+
+        /* Ripple effect on click */
+        .button-ripple {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .button-ripple::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .button-ripple:active::before {
+            width: 200%;
+            height: 200%;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-b from-orange-50 to-orange-100 min-h-screen">
@@ -342,7 +433,13 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
                             <div class="flex items-center justify-between mb-2">
                                 <h3 class="text-lg font-semibold heading-brown">Children</h3>
                                 <div class="bg-green-500 text-white text-xl font-bold h-12 w-12 rounded-full flex items-center justify-center">
-                                    <?php echo $childCount; ?>
+                                    <?php 
+                                    if($childCount > 999) {
+                                        echo '<span class="text-lg">' . $childCount . '</span>';
+                                    } else {
+                                        echo $childCount;
+                                    }
+                                    ?>
                                 </div>
                             </div>
                             <p class="text-gray-500 text-sm">Total enrolled students</p>
@@ -377,57 +474,54 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
                         <div>
                             <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden mb-6">
                                 <div class="p-6 border-b border-gray-100">
-                                    <h3 class="text-lg font-semibold heading-brown">All Drivers</h3>
+                                    <h3 class="text-lg font-semibold heading-brown">Latest Drivers</h3>
                                 </div>
                                 <div class="p-6">
                                     <div class="space-y-6">
-                                        <!-- Driver 1 -->
-                                        <div class="border border-gray-100 rounded-xl p-4">
+                                        <?php
+                                        // Get latest 5 drivers with their bus and school details
+                                        $query = "
+                                            SELECT DISTINCT 
+                                                d.full_name,
+                                                d.phone,
+                                                b.bus_number,
+                                                b.covering_cities,
+                                                GROUP_CONCAT(s.name SEPARATOR ', ') as school_names
+                                            FROM driver d
+                                            LEFT JOIN bus b ON d.bus_id = b.bus_id 
+                                            LEFT JOIN bus_school bs ON b.bus_id = bs.bus_id
+                                            LEFT JOIN school s ON bs.school_id = s.school_id
+                                            GROUP BY d.driver_id
+                                            ORDER BY d.joined_date DESC
+                                            LIMIT 5
+                                        ";
+
+                                        $result = $conn->query($query);
+
+                                        if ($result && $result->num_rows > 0) {
+                                            while($row = $result->fetch_assoc()) {
+                                        ?>
+                                        <!-- Driver Entry -->
+                                        <div class="border border-blue-100 rounded-xl p-4 bg-blue-50">
                                             <div class="flex items-start space-x-4">
-                                                <img src="/api/placeholder/100/100" alt="Robert Davis" class="w-16 h-16 rounded-full object-cover border-2 border-orange-200"/>
+                                                <img src="../img/busdriver.jpg" alt="<?php echo htmlspecialchars($row['full_name']); ?>" class="w-16 h-16 rounded-full object-cover border-2 border-blue-200"/>
                                                 <div class="flex-1">
-                                                    <h4 class="text-md font-medium text-gray-800">Robert Davis</h4>
-                                                    <p class="text-gray-500 text-sm">Bus #42</p>
-                                                    <div class="mt-2 text-xs text-gray-600">
-                                                        <p>Servicing: Westfield High, Springfield Middle, Oakridge Elementary</p>
-                                                        <p>Route: North District - Route C</p>
-                                                        <p>Contact: (555) 987-6543</p>
+                                                    <h4 class="text-md font-medium text-blue-800"><?php echo htmlspecialchars($row['full_name']); ?></h4>
+                                                    <p class="text-blue-600 text-sm">Bus - <b class="text-blue-600"><?php echo htmlspecialchars($row['bus_number']); ?></b></p>
+                                                    <div class="mt-2 text-xs text-gray-500">
+                                                        <p><b class="text-blue-500">Schools:</b>  <br><?php echo htmlspecialchars($row['school_names']); ?></p><br>
+                                                        <p><b class="text-blue-500">Cities:</b>  <br><?php echo htmlspecialchars($row['covering_cities']); ?></p><br>
+                                                        <p><b class="text-blue-500">Contact:</b>  <br><?php echo htmlspecialchars($row['phone']); ?></p>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                        
-                                        <!-- Driver 2 -->
-                                        <div class="border border-gray-100 rounded-xl p-4">
-                                            <div class="flex items-start space-x-4">
-                                                <img src="/api/placeholder/100/100" alt="Sarah Johnson" class="w-16 h-16 rounded-full object-cover border-2 border-orange-200"/>
-                                                <div class="flex-1">
-                                                    <h4 class="text-md font-medium text-gray-800">Sarah Johnson</h4>
-                                                    <p class="text-gray-500 text-sm">Bus #38</p>
-                                                    <div class="mt-2 text-xs text-gray-600">
-                                                        <p>Servicing: Westfield High, Lakeview Middle School</p>
-                                                        <p>Route: East District - Route A</p>
-                                                        <p>Contact: (555) 123-4567</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Driver 3 -->
-                                        <div class="border border-gray-100 rounded-xl p-4">
-                                            <div class="flex items-start space-x-4">
-                                                <img src="/api/placeholder/100/100" alt="Michael Chen" class="w-16 h-16 rounded-full object-cover border-2 border-orange-200"/>
-                                                <div class="flex-1">
-                                                    <h4 class="text-md font-medium text-gray-800">Michael Chen</h4>
-                                                    <p class="text-gray-500 text-sm">Bus #29</p>
-                                                    <div class="mt-2 text-xs text-gray-600">
-                                                        <p>Servicing: Pinecrest High, Meadows Elementary</p>
-                                                        <p>Route: South District - Route D</p>
-                                                        <p>Contact: (555) 876-5432</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <?php
+                                            }
+                                        } else {
+                                            echo "<p class='text-gray-500'>No drivers found</p>";
+                                        }
+                                        ?>
                                     </div>
                                 </div>
                             </div>
@@ -632,12 +726,12 @@ try {
             <div class="h-10 w-1 bg-orange-500 rounded-full"></div>
             <h2 class="text-3xl font-bold heading-brown">Bus Management</h2>
         </div>
-        <div class="flex">
-            <a href="add_bus.php" class="bg-yellow-500 hover:bg-yellow-600 transition duration-300 ease-in-out transform hover:-translate-y-1 text-white px-4 py-2 rounded-lg flex items-center">
+        <div class="flex mt-4 md:mt-0">
+            <a href="add_bus.php" class="w-full md:w-auto bg-yellow-500 hover:bg-yellow-600 transition duration-300 ease-in-out transform hover:-translate-y-1 text-white px-4 py-2 rounded-lg flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
-                Add New Bus
+                <span class="text-sm md:text-base">Add New Bus</span>
             </a>
         </div>
     </div>
@@ -802,17 +896,17 @@ try {
             <div class="text-sm text-gray-500">Total: <?php echo count($buses); ?> buses</div>
         </div>
         
-        <!-- Desktop and Tablet View -->
-        <div class="hidden md:block overflow-x-auto">
+        <!-- Desktop and Tablet View with Scrolling -->
+        <div class="hidden md:block relative overflow-x-auto" style="max-height: 500px; overflow-y: auto;">
             <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
+                <thead class="bg-gray-50 sticky top-0 z-10">
                     <tr>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bus Info</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Capacity</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Covering Schools</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Bus Info</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Capacity</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Location</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Covering Schools</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Status</th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -845,21 +939,15 @@ try {
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div class="flex justify-end space-x-2">
-                                <button onclick="viewBusDetails(<?php echo $bus['bus_id']; ?>)" class="text-blue-600 hover:text-blue-900">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                    </svg>
+                                <button onclick="editBus(<?php echo $bus['bus_id']; ?>)" 
+                                        class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 flex items-center">
+                                    <i class="fas fa-edit mr-1"></i>
+                                    <span>Edit</span>
                                 </button>
-                                <button onclick="editBus(<?php echo $bus['bus_id']; ?>)" class="text-indigo-600 hover:text-indigo-900">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
-                                </button>
-                                <button onclick="deleteBus(<?php echo $bus['bus_id']; ?>)" class="text-red-600 hover:text-red-900">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
+                                <button onclick="deleteBus(<?php echo $bus['bus_id']; ?>)" 
+                                        class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 flex items-center">
+                                    <i class="fas fa-trash-alt mr-1"></i>
+                                    <span>Delete</span>
                                 </button>
                             </div>
                         </td>
@@ -869,51 +957,52 @@ try {
             </table>
         </div>
 
-        <!-- Mobile View -->
-        <div class="md:hidden">
-            <?php foreach ($buses as $bus): ?>
-            <div class="p-4 border-b border-gray-200">
-                <div class="flex justify-between items-start mb-3">
-                    <div>
-                        <h4 class="text-lg font-medium text-gray-900"><?php echo htmlspecialchars($bus['bus_number']); ?></h4>
-                        <p class="text-sm text-gray-500">License: <?php echo htmlspecialchars($bus['license_plate']); ?></p>
+        <!-- Mobile View with Scrolling -->
+        <div class="md:hidden relative overflow-y-auto" style="max-height: 500px;">
+            <div class="space-y-4 divide-y divide-gray-200">
+                <?php foreach ($buses as $bus): ?>
+                <div class="p-4 border-b border-gray-200 mt-4">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <h4 class="text-lg font-medium text-gray-900"><?php echo htmlspecialchars($bus['bus_number']); ?></h4>
+                            <p class="text-sm text-gray-500">License: <?php echo htmlspecialchars($bus['license_plate']); ?></p>
+                        </div>
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full 
+                            <?php echo $bus['is_active'] ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'; ?>">
+                            <?php echo $bus['is_active'] ? 'Active' : 'Inactive'; ?>
+                        </span>
                     </div>
-                    <span class="px-2 py-1 text-xs font-semibold rounded-full 
-                        <?php echo $bus['is_active'] ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'; ?>">
-                        <?php echo $bus['is_active'] ? 'Active' : 'Inactive'; ?>
-                    </span>
+                    
+                    <div class="space-y-2 mb-3">
+                        <div class="flex justify-between">
+                            <span class="text-sm font-medium text-gray-500">Capacity:</span>
+                            <span class="text-sm text-gray-900"><?php echo htmlspecialchars($bus['capacity']); ?> seats</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm font-medium text-gray-500">Location:</span>
+                            <span class="text-sm text-gray-900"><?php echo htmlspecialchars($bus['starting_location'] ?? 'N/A'); ?></span>
+                        </div>
+                        <div>
+                            <span class="text-sm font-medium text-gray-500">Schools:</span>
+                            <p class="text-sm text-gray-900 mt-1"><?php echo htmlspecialchars($bus['schools'] ?? 'No schools assigned'); ?></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-4 mt-4">
+                        <button onclick="editBus(<?php echo $bus['bus_id']; ?>)" class="text-blue-600">
+                            <span class="text-sm">Edit</span>
+                        </button>
+                        <button onclick="deleteBus(<?php echo $bus['bus_id']; ?>)" class="text-red-600">
+                            <span class="text-sm">Delete</span>
+                        </button>
+                    </div>
                 </div>
-                
-                <div class="space-y-2 mb-3">
-                    <div class="flex justify-between">
-                        <span class="text-sm font-medium text-gray-500">Capacity:</span>
-                        <span class="text-sm text-gray-900"><?php echo htmlspecialchars($bus['capacity']); ?> seats</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-sm font-medium text-gray-500">Location:</span>
-                        <span class="text-sm text-gray-900"><?php echo htmlspecialchars($bus['starting_location'] ?? 'N/A'); ?></span>
-                    </div>
-                    <div>
-                        <span class="text-sm font-medium text-gray-500">Schools:</span>
-                        <p class="text-sm text-gray-900 mt-1"><?php echo htmlspecialchars($bus['schools'] ?? 'No schools assigned'); ?></p>
-                    </div>
-                </div>
-                
-                <div class="flex justify-end space-x-4 mt-4">
-                    <button onclick="viewBusDetails(<?php echo $bus['bus_id']; ?>)" class="text-blue-600">
-                        <span class="text-sm">View</span>
-                    </button>
-                    <button onclick="editBus(<?php echo $bus['bus_id']; ?>)" class="text-indigo-600">
-                        <span class="text-sm">Edit</span>
-                    </button>
-                    <button onclick="deleteBus(<?php echo $bus['bus_id']; ?>)" class="text-red-600">
-                        <span class="text-sm">Delete</span>
-                    </button>
-                </div>
+                <?php endforeach; ?>
             </div>
-            <?php endforeach; ?>
+            
         </div>
     </div>
+    <div class="pb-16"></div> <!-- Added bottom space -->
 </section>
 
 <script>
@@ -996,208 +1085,333 @@ try {
 
                 <!-- Driver Management Section -->
                 <section id="history-section" class="dashboard-section mt-8">
+                    <!-- Header with Add Button -->
                     <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
                         <div class="flex items-center space-x-3">
-                            <div class="h-10 w-1 bg-orange-500 rounded-full"></div>
                             <h2 class="text-3xl font-bold heading-brown">Driver Management</h2>
                         </div>
-                        <div class="flex">
-                            <!-- Existing Add New Driver button -->
-                            <button class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                </svg>
-                                Add New Driver
-                            </button>
-                            <!-- New View Route History button -->
-                            <!-- <button class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg flex items-center ml-4">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                </svg>
-                                View Route History
-                            </button> -->
-                        </div>
+                        <button onclick="openAddDriverModal()" 
+                                class="mt-4 md:mt-0 w-full md:w-auto bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg flex items-center justify-center md:justify-start gap-2 transform hover:scale-105 transition-all duration-300 shadow-md hover:shadow-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            <span class="font-medium">Add New Driver</span>
+                        </button>
                     </div>
 
-                    <!-- Search and Filter -->
+                    <!-- Search Bar -->
                     <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 p-6 mb-8">
-                        <div class="flex flex-col md:flex-row gap-4">
+                        <div class="flex flex-col md:flex-row md:items-center gap-4">
                             <div class="flex-1">
-                                <label for="search-driver" class="block text-sm font-medium text-gray-700 mb-1">Search Drivers</label>
+                                <label for="driverSearch" class="block text-sm font-medium text-gray-700 mb-1">Search Drivers</label>
                                 <div class="relative">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                         </svg>
                                     </div>
-                                    <input type="text" id="search-driver" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500" placeholder="Search by name, email, or bus number...">
+                                    <input type="text" 
+                                           id="driverSearch" 
+                                           placeholder="Search by driver name..." 
+                                           class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500">
                                 </div>
-                            </div>
-                            <div class="w-full md:w-48">
-                                <label for="filter-experience" class="block text-sm font-medium text-gray-700 mb-1">Experience</label>
-                                <select id="filter-experience" class="block w-full border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500 py-2">
-                                    <option value="">All Experience</option>
-                                    <option value="0-2">0-2 years</option>
-                                    <option value="3-5">3-5 years</option>
-                                    <option value="5+">5+ years</option>
-                                </select>
-                            </div>
-                            <div class="w-full md:w-48">
-                                <label for="sort-by" class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
-                                <select id="sort-by" class="block w-full border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500 py-2">
-                                    <option value="name">Name</option>
-                                    <option value="age">Age</option>
-                                    <option value="bus">Bus Number</option>
-                                </select>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Driver Cards -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Driver Card 1 -->
-                        <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden">
-                            <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-                                <h3 class="font-semibold heading-brown">Driver Profile</h3>
-                                <div class="flex space-x-2">
-                                    <button class="text-indigo-600 hover:text-indigo-900">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
-                                    </button>
-                                    <button class="text-red-600 hover:text-red-900">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="p-6">
-                                <div class="flex flex-col sm:flex-row gap-6">
-                                    <!-- Profile Picture Column -->
-                                    <div class="flex flex-col items-center">
-                                        <div class="w-32 h-32 rounded-full overflow-hidden mb-3">
-                                            <img src="/api/placeholder/200/200" alt="Robert Davis" class="w-full h-full object-cover" />
-                                        </div>
-                                        <div class="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium">
-                                            Bus #42
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Details Column -->
-                                    <div class="flex-1 space-y-4">
-                                        <div>
-                                            <h4 class="text-xl font-medium text-gray-800">Robert Davis</h4>
-                                            <p class="text-gray-500 text-sm">Joined: January 2020</p>
-                                        </div>
-                                        
-                                        <div class="space-y-2">
-                                            <div class="flex">
-                                                <span class="w-20 text-sm font-medium text-gray-500">Age:</span>
-                                                <span class="flex-1 text-sm text-gray-800">45 years</span>
-                                            </div>
-                                            
-                                            <div class="flex">
-                                                <span class="w-20 text-sm font-medium text-gray-500">Email:</span>
-                                                <span class="flex-1 text-sm text-gray-800">robert.davis@example.com</span>
-                                            </div>
-                                            
-                                            <div class="flex">
-                                                <span class="w-20 text-sm font-medium text-gray-500">Phone:</span>
-                                                <span class="flex-1 text-sm text-gray-800">(555) 987-6543</span>
-                                            </div>
-                                            
-                                            <div class="flex">
-                                                <span class="w-20 text-sm font-medium text-gray-500">License:</span>
-                                                <span class="flex-1 text-sm text-gray-800">CDL Class B - Expires 06/2026</span>
-                                            </div>
-                                            
-                                            <div class="flex">
-                                                <span class="w-20 text-sm font-medium text-gray-500">Experience:</span>
-                                                <span class="flex-1 text-sm text-gray-800">12 years</span>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="pt-4">
-                                            <a href="#" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View Full Profile</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                    <!-- Driver List Section -->
+                    <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden">
+                        <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                            <h3 class="text-lg font-semibold heading-brown">All Drivers</h3>
+                            <div class="text-sm text-gray-500">Total: <?php echo mysqli_num_rows($result); ?> drivers</div>
                         </div>
-                        
-                        <!-- Driver Card 2 -->
-                        <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden">
-                            <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-                                <h3 class="font-semibold heading-brown">Driver Profile</h3>
-                                <div class="flex space-x-2">
-                                    <button class="text-indigo-600 hover:text-indigo-900">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
-                                    </button>
-                                    <button class="text-red-600 hover:text-red-900">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="p-6">
-                                <div class="flex flex-col sm:flex-row gap-6">
-                                    <!-- Profile Picture Column -->
-                                    <div class="flex flex-col items-center">
-                                        <div class="w-32 h-32 rounded-full overflow-hidden mb-3">
-                                            <img src="/api/placeholder/200/200" alt="Sarah Johnson" class="w-full h-full object-cover" />
-                                        </div>
-                                        <div class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
-                                            Bus #38
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Details Column -->
-                                    <div class="flex-1 space-y-4">
-                                        <div>
-                                            <h4 class="text-xl font-medium text-gray-800">Sarah Johnson</h4>
-                                            <p class="text-gray-500 text-sm">Joined: March 2021</p>
-                                        </div>
-                                        
-                                        <div class="space-y-2">
-                                            <div class="flex">
-                                                <span class="w-20 text-sm font-medium text-gray-500">Age:</span>
-                                                <span class="flex-1 text-sm text-gray-800">38 years</span>
-                                            </div>
-                                            
-                                            <div class="flex">
-                                                <span class="w-20 text-sm font-medium text-gray-500">Email:</span>
-                                                <span class="flex-1 text-sm text-gray-800">sarah.johnson@example.com</span>
-                                            </div>
-                                            
-                                            <div class="flex">
-                                                <span class="w-20 text-sm font-medium text-gray-500">Phone:</span>
-                                                <span class="flex-1 text-sm text-gray-800">(555) 123-4567</span>
-                                            </div>
-                                            
-                                            <div class="flex">
-                                                <span class="w-20 text-sm font-medium text-gray-500">License:</span>
-                                                <span class="flex-1 text-sm text-gray-800">CDL Class B - Expires 09/2027</span>
-                                            </div>
-                                            
-                                            <div class="flex">
-                                                <span class="w-20 text-sm font-medium text-gray-500">Experience:</span>
-                                                <span class="flex-1 text-sm text-gray-800">7 years</span>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="pt-4">
-                                            <a href="#" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View Full Profile</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+
+                        <!-- Scrollable Container -->
+                        <div class="relative overflow-x-auto" style="max-height: 460px;">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50 sticky top-0 z-10">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Driver Info</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Assigned Bus</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Age & Experience</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Contact Details</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">License Info</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <?php
+                                    // Fetch drivers with bus information
+                                    $query = "SELECT d.*, b.bus_number 
+                                             FROM driver d 
+                                             LEFT JOIN bus b ON d.bus_id = b.bus_id 
+                                             ORDER BY d.full_name";
+                                    $result = mysqli_query($conn, $query);
+
+                                    while ($driver = mysqli_fetch_assoc($result)) {
+                                        echo "<tr class='hover:bg-gray-50'>";
+                                        echo "<td class='px-6 py-4 whitespace-nowrap'>{$driver['full_name']}</td>";
+                                        echo "<td class='px-6 py-4 whitespace-nowrap'>" . ($driver['bus_number'] ?? 'Not Assigned') . "</td>";
+                                        echo "<td class='px-6 py-4 whitespace-nowrap'>{$driver['age']} years, {$driver['experience_years']} years</td>";
+                                        echo "<td class='px-6 py-4 whitespace-nowrap'>
+                                                <div>{$driver['email']}</div>
+                                                <div class='text-gray-500'>{$driver['phone']}</div>
+                                              </td>";
+                                        echo "<td class='px-6 py-4 whitespace-nowrap'>
+                                                <div>{$driver['license_number']}</div>
+                                                <div class='text-gray-500'>Expires: " . date('M d, Y', strtotime($driver['license_expiry_date'])) . "</div>
+                                              </td>";
+                                        echo "<td class='px-6 py-4 whitespace-nowrap text-right text-sm font-medium'>
+                                                <div class='flex justify-end space-x-2'>
+                                                    <button onclick='editDriver({$driver['driver_id']})' class='bg-blue-500 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 transform hover:scale-105 hover:bg-blue-600 transition-all duration-300 shadow-sm hover:shadow-md'>
+                                                        <i class='fas fa-edit'></i>
+                                                        <span>Edit</span>
+                                                    </button>
+                                                    <button onclick='deleteDriver({$driver['driver_id']})' class='bg-red-500 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 transform hover:scale-105 hover:bg-red-600 transition-all duration-300 shadow-sm hover:shadow-md'>
+                                                        <i class='fas fa-trash-alt'></i>
+                                                        <span>Delete</span>
+                                                    </button>
+                                                </div>
+                                              </td>";
+                                        echo "</tr>";
+                                    }
+                                    ?>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </section>
+
+                <!-- Add/Edit Driver Modal -->
+                <div id="driverModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+                    <div class="flex items-center justify-center min-h-screen px-4">
+                        <div class="bg-white rounded-lg max-w-xl w-full mx-auto shadow-xl">
+                            <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-t-lg px-4 py-3 flex justify-between items-center">
+                                <h3 class="text-xl font-bold text-white" id="modalTitle">Add New Driver</h3>
+                                <button onclick="closeDriverModal()" class="text-white hover:text-gray-200">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <form id="driverForm" class="p-4 space-y-4">
+                                <input type="hidden" id="driver_id" name="driver_id">
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                                        <input type="text" id="full_name" name="full_name" required class="form-input">
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Assigned Bus</label>
+                                        <select id="bus_id" name="bus_id" class="form-select">
+                                            <option value="">Select Bus</option>
+                                            <?php
+                                            $busQuery = "SELECT bus_id, bus_number FROM bus WHERE is_active = 1";
+                                            $busResult = mysqli_query($conn, $busQuery);
+                                            while ($bus = mysqli_fetch_assoc($busResult)) {
+                                                echo "<option value='{$bus['bus_id']}'>{$bus['bus_number']}</option>";
+                                            }
+                                            ?>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                                        <input type="email" id="email" name="email" required class="form-input">
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Phone *</label>
+                                        <input type="tel" id="phone" name="phone" required class="form-input">
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">License Number *</label>
+                                        <input type="text" id="license_number" name="license_number" required class="form-input">
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">License Expiry Date *</label>
+                                        <input type="date" id="license_expiry_date" name="license_expiry_date" required class="form-input">
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Age *</label>
+                                        <input type="number" id="age" name="age" required class="form-input">
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Experience (Years) *</label>
+                                        <input type="number" id="experience_years" name="experience_years" required class="form-input">
+                                    </div>
+                                </div>
+
+                                <div class="flex justify-end space-x-3 pt-4">
+                                    <button type="button" onclick="closeDriverModal()" 
+                                        class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">Cancel</button>
+                                    <button type="submit" 
+                                        class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600">Save Driver</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <style>
+                .form-input, .form-select {
+                    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all;
+                }
+                </style>
+
+                <script>
+                function searchDrivers() {
+                    const searchInput = document.getElementById('driverSearch');
+                    const searchText = searchInput.value.toLowerCase();
+                    
+                    // For desktop/tablet view
+                    const tableRows = document.querySelectorAll('table tbody tr');
+                    tableRows.forEach(row => {
+                        const driverName = row.querySelector('td:first-child').textContent.toLowerCase();
+                        if (driverName.includes(searchText)) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+
+                    // For mobile view
+                    const mobileCards = document.querySelectorAll('.md\\:hidden .divide-y > div');
+                    mobileCards.forEach(card => {
+                        const driverName = card.querySelector('.font-medium').textContent.toLowerCase();
+                        if (driverName.includes(searchText)) {
+                            card.style.display = '';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                }
+
+                // Add event listener for real-time search
+                document.addEventListener('DOMContentLoaded', function() {
+                    const searchInput = document.getElementById('driverSearch');
+                    if (searchInput) {
+                        searchInput.addEventListener('input', searchDrivers);
+                    }
+                });
+
+                function openAddDriverModal() {
+                    document.getElementById('driverModal').classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                }
+
+                function closeDriverModal() {
+                    document.getElementById('driverModal').classList.add('hidden');
+                }
+
+                function editDriver(driverId) {
+                    // Show loading state
+                    const button = event.currentTarget;
+                    const originalContent = button.innerHTML;
+                    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                    button.disabled = true;
+
+                    // Fetch driver details
+                    fetch(`get_driver.php?id=${driverId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            // Reset button state
+                            button.innerHTML = originalContent;
+                            button.disabled = false;
+
+                            // Populate and show modal
+                            populateDriverForm(data);
+                            document.getElementById('driverModal').classList.remove('hidden');
+                            document.getElementById('modalTitle').textContent = 'Edit Driver';
+                            document.body.style.overflow = 'hidden';
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            button.innerHTML = originalContent;
+                            button.disabled = false;
+                            alert('Failed to load driver details');
+                        });
+                }
+
+                function deleteDriver(driverId) {
+                    const button = event.currentTarget;
+                    
+                    if (confirm('Are you sure you want to delete this driver?')) {
+                        // Show loading state
+                        const originalContent = button.innerHTML;
+                        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+                        button.disabled = true;
+
+                        fetch('delete_driver.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ driver_id: driverId })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Remove the row/card from the UI
+                                const row = button.closest('tr') || button.closest('.mobile-card');
+                                row.remove();
+                                showNotification('Driver deleted successfully', 'success');
+                            } else {
+                                throw new Error(data.message || 'Failed to delete driver');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            button.innerHTML = originalContent;
+                            button.disabled = false;
+                            showNotification(error.message, 'error');
+                        });
+                    }
+                }
+
+                // Add notification function
+                function showNotification(message, type = 'success') {
+                    const notification = document.createElement('div');
+                    notification.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg text-white ${
+                        type === 'success' ? 'bg-green-500' : 'bg-red-500'
+                    } shadow-lg transform transition-all duration-300 translate-y-0 opacity-100`;
+                    notification.textContent = message;
+
+                    document.body.appendChild(notification);
+
+                    // Animate out and remove after 3 seconds
+                    setTimeout(() => {
+                        notification.classList.add('translate-y-2', 'opacity-0');
+                        setTimeout(() => notification.remove(), 300);
+                    }, 3000);
+                }
+
+                document.getElementById('driverForm').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const formData = new FormData(this);
+                    
+                    fetch('save_driver.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            closeDriverModal();
+                            location.reload();
+                        } else {
+                            alert(data.message || 'Failed to save driver');
+                        }
+                    });
+                });
+                </script>
 
 
 
@@ -1560,20 +1774,16 @@ try {
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
                                     <input type="email" name="email" 
                                         value="<?php echo htmlspecialchars($current_admin['email']); ?>" 
-                                        class="w-full p-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" 
+                                        class="w-full p-2 border border-gray-300 rounded-lg cursor-not-allowed" 
                                         readonly>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                                    <select name="role" 
-                                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition"
-                                            <?php echo $current_admin['role'] === 'super_admin' ? 'disabled' : ''; ?>>
-                                        <option value="super_admin" <?php echo $current_admin['role'] === 'super_admin' ? 'selected' : 'disabled'; ?>>Super Admin</option>
-                                        <option value="admin" <?php echo $current_admin['role'] === 'admin' ? 'selected' : ''; ?>>Admin</option>
-                                        <option value="transportation_manager" <?php echo $current_admin['role'] === 'transportation_manager' ? 'selected' : ''; ?>>Transportation Manager</option>
-                                        <option value="school_admin" <?php echo $current_admin['role'] === 'school_admin' ? 'selected' : ''; ?>>School Admin</option>
-                                        <option value="support_staff" <?php echo $current_admin['role'] === 'support_staff' ? 'selected' : ''; ?>>Support Staff</option>
-                                    </select>
+                                    <input type="text" name="role" 
+                                           value="<?php echo htmlspecialchars(ucwords(str_replace('_', ' ', $current_admin['role']))); ?>"
+                                           class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition"
+                                           <?php echo $current_admin['role'] === 'super_admin' ? 'disabled' : ''; ?>
+                                           readonly>
                                 </div>
                                 <div class="mt-4">
                                     <button type="submit" class="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition duration-300">
@@ -1586,40 +1796,36 @@ try {
                             <!-- Admin Actions Section -->
                             <div class="p-6 grid md:grid-cols-2 gap-4">
                                 <!-- Password Change Button -->
-                                <a href="change_password.php" class="block">
-                                    <button class="w-full bg-yellow-500 text-white py-3 rounded-lg hover:bg-yellow-600 transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                        </svg>
-                                        <span>Change Password</span>
-                                    </button>
-                                </a>
+                                <button onclick="showChangePasswordModal()" class="w-full bg-yellow-500 text-white py-3 rounded-lg hover:bg-yellow-600 transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                    </svg>
+                                    <span>Change Password</span>
+                                </button>
 
                                 <!-- Register New Admin Button -->
-                                <a href="register_admin.php" class="block">
-                                    <button class="w-full bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                                        </svg>
-                                        <span>Register New Admin</span>
-                                    </button>
-                                </a>
+                                <button onclick="showRegisterAdminModal()" class="w-full bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                                    </svg>
+                                    <span>Register New Admin</span>
+                                </button>
                             </div>
 
                             <!-- Admins Table -->
                             <div class="p-6">
                                 <h3 class="text-xl font-semibold mb-4">Administrators</h3>
-                                <div class="overflow-x-auto">
-                                    <table class="w-full bg-white shadow-md rounded-lg overflow-hidden">
-                                        <thead class="bg-gray-100">
+                                <div class="relative overflow-x-auto" style="max-height: 500px; overflow-y: scroll;">
+                                    <table class="w-full text-sm text-left text-gray-500">
+                                        <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0">
                                             <tr>
-                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                                                <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                             </tr>
                                         </thead>
-                                        <tbody class="divide-y divide-gray-200">
+                                        <tbody class="bg-white divide-y divide-gray-200">
                                             <?php foreach ($admins as $admin): ?>
                                             <tr class="hover:bg-gray-50">
                                                 <td class="px-4 py-3">
@@ -1640,14 +1846,22 @@ try {
                                                     <?php echo htmlspecialchars($admin['email']); ?>
                                                 </td>
                                                 <td class="px-4 py-3 text-sm text-gray-500">
-                                                    <?php echo htmlspecialchars($admin['role']); ?>
+                                                    <?php 
+                                                        $role = str_replace('_', ' ', $admin['role']);
+                                                        echo htmlspecialchars(ucwords($role)); 
+                                                    ?>
                                                 </td>
                                                 <td class="px-4 py-3 text-right text-sm font-medium">
                                                     <?php if ($admin['role'] !== 'super_admin'): ?>
-                                                        <a href="edit_admin.php?id=<?php echo $admin['admin_id']; ?>" 
-                                                        class="text-blue-600 hover:text-blue-900 mr-3">Edit</a>
-                                                        <a href="delete_admin.php?id=<?php echo $admin['admin_id']; ?>" 
-                                                        class="text-red-600 hover:text-red-900 delete-admin">Delete</a>
+                                                        <button onclick="showEditAdminModal(<?php echo htmlspecialchars(json_encode($admin)); ?>)" 
+                                                                class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transform hover:scale-105 transition duration-200 ease-in-out shadow-md hover:shadow-lg mr-2">
+                                                            <i class="fas fa-edit mr-1"></i> Edit
+                                                        </button>
+                                                        <br><br>
+                                                        <button onclick="confirmDeleteAdmin(<?php echo $admin['admin_id']; ?>)"
+                                                                class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transform hover:scale-105 transition duration-200 ease-in-out shadow-md hover:shadow-lg">
+                                                            <i class="fas fa-trash-alt mr-1"></i> Delete
+                                                        </button>
                                                     <?php else: ?>
                                                         <span class="text-gray-400 cursor-not-allowed">Cannot Modify</span>
                                                     <?php endif; ?>
@@ -1661,16 +1875,126 @@ try {
                         </div>
                     </div>
 
+                    <!-- Change Password Modal -->
+                    <div id="changePasswordModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
+                        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                            <div class="mt-3 text-center">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900">Change Password</h3>
+                                <div class="mt-2 px-7 py-3">
+                                    <form id="changePasswordForm">
+                                        <input type="password" placeholder="Current Password" name="current_password" class="mb-3 w-full px-3 py-2 border rounded-lg">
+                                        <input type="password" placeholder="New Password" name="new_password" class="mb-3 w-full px-3 py-2 border rounded-lg">
+                                        <input type="password" placeholder="Confirm New Password" name="confirm_password" class="mb-3 w-full px-3 py-2 border rounded-lg">
+                                        <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600">Update Password</button>
+                                        <button type="button" onclick="hideChangePasswordModal()" class="ml-2 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">Cancel</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Register Admin Modal -->
+                    <div id="registerAdminModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
+                        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                            <div class="mt-3 text-center">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900">Register New Admin</h3>
+                                <div class="mt-2 px-7 py-3">
+                                    <form id="registerAdminForm">
+                                        <input type="text" placeholder="Full Name" name="full_name" class="mb-3 w-full px-3 py-2 border rounded-lg">
+                                        <input type="email" placeholder="Email" name="email" class="mb-3 w-full px-3 py-2 border rounded-lg">
+                                        <input type="password" placeholder="Password" name="password" class="mb-3 w-full px-3 py-2 border rounded-lg">
+                                        <input type="password" placeholder="Confirm Password" name="confirm_password" class="mb-3 w-full px-3 py-2 border rounded-lg">
+                                        <select name="role" class="mb-3 w-full px-3 py-2 border rounded-lg">
+                                            <option value="admin">Admin</option>
+                                            <option value="transportation_manager">Transportation Manager</option>
+                                            <option value="school_admin">School Admin</option>
+                                            <option value="support_staff">Support Staff</option>
+                                        </select>
+                                        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">Register</button>
+                                        <button type="button" onclick="hideRegisterAdminModal()" class="ml-2 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">Cancel</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Edit Admin Modal -->
+                    <div id="editAdminModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
+                        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                            <div class="mt-3 text-center">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900">Edit Admin</h3>
+                                <div class="mt-2 px-7 py-3">
+                                    <form id="editAdminForm">
+                                        <input type="hidden" name="admin_id" id="edit_admin_id">
+                                        <input type="text" placeholder="Full Name" name="full_name" id="edit_full_name" class="mb-3 w-full px-3 py-2 border rounded-lg">
+                                        <input type="email" placeholder="Email" name="email" id="edit_email" class="mb-3 w-full px-3 py-2 border rounded-lg" readonly>
+                                        <select name="role" id="edit_role" class="mb-3 w-full px-3 py-2 border rounded-lg">
+                                            <option value="admin">Admin</option>
+                                            <option value="transportation_manager">Transportation Manager</option>
+                                            <option value="school_admin">School Admin</option>
+                                            <option value="support_staff">Support Staff</option>
+                                        </select>
+                                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Update</button>
+                                        <button type="button" onclick="hideEditAdminModal()" class="ml-2 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">Cancel</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <script>
-                        document.querySelectorAll('.delete-admin').forEach(button => {
-                            button.addEventListener('click', function(e) {
-                                if (!confirm('Are you sure you want to delete this admin?')) {
-                                    e.preventDefault();
-                                }
-                            });
+                        // Modal Functions
+                        function showChangePasswordModal() {
+                            document.getElementById('changePasswordModal').classList.remove('hidden');
+                        }
+
+                        function hideChangePasswordModal() {
+                            document.getElementById('changePasswordModal').classList.add('hidden');
+                        }
+
+                        function showRegisterAdminModal() {
+                            document.getElementById('registerAdminModal').classList.remove('hidden');
+                        }
+
+                        function hideRegisterAdminModal() {
+                            document.getElementById('registerAdminModal').classList.add('hidden');
+                        }
+
+                        function showEditAdminModal(admin) {
+                            document.getElementById('edit_admin_id').value = admin.admin_id;
+                            document.getElementById('edit_full_name').value = admin.full_name;
+                            document.getElementById('edit_email').value = admin.email;
+                            document.getElementById('edit_role').value = admin.role;
+                            document.getElementById('editAdminModal').classList.remove('hidden');
+                        }
+
+                        function hideEditAdminModal() {
+                            document.getElementById('editAdminModal').classList.add('hidden');
+                        }
+
+                        function confirmDeleteAdmin(adminId) {
+                            if (confirm('Are you sure you want to delete this admin?')) {
+                                // Handle delete action here
+                                console.log('Deleting admin with ID:', adminId);
+                            }
+                        }
+
+                        // Form Submissions
+                        document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
+                            e.preventDefault();
+                            // Handle password change submission
+                        });
+
+                        document.getElementById('registerAdminForm').addEventListener('submit', function(e) {
+                            e.preventDefault();
+                            // Handle new admin registration
+                        });
+
+                        document.getElementById('editAdminForm').addEventListener('submit', function(e) {
+                            e.preventDefault();
+                            // Handle admin edit
                         });
                     </script>
-
 
                     </section>
 
@@ -1922,6 +2246,425 @@ function removeRouteStop(button) {
         stopInput.remove();
     }
 }
+</script>
+
+<!-- Update the Edit Bus Modal with reduced size and yellow button -->
+<div id="editBusModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+        <!-- Reduce max-width and add max-height -->
+        <div class="relative bg-white rounded-lg max-w-xl w-full mx-auto shadow-xl" style="max-height: 80vh;">
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-r from-orange-500 to-orange-600 rounded-t-lg px-4 py-3 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-white">Edit Bus Details</h3>
+                <button onclick="closeEditModal()" class="text-white hover:text-gray-200 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Modal Body with scrollable content -->
+            <div class="p-4 overflow-y-auto" style="max-height: calc(80vh - 60px);">
+                <form id="editBusForm" class="space-y-4">
+                    <input type="hidden" id="edit_bus_id">
+                    
+                    <!-- Bus Details Section -->
+                    <div class="bg-gray-50 rounded-lg p-3 space-y-3">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                                <label for="edit_bus_number" class="block text-sm font-medium text-gray-700 mb-1">Bus Number *</label>
+                                <input type="text" id="edit_bus_number" name="bus_number" required 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all">
+                            </div>
+                            
+                            <div>
+                                <label for="edit_license_plate" class="block text-sm font-medium text-gray-700 mb-1">License Plate *</label>
+                                <input type="text" id="edit_license_plate" name="license_plate" required 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                                <label for="edit_capacity" class="block text-sm font-medium text-gray-700 mb-1">Capacity *</label>
+                                <input type="number" id="edit_capacity" name="capacity" required min="1"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all">
+                            </div>
+                            
+                            <div>
+                                <label for="edit_status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                                <select id="edit_status" name="status" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all">
+                                    <option value="1">Active</option>
+                                    <option value="0">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="edit_starting_location" class="block text-sm font-medium text-gray-700 mb-1">Starting Location *</label>
+                            <input type="text" id="edit_starting_location" name="starting_location" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all">
+                        </div>
+
+                        <div>
+                            <label for="edit_covering_cities" class="block text-sm font-medium text-gray-700 mb-1">Covering Cities</label>
+                            <textarea id="edit_covering_cities" name="covering_cities" rows="2"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all resize-none"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex justify-end space-x-3 pt-2">
+                        <button type="button" onclick="closeEdit_Bus_Modal()" 
+                            class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-300 text-sm">
+                            Cancel
+                        </button>
+                        <button type="submit" 
+                            class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition-all duration-300 text-sm flex items-center">
+                            <span>Update</span>
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Update animation for smaller modal */
+    @keyframes modalFadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95) translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    #editBusModal > div > div {
+        animation: modalFadeIn 0.2s ease-out;
+    }
+
+    /* Custom scrollbar styling */
+    .overflow-y-auto::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .overflow-y-auto::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+
+    .overflow-y-auto::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 3px;
+    }
+
+    .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+        background: #666;
+    }
+</style>
+
+<script>
+// Function to show edit modal
+function editBus(busId) {
+    const modal = document.getElementById('editBusModal');
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+
+    // Show loading state
+    showLoadingState();
+
+    // Fetch bus details
+    fetch(`get_bus_details.php?id=${busId}`)
+        .then(response => response.json())
+        .then(data => {
+            hideLoadingState();
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            populateForm(data);
+        })
+        .catch(error => {
+            hideLoadingState();
+            showError('Failed to load bus details: ' + error.message);
+        });
+}
+
+// Function to close edit modal
+function closeEdit_Bus_Modal() {
+    const modal = document.getElementById('editBusModal');
+    modal.classList.add('hidden');
+    document.body.style.overflow = 'auto'; // Restore scrolling
+    resetForm();
+}
+
+// Function to populate form
+function populateForm(data) {
+    document.getElementById('edit_bus_id').value = data.bus_id;
+    document.getElementById('edit_bus_number').value = data.bus_number;
+    document.getElementById('edit_license_plate').value = data.license_plate;
+    document.getElementById('edit_capacity').value = data.capacity;
+    document.getElementById('edit_status').value = data.is_active;
+    document.getElementById('edit_starting_location').value = data.starting_location;
+    document.getElementById('edit_covering_cities').value = data.covering_cities;
+}
+
+// Function to reset form
+function resetForm() {
+    document.getElementById('editBusForm').reset();
+}
+
+// Function to show loading state
+function showLoadingState() {
+    // Add loading overlay if needed
+}
+
+// Function to hide loading state
+function hideLoadingState() {
+    // Remove loading overlay if needed
+}
+
+// Function to show error message
+function showError(message) {
+    alert(message); // You can replace this with a better error notification
+}
+
+// Handle form submission
+document.getElementById('editBusForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        bus_id: document.getElementById('edit_bus_id').value,
+        bus_number: document.getElementById('edit_bus_number').value,
+        license_plate: document.getElementById('edit_license_plate').value,
+        capacity: document.getElementById('edit_capacity').value,
+        is_active: document.getElementById('edit_status').value,
+        starting_location: document.getElementById('edit_starting_location').value,
+        covering_cities: document.getElementById('edit_covering_cities').value
+    };
+
+    // Show loading state
+    showLoadingState();
+
+    // Send update request
+    fetch('update_bus.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoadingState();
+        if (data.success) {
+            closeEditModal();
+            // Show success message and refresh the page
+            alert('Bus details updated successfully');
+            location.reload();
+        } else {
+            throw new Error(data.message || 'Failed to update bus details');
+        }
+    })
+    .catch(error => {
+        hideLoadingState();
+        showError(error.message);
+    });
+});
+
+// Close modal when clicking outside
+document.getElementById('editBusModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeEditModal();
+    }
+});
+</script>
+
+<!-- Edit Driver Modal -->
+<div id="editDriverModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-[28rem] max-w-[90%] shadow-lg rounded-md bg-white" style="margin-left: 20px; margin-right: 20px;">
+        <div class="flex justify-between items-center mb-4 border-b pb-3">
+            <h3 class="text-lg font-semibold text-gray-900">Edit Driver Details</h3>
+            <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-500">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        
+        <form id="editDriverForm" class="space-y-3">
+            <input type="hidden" id="editDriverId" name="driver_id">
+            
+            <!-- Personal Information -->
+            <div>
+                <label for="editFullName" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                <input type="text" id="editFullName" name="full_name" required 
+                       class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500">
+            </div>
+
+            <!-- Bus and Age -->
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label for="editBusId" class="block text-sm font-medium text-gray-700 mb-1">Assigned Bus</label>
+                    <select id="editBusId" name="bus_id" 
+                            class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500">
+                        <option value="">Select Bus</option>
+                        <?php
+                        $bus_query = "SELECT bus_id, bus_number FROM bus WHERE is_active = 1";
+                        $bus_result = mysqli_query($conn, $bus_query);
+                        while ($bus = mysqli_fetch_assoc($bus_result)) {
+                            echo "<option value='" . $bus['bus_id'] . "'>" . $bus['bus_number'] . "</option>";
+                        }
+                        ?>
+                    </select>
+                </div>
+                <div>
+                    <label for="editAge" class="block text-sm font-medium text-gray-700 mb-1">Age</label>
+                    <input type="number" id="editAge" name="age" required min="18" max="65"
+                           class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500">
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label for="editEmail" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" id="editEmail" name="email" required
+                           class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500">
+                </div>
+                <div>
+                    <label for="editPhone" class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                    <input type="tel" id="editPhone" name="phone" required
+                           class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500">
+                </div>
+            </div>
+
+            <!-- License Information -->
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label for="editLicenseNumber" class="block text-sm font-medium text-gray-700 mb-1">License Number</label>
+                    <input type="text" id="editLicenseNumber" name="license_number" required
+                           class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500">
+                </div>
+                <div>
+                    <label for="editLicenseExpiry" class="block text-sm font-medium text-gray-700 mb-1">License Expiry</label>
+                    <input type="date" id="editLicenseExpiry" name="license_expiry_date" required
+                           class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500">
+                </div>
+            </div>
+
+            <!-- Experience -->
+            <div>
+                <label for="editExperience" class="block text-sm font-medium text-gray-700 mb-1">Experience (Years)</label>
+                <input type="number" id="editExperience" name="experience_years" required min="0"
+                       class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500">
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-end space-x-2 pt-3 border-t mt-4">
+                <button type="button" onclick="closeEditModal()" 
+                        class="px-3 py-1.5 bg-gray-500 text-white text-sm rounded-lg hover:bg-gray-600 transition-colors">
+                    Cancel
+                </button>
+                <button type="submit" 
+                        class="px-3 py-1.5 bg-yellow-500 text-white text-sm rounded-lg hover:bg-yellow-600 transition-colors">
+                    Update
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Add this JavaScript code -->
+<script>
+function editDriver(driverId) {
+    // Show loading state on the button
+    const button = event.currentTarget;
+    const originalContent = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+    button.disabled = true;
+
+    // Fetch driver details
+    fetch(`get_driver_details.php?id=${driverId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Populate form fields
+                document.getElementById('editDriverId').value = data.driver.driver_id;
+                document.getElementById('editFullName').value = data.driver.full_name;
+                document.getElementById('editBusId').value = data.driver.bus_id || '';
+                document.getElementById('editAge').value = data.driver.age;
+                document.getElementById('editEmail').value = data.driver.email;
+                document.getElementById('editPhone').value = data.driver.phone;
+                document.getElementById('editLicenseNumber').value = data.driver.license_number;
+                document.getElementById('editLicenseExpiry').value = data.driver.license_expiry_date;
+                document.getElementById('editExperience').value = data.driver.experience_years;
+
+                // Show the modal
+                document.getElementById('editDriverModal').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            } else {
+                throw new Error(data.message || 'Failed to load driver details');
+            }
+        })
+        .catch(error => {
+            console.error('Error details:', error);
+            alert('Failed to load driver details: ' + error.message);
+        })
+        .finally(() => {
+            // Reset button state
+            button.innerHTML = originalContent;
+            button.disabled = false;
+        });
+}
+
+function closeEditModal() {
+    document.getElementById('editDriverModal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+    document.getElementById('editDriverForm').reset();
+}
+
+// Handle form submission
+document.getElementById('editDriverForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const submitButton = this.querySelector('button[type="submit"]');
+    const originalContent = submitButton.innerHTML;
+    
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+    submitButton.disabled = true;
+
+    fetch('update_driver.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Driver updated successfully');
+            closeEditModal();
+            location.reload(); // Refresh to show updated data
+        } else {
+            throw new Error(data.message || 'Failed to update driver');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to update driver: ' + error.message);
+    })
+    .finally(() => {
+        submitButton.innerHTML = originalContent;
+        submitButton.disabled = false;
+    });
+});
 </script>
 </body>
 </html>
