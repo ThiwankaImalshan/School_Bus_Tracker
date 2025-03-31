@@ -24,6 +24,33 @@ try {
     $schoolStmt->execute();
     $schools = $schoolStmt->fetchAll(PDO::FETCH_ASSOC);
     
+    // Fetch unique covering cities from buses
+    $cityStmt = $pdo->prepare("
+        SELECT 
+            DISTINCT TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(covering_cities, ',', numbers.n), ',', -1)) as city,
+            CASE 
+                WHEN TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(covering_cities, ',', numbers.n), ',', -1)) = 'Kelaniya' 
+                THEN '6.9553,79.9220,2' -- lat,lng,radius in km
+                WHEN TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(covering_cities, ',', numbers.n), ',', -1)) = 'Peliyagoda' 
+                THEN '6.9615,79.8918,2'
+                WHEN TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(covering_cities, ',', numbers.n), ',', -1)) = 'Kiribathgoda' 
+                THEN '6.9750,79.9277,2'
+                -- Add more cities as needed
+                ELSE NULL
+            END as boundaries
+        FROM bus
+        CROSS JOIN (
+            SELECT 1 + units.i + tens.i * 10 as n
+            FROM (SELECT 0 as i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) units
+            CROSS JOIN (SELECT 0 as i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) tens
+            WHERE 1 + units.i + tens.i * 10 <= 100
+        ) numbers
+        WHERE TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(covering_cities, ',', numbers.n), ',', -1)) != ''
+        ORDER BY city
+    ");
+    $cityStmt->execute();
+    $cities = $cityStmt->fetchAll(PDO::FETCH_ASSOC);
+    
 } catch (PDOException $e) {
     die("Database connection failed: " . $e->getMessage());
 }
@@ -37,7 +64,12 @@ try {
     <title>Parent Portal - Add Child</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <link rel="stylesheet" href="styles.css">
+    
+    <!-- Add Leaflet.js for maps -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -91,6 +123,17 @@ try {
             background: linear-gradient(135deg, #FF7A00, #FFA000);
             transform: translateY(-2px);
         }
+        #map {
+            height: 400px;
+            width: 100%;
+            border-radius: 0.75rem;
+        }
+        .leaflet-control {
+            background-color: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body class="bg-gradient-to-b from-yellow-50 to-orange-50 min-h-screen p-4">
@@ -101,7 +144,7 @@ try {
     </div>
 
     <main class="container mx-auto py-6 md:py-10 relative">
-        <div class="max-w-2xl mx-auto">
+        <div class="max-w-4xl mx-auto">
             <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
                 <div class="flex items-center space-x-3">
                     <div class="h-10 w-1 bg-orange-500 rounded-full"></div>
@@ -132,6 +175,7 @@ try {
                 <form id="addChildForm" action="add_child_process.php" method="POST" class="space-y-6 relative">
                     <!-- Hidden input for parent_id from session -->
                     <input type="hidden" name="parent_id" value="<?php echo $_SESSION['parent_id']; ?>">
+                    <input type="hidden" name="pickup_location" id="pickup_location">
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="group">
@@ -150,7 +194,7 @@ try {
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path d="M12 14l9-5-9-5-9 5 9 5z" />
-                                    <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                                    <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998a12.078 12.078 0 01.665-6.479L12 14z" />
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998a12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
                                 </svg>
                             </div>
@@ -180,34 +224,32 @@ try {
                         </div>
                     </div>
                     
+                    <!-- City and Bus Selection -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="group">
-                        <label for="pickup_location" class="block text-sm font-medium text-gray-700 mb-1 group-hover:text-orange-600 transition">Pickup Location</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                            </div>
-                            <select id="pickup_location_type" name="pickup_location_type" required class="w-full pl-10 pr-10 py-3 rounded-xl border border-orange-200 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition appearance-none bg-white input-focus-effect">
-                                <option value="" disabled selected>Select pickup location</option>
-                                <option value="home">Home Address</option>
-                                <option value="bus_stop_1">Bus Stop 1 - Main Street</option>
-                                <option value="bus_stop_2">Bus Stop 2 - Park Avenue</option>
-                                <option value="bus_stop_3">Bus Stop 3 - School Lane</option>
-                                <option value="custom">Custom Location</option>
+                            <label for="city" class="block text-sm font-medium text-gray-700 mb-1">City</label>
+                            <select id="city" name="city" required class="w-full px-4 py-3 rounded-xl border border-orange-200 focus:outline-none focus:ring-2 focus:ring-orange-400">
+                                <option value="">Select your city</option>
+                                <?php foreach($cities as $city): ?>
+                                    <option value="<?php echo htmlspecialchars(trim($city['city'])); ?>">
+                                        <?php echo htmlspecialchars(trim($city['city'])); ?>
+                                    </option>
+                                <?php endforeach; ?>
                             </select>
-                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                </svg>
                             </div>
+                        
+                        <div class="group">
+                            <label for="bus_id" class="block text-sm font-medium text-gray-700 mb-1">Available Bus</label>
+                            <select id="bus_id" name="bus_id" required class="w-full px-4 py-3 rounded-xl border border-orange-200 focus:outline-none focus:ring-2 focus:ring-orange-400" disabled>
+                                <option value="">Select a city first</option>
+                            </select>
                         </div>
                     </div>
                     
-                    <div id="custom_location_container" class="hidden group">
-                        <label for="custom_pickup_location" class="block text-sm font-medium text-gray-700 mb-1 group-hover:text-orange-600 transition">Custom Pickup Location</label>
-                        <input type="text" id="custom_pickup_location" name="custom_pickup_location" class="w-full px-4 py-3 rounded-xl border border-orange-200 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition input-focus-effect">
+                    <!-- Map for pickup location -->
+                    <div class="group">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Set Pickup Location</label>
+                        <div id="map" class="border border-orange-200 rounded-xl"></div>
                     </div>
                     
                     <div class="group">
@@ -255,7 +297,7 @@ try {
                         <textarea id="medical_notes" name="medical_notes" class="w-full px-4 py-3 rounded-xl border border-orange-200 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition input-focus-effect" rows="3" placeholder="Allergies, medications, or other important medical information"></textarea>
                     </div>
                     
-                    <div class="bg-orange-50 rounded-xl p-4 border border-orange-100">
+                    <!-- <div class="bg-orange-50 rounded-xl p-4 border border-orange-100">
                         <label class="block text-sm font-medium text-gray-700 mb-3">Tracking Preferences</label>
                         <div class="space-y-3">
                             <div class="flex items-center hover:bg-orange-100 p-2 rounded-lg transition-colors">
@@ -286,7 +328,7 @@ try {
                                 </label>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
                     
                     <div class="pt-6">
                         <!-- Updated submit button with gradient and improved hover effects -->
@@ -309,39 +351,152 @@ try {
     </main>
 
     <script>
-        // Show custom location field if "Custom Location" is selected
-        document.getElementById('pickup_location_type').addEventListener('change', function() {
-            const customLocationContainer = document.getElementById('custom_location_container');
-            if (this.value === 'custom') {
-                customLocationContainer.classList.remove('hidden');
-                document.getElementById('custom_pickup_location').setAttribute('required', 'required');
+        // Initialize map
+        const map = L.map('map').setView([6.9271, 79.8612], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        let marker;
+        let cityCircle;
+        const cityBoundaries = {
+            <?php 
+            foreach($cities as $city) {
+                if (!empty($city['boundaries'])) {
+                    list($lat, $lng, $radius) = explode(',', $city['boundaries']);
+                    echo "'" . addslashes($city['city']) . "': {lat: $lat, lng: $lng, radius: $radius},";
+                }
+            }
+            ?>
+        };
+
+        // Function to check if a point is within circle
+        function isPointInCircle(point, circle) {
+            const center = L.latLng(circle.lat, circle.lng);
+            const pointLatLng = L.latLng(point.lat, point.lng);
+            const distanceInKm = center.distanceTo(pointLatLng) / 1000;
+            return distanceInKm <= circle.radius;
+        }
+
+        // Handle map clicks
+        map.on('click', function(e) {
+            const selectedCity = document.getElementById('city').value;
+            const cityBoundary = cityBoundaries[selectedCity];
+
+            if (!selectedCity) {
+                alert('Please select a city first');
+                return;
+            }
+
+            // Only check boundaries if the city has defined boundaries
+            if (cityBoundary && !isPointInCircle(e.latlng, cityBoundary)) {
+                alert('Please select a location within the selected city boundary');
+                return;
+            }
+
+            if (marker) {
+                map.removeLayer(marker);
+            }
+            marker = L.marker(e.latlng).addTo(map);
+            document.getElementById('pickup_location').value = `${e.latlng.lat},${e.latlng.lng}`;
+        });
+
+        // Handle city selection
+        document.getElementById('city').addEventListener('change', function() {
+            const city = this.value;
+            const busSelect = document.getElementById('bus_id');
+            
+            // Clear existing marker and circle
+            if (marker) {
+                map.removeLayer(marker);
+            }
+            if (cityCircle) {
+                map.removeLayer(cityCircle);
+            }
+
+            if (city) {
+                const boundary = cityBoundaries[city];
+                
+                if (boundary) {
+                    // Create and add circle for city boundary
+                    cityCircle = L.circle([boundary.lat, boundary.lng], {
+                        color: 'orange',
+                        fillColor: '#FFB700',
+                        fillOpacity: 0.2,
+                        radius: boundary.radius * 1000 // Convert km to meters
+                    }).addTo(map);
+
+                    // Center map on selected city with boundary
+                    map.setView([boundary.lat, boundary.lng], 14);
+                } else {
+                    // For cities without boundaries, show a wider view of Sri Lanka
+                    map.setView([7.8731, 80.7718], 8);
+                }
+
+                // Fetch available buses
+                fetch(`get_available_buses.php?city=${encodeURIComponent(city)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        busSelect.innerHTML = '<option value="">Select a bus</option>';
+                        data.forEach(bus => {
+                            busSelect.innerHTML += `<option value="${bus.bus_id}">${bus.bus_number} - ${bus.available_seats} seats available</option>`;
+                        });
+                        busSelect.disabled = false;
+                    })
+                    .catch(error => console.error('Error:', error));
             } else {
-                customLocationContainer.classList.add('hidden');
-                document.getElementById('custom_pickup_location').removeAttribute('required');
+                busSelect.innerHTML = '<option value="">Select a city first</option>';
+                busSelect.disabled = true;
+                map.setView([6.9271, 79.8612], 13); // Reset map view
+            }
+
+            // Update city info
+            updateCityInfo(city);
+        });
+
+        // Add custom control to show city info
+        const cityInfoControl = L.Control.extend({
+            options: {
+                position: 'topright'
+            },
+
+            onAdd: function(map) {
+                const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control bg-white p-3 rounded-lg shadow-lg');
+                container.innerHTML = `
+                    <div class="text-sm font-medium text-gray-700">
+                        <h4 class="font-bold mb-2">Selected Area</h4>
+                        <div id="cityInfo">Select a city to see coverage area</div>
+                    </div>
+                `;
+                return container;
             }
         });
-        
-        // Form submission handler
-        document.getElementById('addChildForm').addEventListener('submit', function(e) {
-            // Custom location handling - combine the location type and custom value if needed
-            const locationType = document.getElementById('pickup_location_type').value;
-            if (locationType === 'custom') {
-                const customLocation = document.getElementById('custom_pickup_location').value;
-                // Create a hidden field to store the final pickup location value
-                const hiddenInput = document.createElement('input');
-                hiddenInput.type = 'hidden';
-                hiddenInput.name = 'pickup_location';
-                hiddenInput.value = customLocation;
-                this.appendChild(hiddenInput);
+
+        map.addControl(new cityInfoControl());
+
+        // Function to update city info
+        function updateCityInfo(city) {
+            const cityInfo = document.getElementById('cityInfo');
+            
+            if (city) {
+                const boundary = cityBoundaries[city];
+                if (boundary) {
+                    cityInfo.innerHTML = `
+                        <p class="text-orange-600">${city}</p>
+                        <p class="text-xs text-gray-500">Coverage radius: ${boundary.radius}km</p>
+                        <p class="text-xs text-gray-500">Select location within highlighted area</p>
+                    `;
+                } else {
+                    cityInfo.innerHTML = `
+                        <p class="text-orange-600">${city}</p>
+                        <p class="text-xs text-gray-500">No defined boundary</p>
+                        <p class="text-xs text-gray-500">Select any pickup location</p>
+                    `;
+                }
             } else {
-                // For non-custom locations, just use the selected option
-                const hiddenInput = document.createElement('input');
-                hiddenInput.type = 'hidden';
-                hiddenInput.name = 'pickup_location';
-                hiddenInput.value = locationType;
-                this.appendChild(hiddenInput);
+                cityInfo.innerHTML = 'Select a city to see coverage area';
             }
-        });
+        }
     </script>
 </body>
 </html>

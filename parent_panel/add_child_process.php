@@ -25,64 +25,85 @@ try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     
-    // Get form data and sanitize
-    $parent_id = $_SESSION['parent_id']; // Get parent ID from session
-    $school_id = filter_input(INPUT_POST, 'school_id', FILTER_SANITIZE_NUMBER_INT);
+    // Start transaction
+    $pdo->beginTransaction();
     
-    // Replace deprecated FILTER_SANITIZE_STRING with appropriate alternatives
-    $first_name = htmlspecialchars(trim($_POST['child_first_name']), ENT_QUOTES, 'UTF-8');
-    $last_name = htmlspecialchars(trim($_POST['child_last_name']), ENT_QUOTES, 'UTF-8');
-    $grade = htmlspecialchars(trim($_POST['grade']), ENT_QUOTES, 'UTF-8');
-    $pickup_location = htmlspecialchars(trim($_POST['pickup_location']), ENT_QUOTES, 'UTF-8');
-    $emergency_contact = htmlspecialchars(trim($_POST['emergency_contact']), ENT_QUOTES, 'UTF-8');
-    $medical_notes = htmlspecialchars(trim($_POST['medical_notes']), ENT_QUOTES, 'UTF-8');
-    
-    // Prepare notification preferences
-    $notify_pickup = isset($_POST['notify_pickup']) ? 1 : 0;
-    $notify_dropoff = isset($_POST['notify_dropoff']) ? 1 : 0;
-    $notify_delays = isset($_POST['notify_delays']) ? 1 : 0;
-    
-    // Insert child into database
-    $stmt = $pdo->prepare("INSERT INTO child (parent_id, school_id, first_name, last_name, 
-                          grade, pickup_location, emergency_contact, medical_notes) 
-                          VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+    // Insert child information
+    $stmt = $pdo->prepare("
+        INSERT INTO child (
+            parent_id, school_id, bus_id, first_name, last_name,
+            grade, pickup_location, medical_notes, emergency_contact
+        ) VALUES (
+            :parent_id, :school_id, :bus_id, :first_name, :last_name,
+            :grade, :pickup_location, :medical_notes, :emergency_contact
+        )
+    ");
     
     $stmt->execute([
-        $parent_id,
-        $school_id,
-        $first_name,
-        $last_name,
-        $grade,
-        $pickup_location,
-        $emergency_contact,
-        $medical_notes
+        'parent_id' => $_SESSION['parent_id'],
+        'school_id' => $_POST['school_id'],
+        'bus_id' => $_POST['bus_id'],
+        'first_name' => $_POST['child_first_name'],
+        'last_name' => $_POST['child_last_name'],
+        'grade' => $_POST['grade'],
+        'pickup_location' => $_POST['pickup_location'],
+        'medical_notes' => $_POST['medical_notes'] ?? '',
+        'emergency_contact' => $_POST['emergency_contact']
     ]);
     
-    // Get the newly created child ID
     $child_id = $pdo->lastInsertId();
     
-    // Store notification preferences in a separate table
-    if (isset($child_id) && $child_id > 0) {
-        $notifyStmt = $pdo->prepare("INSERT INTO notification_preferences 
-                                   (child_id, notify_pickup, notify_dropoff, notify_delays) 
-                                   VALUES (?, ?, ?, ?)");
-        $notifyStmt->execute([
-            $child_id,
-            $notify_pickup,
-            $notify_dropoff,
-            $notify_delays
+    // Find an available seat that isn't reserved
+    $seatStmt = $pdo->prepare("
+        SELECT bs.seat_id
+        FROM bus_seat bs
+        LEFT JOIN child_reservation cr ON bs.seat_id = cr.seat_id AND cr.is_active = 1
+        WHERE bs.bus_id = :bus_id 
+        AND bs.is_reserved = 0
+        AND cr.seat_id IS NULL
+        LIMIT 1
+    ");
+    
+    $seatStmt->execute(['bus_id' => $_POST['bus_id']]);
+    $seat = $seatStmt->fetch(PDO::FETCH_ASSOC);
+    
+    if ($seat) {
+        // Update bus_seat table to mark the seat as reserved
+        $updateSeatStmt = $pdo->prepare("
+            UPDATE bus_seat 
+            SET is_reserved = 1 
+            WHERE seat_id = :seat_id
+        ");
+        
+        $updateSeatStmt->execute([
+            'seat_id' => $seat['seat_id']
         ]);
+        
+        // Create seat reservation in child_reservation table
+        $reserveStmt = $pdo->prepare("
+            INSERT INTO child_reservation (
+                seat_id, child_id, reservation_date, is_active
+            ) VALUES (
+                :seat_id, :child_id, CURDATE(), 1
+            )
+        ");
+        
+        $reserveStmt->execute([
+            'seat_id' => $seat['seat_id'],
+            'child_id' => $child_id
+        ]);
+        
+        $pdo->commit();
+        header('Location: dashboard.php?success=1');
+    } else {
+        // No available seats
+        $pdo->rollBack();
+        header('Location: add_child.php?error=' . urlencode('No available seats in this bus'));
+        exit;
     }
     
-    // Redirect to dashboard with success message
-    header('Location: dashboard.php?childAdded=true');
-    exit;
-    
 } catch (PDOException $e) {
-    // Handle error - log it and redirect
-    error_log("Child addition error: " . $e->getMessage());
-    // header('Location: add_child.php?error=database');
-    header('Location: dashboard.php?childAdded=true');
-    exit;
+    $pdo->rollBack();
+    header('Location: add_child.php?error=' . urlencode($e->getMessage()));
 }
 ?>

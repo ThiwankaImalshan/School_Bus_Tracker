@@ -1874,9 +1874,8 @@ try {
                             </div>
                         </div>
                     </div>
-
                     <!-- Change Password Modal -->
-                    <div id="changePasswordModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
+                    <div id="changePasswordModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
                         <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
                             <div class="mt-3 text-center">
                                 <h3 class="text-lg leading-6 font-medium text-gray-900">Change Password</h3>
@@ -1894,7 +1893,7 @@ try {
                     </div>
 
                     <!-- Register Admin Modal -->
-                    <div id="registerAdminModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
+                    <div id="registerAdminModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
                         <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
                             <div class="mt-3 text-center">
                                 <h3 class="text-lg leading-6 font-medium text-gray-900">Register New Admin</h3>
@@ -1919,7 +1918,7 @@ try {
                     </div>
 
                     <!-- Edit Admin Modal -->
-                    <div id="editAdminModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
+                    <div id="editAdminModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
                         <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
                             <div class="mt-3 text-center">
                                 <h3 class="text-lg leading-6 font-medium text-gray-900">Edit Admin</h3>

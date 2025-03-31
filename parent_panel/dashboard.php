@@ -10,16 +10,33 @@ if (!isset($_SESSION['parent_id']) || !$_SESSION['logged_in']) {
 }
 
 // Database connection
-$host = 'localhost';
-$dbname = 'school_bus_management';
-$username = 'root'; // Replace with your database username
-$password = ''; // Replace with your database password
-
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+    $pdo = new PDO("mysql:host=localhost;dbname=school_bus_management", "root", "");
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
+    error_log("Database connection failed: " . $e->getMessage());
+    die("Database connection failed. Please try again later.");
+}
+
+// Add this after your session check and database connection
+try {
+    // Fetch parent information
+    $parentStmt = $pdo->prepare("
+        SELECT full_name, email, phone, home_address 
+        FROM parent 
+        WHERE parent_id = :parent_id
+    ");
+    $parentStmt->execute(['parent_id' => $_SESSION['parent_id']]);
+    $parentInfo = $parentStmt->fetch(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    // Handle error appropriately
+    error_log("Error fetching parent info: " . $e->getMessage());
+    $parentInfo = [
+        'full_name' => '',
+        'email' => '',
+        'phone' => '',
+        'home_address' => ''
+    ];
 }
 
 // Get parent's children
@@ -64,6 +81,29 @@ foreach ($children as $child) {
         break;
     }
 }
+
+// In your PHP section where you fetch child details, modify the query:
+
+$childStmt = $pdo->prepare("
+    SELECT 
+        c.*,
+        s.name as school_name,
+        s.address as school_address,
+        b.bus_number,
+        b.license_plate,
+        b.starting_location,
+        b.covering_cities
+    FROM child c
+    LEFT JOIN school s ON c.school_id = s.school_id
+    LEFT JOIN bus b ON c.bus_id = b.bus_id
+    WHERE c.child_id = :child_id AND c.parent_id = :parent_id
+");
+
+$childStmt->execute([
+    'child_id' => $selectedChildId,
+    'parent_id' => $_SESSION['parent_id']
+]);
+$childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
 ?>
 
 
@@ -201,6 +241,34 @@ foreach ($children as $child) {
         .content-area {
             background-color: rgba(255, 205, 141, 0.1); /* Lightest orange with 10% opacity */
         }
+        /* Button hover animations */
+        .button-hover-effect {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .button-hover-effect::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 50%);
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.3s ease-out;
+        }
+
+        .button-hover-effect:hover::after {
+            transform: translate(-50%, -50%) scale(2);
+        }
+
+        /* Disable styles for modal buttons */
+        .modal-button-disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-b from-orange-50 to-orange-100 min-h-screen">
@@ -314,14 +382,46 @@ foreach ($children as $child) {
                             <!-- <button id="profile-menu-button" class="bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 order-last">
                                 <img class="h-8 w-8 rounded-full object-cover border-2 border-orange-200" src="https://randomuser.me/api/portraits/women/44.jpg" alt="Profile">
                             </button> -->
-                            <button id="" class="bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 order-last">
-                                <img class="h-8 w-8 rounded-full object-cover border-2 border-orange-200" src="https://randomuser.me/api/portraits/women/44.jpg" alt="Profile">
+                            <button id="profileButton" 
+                                    onclick="openLogoutModal()" 
+                                    class="bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 order-last">
+                                <img class="h-8 w-8 rounded-full object-cover border-2 border-orange-200" 
+                                     src="https://randomuser.me/api/portraits/women/44.jpg" 
+                                     alt="Profile">
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
         </header>
+
+        <!-- Add this right after the header section -->
+        <div id="logoutModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-[9999]">
+            <div class="relative top-20 mx-auto p-5 border w-80 shadow-lg rounded-md bg-white">
+                <div class="flex flex-col items-center">
+                    <!-- Warning Icon -->
+                    <div class="mb-4">
+                        <svg class="h-12 w-12 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Confirm Logout</h3>
+                    <p class="text-sm text-gray-500 text-center mb-6">Are you sure you want to logout from your account?</p>
+                    
+                    <div class="flex space-x-4">
+                        <button onclick="closeLogoutModal()" 
+                                class="px-4 py-2 bg-gray-500 text-white text-sm rounded-lg hover:bg-gray-600 transition-colors">
+                            Cancel
+                        </button>
+                        <a href="logout.php" 
+                           class="px-4 py-2 bg-yellow-500 text-white text-sm rounded-lg hover:bg-yellow-600 transition-colors">
+                            Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Page Content -->
         <main class="content-area flex-1 bg-orange-50">
@@ -359,12 +459,13 @@ foreach ($children as $child) {
                         <!-- Current Active Child Display -->
                         <?php if ($selectedChild): ?>
                         <div id="currentChildProfile" class="flex items-center space-x-4">
-                            <img src="<?php echo !empty($selectedChild['photo_url']) ? $selectedChild['photo_url'] : '/api/placeholder/200/200'; ?>" 
+                            <img src="<?php echo !empty($selectedChild['photo_url']) ? $selectedChild['photo_url'] : 'assets\img\student1.jpg'; ?>" 
                                 alt="<?php echo $selectedChild['first_name'] . ' ' . $selectedChild['last_name']; ?>" 
                                 class="w-20 h-20 rounded-full object-cover border-4 border-orange-200"/>
                             <div>
                                 <h4 class="text-xl font-medium text-gray-800"><?php echo $selectedChild['first_name'] . ' ' . $selectedChild['last_name']; ?></h4>
-                                <p class="text-gray-500">Grade <?php echo $selectedChild['grade']; ?> • Bus #<?php echo $selectedChild['bus_id']; ?></p>
+                                <!-- <p class="text-gray-500">Grade <?php echo $selectedChild['grade']; ?> • Bus #<?php echo $selectedChild['bus_id']; ?></p> -->
+                                <p class="text-gray-500">Grade <?php echo $selectedChild['grade']; ?></p>
                             </div>
                         </div>
                         <?php else: ?>
@@ -391,7 +492,7 @@ foreach ($children as $child) {
                                     <div class="flex flex-col items-center mb-6">
                                         <!-- Student Image -->
                                         <div class="w-24 h-24 rounded-full overflow-hidden mb-3">
-                                            <img src="<?php echo !empty($selectedChild['photo_url']) ? $selectedChild['photo_url'] : '/api/placeholder/200/200'; ?>" 
+                                            <img src="<?php echo !empty($selectedChild['photo_url']) ? $selectedChild['photo_url'] : 'assets\img\student1.jpg'; ?>" 
                                                 alt="Student Photo" class="w-full h-full object-cover" />
                                         </div>
                                         <!-- Student Name -->
@@ -426,15 +527,15 @@ foreach ($children as $child) {
                                             <span class="flex-1 text-sm text-gray-800"><?php echo $selectedChild['grade']; ?></span>
                                         </div>
 
-                                        <div class="flex">
+                                        <!-- <div class="flex">
                                             <span class="w-32 text-sm font-medium text-gray-500">Bus:</span>
                                             <span class="flex-1 text-sm text-gray-800">#<?php echo $selectedChild['bus_id']; ?></span>
-                                        </div>
+                                        </div> -->
 
-                                        <div class="flex">
+                                        <!-- <div class="flex">
                                             <span class="w-32 text-sm font-medium text-gray-500">Pickup:</span>
                                             <span class="flex-1 text-sm text-gray-800"><?php echo $selectedChild['pickup_location']; ?></span>
-                                        </div>
+                                        </div> -->
 
                                         <div class="flex">
                                             <span class="w-32 text-sm font-medium text-gray-500">Medical Notes:</span>
@@ -452,7 +553,7 @@ foreach ($children as $child) {
                         </div>
 
                             <!-- Attendance and Fee Status -->
-                            <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden">
+                            <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden mb-6">
                                 <div class="p-6 border-b border-gray-100">
                                     <h3 class="text-lg font-semibold heading-brown">Attendance & Fee Status</h3>
                                 </div>
@@ -472,70 +573,156 @@ foreach ($children as $child) {
 
                                     <!-- Attendance Marking -->
                                     <div class="flex flex-col">
-                                        <div class="flex items-center justify-between mb-4">
-                                            <div>
-                                                <h4 class="text-sm font-medium text-gray-800">Today's Attendance</h4>
-                                                <p class="text-xs text-gray-500">March 9, 2025</p>
-                                            </div>
-                                            <div class="flex space-x-2">
-                                                <button class="py-2 px-4 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors text-sm font-medium">
-                                                    Present
-                                                </button>
-                                                <button class="py-2 px-4 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors text-sm font-medium">
-                                                    Absent
-                                                </button>
+                                        <div id="attendanceStatus" class="bg-green-50 rounded-xl p-4 mb-4">
+                                            <div class="flex justify-between items-center">
+                                                <div>
+                                                    <h4 class="text-sm font-medium text-gray-800">Today's Attendance</h4>
+                                                    <p id="currentDate" class="text-xs text-gray-500"></p>
+                                                </div>
+                                                <div id="attendanceLabel" class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                                                    Today's Present
+                                                </div>
                                             </div>
                                         </div>
+                                        <div class="flex space-x-3 justify-end">
+                                            <button onclick="markAttendance('present')" class="py-2 px-4 bg-green-500 text-white rounded-xl text-sm font-medium shadow-lg transform transition-all duration-200 hover:shadow-green-200 hover:-translate-y-1 active:translate-y-0 active:shadow-inner border border-green-600">
+                                                Present
+                                            </button>
+                                            <button onclick="markAttendance('absent')" class="py-2 px-4 bg-red-500 text-white rounded-xl text-sm font-medium shadow-lg transform transition-all duration-200 hover:shadow-red-200 hover:-translate-y-1 active:translate-y-0 active:shadow-inner border border-red-600">
+                                                Absent
+                                            </button>
+                                        </div>
                                     </div>
+                                    
+                                    <script>
+                                        // Display current date
+                                        function formatDate(date) {
+                                            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                                            return date.toLocaleDateString('en-US', options);
+                                        }
+                                        
+                                        document.getElementById('currentDate').textContent = formatDate(new Date());
+                                        
+                                        function markAttendance(status) {
+                                            const statusDiv = document.getElementById('attendanceStatus');
+                                            const label = document.getElementById('attendanceLabel');
+                                            
+                                            if (status === 'present') {
+                                                statusDiv.className = 'bg-green-50 rounded-xl p-4 mb-4';
+                                                label.className = 'bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium';
+                                                label.textContent = 'Today\'s Present';
+                                            } else {
+                                                statusDiv.className = 'bg-red-50 rounded-xl p-4 mb-4';
+                                                label.className = 'bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium';
+                                                label.textContent = 'Today\'s Absent';
+                                            }
+                                        }
+                                    </script>
                                 </div>
                             </div>
                         </div>
                         
                         <!-- Bus Information (Right Side) -->
                         <div>
-                            <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden h-full">
-                                <div class="p-6 border-b border-gray-100">
-                                    <h3 class="text-lg font-semibold heading-brown">Transportation</h3>
+                            <!-- Replace or update your existing transportation div -->
+                            <div class="bg-white rounded-xl shadow-sm p-6 relative overflow-hidden">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-lg font-semibold text-gray-800">Transportation</h3>
+                                    <?php if ($childDetails['bus_id']): ?>
+                                        <span class="px-3 py-1 text-sm bg-green-100 text-green-800 rounded-full">Active</span>
+                                    <?php else: ?>
+                                        <span class="px-3 py-1 text-sm bg-yellow-100 text-yellow-800 rounded-full">Not Assigned</span>
+                                    <?php endif; ?>
                                 </div>
-                                <div class="p-6 flex flex-col items-center">
-                                    <!-- Bus Image -->
-                                    <div class="w-full h-48 mb-6 rounded-xl overflow-hidden">
-                                        <img src="/api/placeholder/400/300" alt="School Bus" class="w-full h-full object-cover" />
-                                    </div>
 
-                                    <!-- Bus Details -->
-                                    <div class="w-full space-y-4">
-                                        <div class="flex">
-                                            <span class="w-32 text-sm font-medium text-gray-500">Bus Number:</span>
-                                            <span class="flex-1 text-sm text-gray-800">Bus #42</span>
+                                <?php if ($childDetails['bus_id']): ?>
+                                    <div class="space-y-4">
+                                        <!-- Bus Details -->
+                                        <div class="flex items-start space-x-4">
+                                            <div class="flex-shrink-0">
+                                                <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v6a2 2 0 002 2h2" />
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                            <div class="flex-1">
+                                                <h4 class="text-sm font-medium text-gray-900">Bus Information</h4>
+                                                <div class="mt-2 grid grid-cols-2 gap-4 text-sm">
+                                                    <div>
+                                                        <p class="text-gray-500">Bus Number</p>
+                                                        <p class="font-medium text-gray-900"><?php echo htmlspecialchars($childDetails['bus_number']); ?></p>
+                                                    </div>
+                                                    <div>
+                                                        <p class="text-gray-500">License Plate</p>
+                                                        <p class="font-medium text-gray-900"><?php echo htmlspecialchars($childDetails['license_plate']); ?></p>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                        
-                                        <div class="flex">
-                                            <span class="w-32 text-sm font-medium text-gray-500">Driver:</span>
-                                            <span class="flex-1 text-sm text-gray-800">Mr. Robert Davis</span>
+
+                                        <!-- Route Details -->
+                                        <div class="flex items-start space-x-4">
+                                            <div class="flex-shrink-0">
+                                                <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                            <div class="flex-1">
+                                                <h4 class="text-sm font-medium text-gray-900">Route Information</h4>
+                                                <div class="mt-2 space-y-2 text-sm">
+                                                    <div>
+                                                        <p class="text-gray-500">Starting Location</p>
+                                                        <p class="font-medium text-gray-900"><?php echo htmlspecialchars($childDetails['starting_location']); ?></p>
+                                                    </div>
+                                                    <!-- <div>
+                                                        <p class="text-gray-500">Covering Areas</p>
+                                                        <p class="font-medium text-gray-900">
+                                                            <?php 
+                                                            $cities = explode(',', $childDetails['covering_cities']);
+                                                            echo htmlspecialchars(implode(', ', array_map('trim', $cities))); 
+                                                            ?>
+                                                        </p>
+                                                    </div> -->
+                                                </div>
+                                            </div>
                                         </div>
-                                        
-                                        <div class="flex">
-                                            <span class="w-32 text-sm font-medium text-gray-500">Route:</span>
-                                            <span class="flex-1 text-sm text-gray-800">North District - Route C</span>
-                                        </div>
-                                        
-                                        <div class="flex">
-                                            <span class="w-32 text-sm font-medium text-gray-500">Pick-up Time:</span>
-                                            <span class="flex-1 text-sm text-gray-800">7:15 AM</span>
-                                        </div>
-                                        
-                                        <div class="flex">
-                                            <span class="w-32 text-sm font-medium text-gray-500">Drop-off Time:</span>
-                                            <span class="flex-1 text-sm text-gray-800">3:45 PM</span>
-                                        </div>
-                                        
-                                        <div class="flex">
-                                            <span class="w-32 text-sm font-medium text-gray-500">Contact:</span>
-                                            <span class="flex-1 text-sm text-gray-800">(555) 987-6543</span>
-                                        </div>
+
+                                        <!-- Pickup Location -->
+                                        <!-- <div class="flex items-start space-x-4">
+                                            <div class="flex-shrink-0">
+                                                <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                            <div class="flex-1">
+                                                <h4 class="text-sm font-medium text-gray-900">Pickup Location</h4>
+                                                <div class="mt-2 text-sm">
+                                                    <p class="text-gray-500">Current Pickup Point</p>
+                                                    <p class="font-medium text-gray-900"><?php echo htmlspecialchars($childDetails['pickup_location']); ?></p>
+                                                </div>
+                                            </div>
+                                        </div> -->
                                     </div>
-                                </div>
+                                <?php else: ?>
+                                    <div class="text-center py-6">
+                                        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                            </svg>
+                                        </div>
+                                        <h3 class="text-lg font-medium text-gray-900 mb-2">No Bus Assigned</h3>
+                                        <p class="text-gray-500 text-sm mb-4">This child has not been assigned to a bus route yet.</p>
+                                        <a href="add_child.php" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+                                            Request Transportation
+                                        </a>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                         </div>
 
@@ -1646,132 +1833,273 @@ foreach ($children as $child) {
             <div class="h-10 w-1 bg-orange-500 rounded-full"></div>
             <h2 class="text-3xl font-bold heading-brown">Account Settings</h2>
         </div>
-        <div class="mt-4 md:mt-0">
-            <button class="btn-primary text-sm px-4 py-2 rounded-lg">Save Changes</button>
-        </div>
     </div>
 
     <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden mb-6">
-        <div class="p-4 border-b border-gray-100">
-            <h3 class="text-lg font-semibold heading-brown">Personal Information</h3>
-        </div>
-        
-        <div class="p-6 border-b border-gray-100">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-semibold heading-brown">Personal Information</h3>
+                <!-- <button onclick="openUpdateModal()" class="btn-primary text-sm px-4 py-2 rounded-lg flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                    Update Information
+                </button> -->
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                    <input type="text" value="Sarah Johnson" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+                    <label class="block text-sm font-medium text-gray-500">Full Name</label>
+                    <p class="mt-1 text-gray-900">
+                        <?php echo isset($parentInfo['full_name']) ? htmlspecialchars($parentInfo['full_name']) : 'Not available'; ?>
+                    </p>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input type="email" value="sarah.johnson@example.com" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+                    <label class="block text-sm font-medium text-gray-500">Email</label>
+                    <p class="mt-1 text-gray-900">
+                        <?php echo isset($parentInfo['email']) ? htmlspecialchars($parentInfo['email']) : 'Not available'; ?>
+                    </p>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                    <input type="tel" value="(555) 123-4567" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+                    <label class="block text-sm font-medium text-gray-500">Phone</label>
+                    <p class="mt-1 text-gray-900">
+                        <?php echo !empty($parentInfo['phone']) ? htmlspecialchars($parentInfo['phone']) : 'Not provided'; ?>
+                    </p>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Language Preference</label>
-                    <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                        <option>English</option>
-                        <option>Spanish</option>
-                        <option>French</option>
-                    </select>
+                    <label class="block text-sm font-medium text-gray-500">Home Address</label>
+                    <p class="mt-1 text-gray-900">
+                        <?php echo isset($parentInfo['home_address']) ? htmlspecialchars($parentInfo['home_address']) : 'Not available'; ?>
+                    </p>
                 </div>
             </div>
-            <div class="flex justify-end mt-4">
-                <button class="text-orange-500 text-sm px-4 py-2 border border-orange-200 rounded-lg hover:bg-orange-50">Update Information</button>
-            </div>
-        </div>
-        
-        <!-- <div class="p-4 border-b border-gray-100">
-            <h3 class="text-lg font-semibold heading-brown">Password Settings</h3>
-        </div>
-        
-        <div class="p-6 border-b border-gray-100">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
-                    <input type="password" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-                    <input type="password" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
-                    <input type="password" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                </div>
-            </div>
-            <div class="flex justify-end mt-4">
-                <button class="text-orange-500 text-sm px-4 py-2 border border-orange-200 rounded-lg hover:bg-orange-50">Update Password</button>
-            </div>
-        </div> -->
-        
-        <div class="p-4 border-b border-gray-100">
-            <h3 class="text-lg font-semibold heading-brown">Notification Preferences</h3>
-        </div>
-        
-        <div class="p-6 border-b border-gray-100">
-            <div class="space-y-4">
-                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div>
-                        <h4 class="font-medium text-gray-800">Email Notifications</h4>
-                        <p class="text-sm text-gray-600">Receive updates about your child's bus status via email</p>
-                    </div>
-                    <label class="relative inline-block w-12 h-6">
-                        <input type="checkbox" checked class="opacity-0 w-0 h-0">
-                        <span class="absolute cursor-pointer inset-0 bg-gray-300 rounded-full transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:left-1 before:bottom-1 before:bg-white before:rounded-full before:transition-all before:duration-300 checked:bg-orange-500 checked:before:translate-x-6"></span>
-                    </label>
-                </div>
-                
-                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div>
-                        <h4 class="font-medium text-gray-800">SMS Notifications</h4>
-                        <p class="text-sm text-gray-600">Receive text alerts about your child's bus status</p>
-                    </div>
-                    <label class="relative inline-block w-12 h-6">
-                        <input type="checkbox" checked class="opacity-0 w-0 h-0">
-                        <span class="absolute cursor-pointer inset-0 bg-gray-300 rounded-full transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:left-1 before:bottom-1 before:bg-white before:rounded-full before:transition-all before:duration-300 checked:bg-orange-500 checked:before:translate-x-6"></span>
-                    </label>
-                </div>
-                
-                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div>
-                        <h4 class="font-medium text-gray-800">Push Notifications</h4>
-                        <p class="text-sm text-gray-600">Receive mobile app notifications about your child's bus status</p>
-                    </div>
-                    <label class="relative inline-block w-12 h-6">
-                        <input type="checkbox" checked class="opacity-0 w-0 h-0">
-                        <span class="absolute cursor-pointer inset-0 bg-gray-300 rounded-full transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:left-1 before:bottom-1 before:bg-white before:rounded-full before:transition-all before:duration-300 checked:bg-orange-500 checked:before:translate-x-6"></span>
-                    </label>
-                </div>
-            </div>
-        </div>
-        
-        <!-- <div class="p-4 border-b border-gray-100">
-            <h3 class="text-lg font-semibold text-red-600">Danger Zone</h3>
-        </div> -->
-        
-        <div class="p-6">
-            <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
-                <h4 class="font-medium text-yellow-800 mb-2">Change Password</h4>
-                <p class="text-sm text-yellow-700 mb-4">Once you delete your account, there is no going back. Please be certain.</p>
-                <div class="flex items-center">
-                    <button class="bg-white text-yellow-500 hover:bg-yellow-100 px-4 py-2 rounded-lg text-sm border border-yellow-200">Change Password</button>
-                </div>
-            </div>
-            <br>
-            <div class="bg-red-50 p-4 rounded-lg border border-red-100">
-                <h4 class="font-medium text-red-800 mb-2">Delete Account</h4>
-                <p class="text-sm text-red-700 mb-4">Once you delete your account, there is no going back. Please be certain.</p>
-                <div class="flex items-center">
-                    <button class="bg-white text-red-500 hover:bg-red-100 px-4 py-2 rounded-lg text-sm border border-red-200">Delete My Account</button>
-                </div>
+
+            <div class="mt-8 flex flex-col md:flex-row gap-4">
+                <!-- Update Information Button -->
+                <button onclick="openUpdateModal()" 
+                        class="inline-flex items-center justify-center px-6 py-2 bg-yellow-500 text-white rounded-lg 
+                               hover:bg-yellow-600 transform hover:-translate-y-0.5 transition-all duration-200 
+                               focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                    Update Information
+                </button>
+
+                <!-- Change Password Button -->
+                <button onclick="openChangePasswordModal()" 
+                        class="inline-flex items-center justify-center px-6 py-2 bg-blue-500 text-white rounded-lg 
+                               hover:bg-blue-600 transform hover:-translate-y-0.5 transition-all duration-200 
+                               focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    Change Password
+                </button>
+
+                <!-- Delete Account Button -->
+                <button onclick="openDeleteAccountModal()" 
+                        class="inline-flex items-center justify-center px-6 py-2 border-2 bg-red-500 text-white rounded-lg 
+                               hover:bg-red-600 transform hover:-translate-y-0.5 transition-all duration-200 
+                               focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Delete Account
+                </button>
             </div>
         </div>
     </div>
 </section>
+
+<!-- Update Information Modal -->
+<div id="updateModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-[9999]">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-semibold text-gray-900">Update Information</h3>
+            <button onclick="closeUpdateModal()" class="text-gray-400 hover:text-gray-600">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <form id="updateForm" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Full Name</label>
+                <input type="text" name="full_name" value="<?php echo htmlspecialchars($parentInfo['full_name']); ?>" class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Phone</label>
+                <input type="tel" name="phone" value="<?php echo htmlspecialchars($parentInfo['phone']); ?>" class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Home Address</label>
+                <textarea name="home_address" class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300"><?php echo htmlspecialchars($parentInfo['home_address']); ?></textarea>
+            </div>
+            <div class="flex justify-end space-x-3 mt-6">
+                <button type="button" onclick="closeUpdateModal()" class="px-4 py-2 text-gray-500 hover:text-gray-700">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div id="changePasswordModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-[9999]">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-semibold text-gray-900">Change Password</h3>
+            <button onclick="closeChangePasswordModal()" class="text-gray-400 hover:text-gray-600">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <form id="changePasswordForm" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Current Password</label>
+                <input type="password" name="current_password" required class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">New Password</label>
+                <input type="password" name="new_password" required class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Confirm New Password</label>
+                <input type="password" name="confirm_password" required class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
+            </div>
+            <div class="flex justify-end space-x-3 mt-6">
+                <button type="button" onclick="closeChangePasswordModal()" class="px-4 py-2 text-gray-500 hover:text-gray-700">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Update Password</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Account Modal -->
+<div id="deleteAccountModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-[9999]">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-semibold text-red-600">Delete Account</h3>
+            <button onclick="closeDeleteAccountModal()" class="text-gray-400 hover:text-gray-600">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div class="mb-4">
+            <p class="text-gray-600">Are you sure you want to delete your account? This action cannot be undone.</p>
+        </div>
+        <form id="deleteAccountForm" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Enter your password to confirm</label>
+                <input type="password" name="confirm_password" required class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-red-300">
+            </div>
+            <div class="flex justify-end space-x-3 mt-6">
+                <button type="button" onclick="closeDeleteAccountModal()" class="px-4 py-2 text-gray-500 hover:text-gray-700">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Delete Account</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Modal functions
+    function openUpdateModal() {
+        document.getElementById('updateModal').classList.remove('hidden');
+    }
+
+    function closeUpdateModal() {
+        document.getElementById('updateModal').classList.add('hidden');
+    }
+
+    function openChangePasswordModal() {
+        document.getElementById('changePasswordModal').classList.remove('hidden');
+    }
+
+    function closeChangePasswordModal() {
+        document.getElementById('changePasswordModal').classList.add('hidden');
+    }
+
+    function openDeleteAccountModal() {
+        document.getElementById('deleteAccountModal').classList.remove('hidden');
+    }
+
+    function closeDeleteAccountModal() {
+        document.getElementById('deleteAccountModal').classList.add('hidden');
+    }
+
+    // Form submissions
+    document.getElementById('updateForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        
+        fetch('update_parent_info.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Information updated successfully');
+                location.reload();
+            } else {
+                alert(data.message || 'Error updating information');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while updating information');
+        });
+    });
+
+    document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        
+        fetch('change_password.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Password changed successfully');
+                closeChangePasswordModal();
+                this.reset();
+            } else {
+                alert(data.message || 'Error changing password');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while changing password');
+        });
+    });
+
+    document.getElementById('deleteAccountForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        
+        fetch('delete_account.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Account deleted successfully');
+                window.location.href = 'logout.php';
+            } else {
+                alert(data.message || 'Error deleting account');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while deleting account');
+        });
+    });
+</script>
 
 
 
@@ -1954,5 +2282,78 @@ foreach ($children as $child) {
     }
     
 </script>
+
+<!-- Add this JavaScript for handling the modal -->
+<script>
+function openLogoutModal() {
+    const modal = document.getElementById('logoutModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeLogoutModal() {
+    const modal = document.getElementById('logoutModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+}
+
+// Close modal when clicking outside
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('logoutModal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeLogoutModal();
+            }
+        });
+    }
+
+    // Close modal on escape key press
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeLogoutModal();
+        }
+    });
+});
+</script>
+
+<style>
+/* Ensure modal is always on top */
+#logoutModal {
+    z-index: 9999 !important;
+}
+
+/* Add animation for modal */
+@keyframes modalFade {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#logoutModal > div {
+    animation: modalFade 0.3s ease-out;
+}
+
+/* Hover effects for buttons */
+#logoutModal button:hover,
+#logoutModal a:hover {
+    transform: translateY(-1px);
+    transition: all 0.2s;
+}
+
+/* Add shadow to modal */
+#logoutModal > div {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+</style>
 </body>
 </html>
