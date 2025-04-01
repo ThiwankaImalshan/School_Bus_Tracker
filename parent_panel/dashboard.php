@@ -317,6 +317,12 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                     </svg>
                     Payments
                 </button>
+                <button onclick="showSection('children')" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    Children
+                </button>
                 <button onclick="showSection('settings')" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -355,6 +361,12 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                 </svg>
                 <span>Payments</span>
             </button>
+            <button onclick="showSection('children')" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span>Children</span>
+            </button>
             <button onclick="showSection('settings')" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -364,6 +376,11 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
             </button>
         </div>
     </div>
+
+
+
+
+
 
     <!-- Main Content -->
     <div class="md:pl-64">
@@ -426,6 +443,14 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
         <!-- Page Content -->
         <main class="content-area flex-1 bg-orange-50">
             <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+
+
+
+
+
+
+
 
                 <!-- Home Section -->
                 <section id="home-section" class="dashboard-section">
@@ -575,10 +600,10 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                     <div class="flex flex-col">
                                         <div id="attendanceStatus" class="bg-green-50 rounded-xl p-4 mb-4">
                                             <div class="flex justify-between items-center">
-                                                <div>
-                                                    <h4 class="text-sm font-medium text-gray-800">Today's Attendance</h4>
+                                            <div>
+                                                <h4 class="text-sm font-medium text-gray-800">Today's Attendance</h4>
                                                     <p id="currentDate" class="text-xs text-gray-500"></p>
-                                                </div>
+                                            </div>
                                                 <div id="attendanceLabel" class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
                                                     Today's Present
                                                 </div>
@@ -586,13 +611,13 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                         </div>
                                         <div class="flex space-x-3 justify-end">
                                             <button onclick="markAttendance('present')" class="py-2 px-4 bg-green-500 text-white rounded-xl text-sm font-medium shadow-lg transform transition-all duration-200 hover:shadow-green-200 hover:-translate-y-1 active:translate-y-0 active:shadow-inner border border-green-600">
-                                                Present
-                                            </button>
+                                                    Present
+                                                </button>
                                             <button onclick="markAttendance('absent')" class="py-2 px-4 bg-red-500 text-white rounded-xl text-sm font-medium shadow-lg transform transition-all duration-200 hover:shadow-red-200 hover:-translate-y-1 active:translate-y-0 active:shadow-inner border border-red-600">
-                                                Absent
-                                            </button>
+                                                    Absent
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
                                     
                                     <script>
                                         // Display current date
@@ -633,26 +658,26 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                     <?php else: ?>
                                         <span class="px-3 py-1 text-sm bg-yellow-100 text-yellow-800 rounded-full">Not Assigned</span>
                                     <?php endif; ?>
-                                </div>
+                                    </div>
 
                                 <?php if ($childDetails['bus_id']): ?>
                                     <div class="space-y-4">
-                                        <!-- Bus Details -->
+                                    <!-- Bus Details -->
                                         <div class="flex items-start space-x-4">
                                             <div class="flex-shrink-0">
                                                 <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v6a2 2 0 002 2h2" />
                                                     </svg>
-                                                </div>
-                                            </div>
+                                        </div>
+                                        </div>
                                             <div class="flex-1">
                                                 <h4 class="text-sm font-medium text-gray-900">Bus Information</h4>
                                                 <div class="mt-2 grid grid-cols-2 gap-4 text-sm">
                                                     <div>
                                                         <p class="text-gray-500">Bus Number</p>
                                                         <p class="font-medium text-gray-900"><?php echo htmlspecialchars($childDetails['bus_number']); ?></p>
-                                                    </div>
+                                        </div>
                                                     <div>
                                                         <p class="text-gray-500">License Plate</p>
                                                         <p class="font-medium text-gray-900"><?php echo htmlspecialchars($childDetails['license_plate']); ?></p>
@@ -660,7 +685,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                                 </div>
                                             </div>
                                         </div>
-
+                                        
                                         <!-- Route Details -->
                                         <div class="flex items-start space-x-4">
                                             <div class="flex-shrink-0">
@@ -689,7 +714,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                                 </div>
                                             </div>
                                         </div>
-
+                                        
                                         <!-- Pickup Location -->
                                         <!-- <div class="flex items-start space-x-4">
                                             <div class="flex-shrink-0">
@@ -698,14 +723,14 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                                     </svg>
-                                                </div>
-                                            </div>
+                                        </div>
+                                    </div>
                                             <div class="flex-1">
                                                 <h4 class="text-sm font-medium text-gray-900">Pickup Location</h4>
                                                 <div class="mt-2 text-sm">
                                                     <p class="text-gray-500">Current Pickup Point</p>
                                                     <p class="font-medium text-gray-900"><?php echo htmlspecialchars($childDetails['pickup_location']); ?></p>
-                                                </div>
+                                </div>
                                             </div>
                                         </div> -->
                                     </div>
@@ -732,6 +757,28 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                         </div>
                     </div>
                 </section>
+
+                
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
                 
 
@@ -982,8 +1029,32 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                 <!-- Previous Routings Section -->
-<section id="history" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-72 md:mr-8 mx-4 md:mx-0">
+                <section id="history-section" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-72 md:mr-8 mx-4 md:mx-0">
     <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
         <div class="flex items-center space-x-3">
             <!-- <div class="h-10 w-1 bg-blue-500 rounded-full"></div> -->
@@ -1286,20 +1357,188 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
 
 
 
-                <!-- Payment Section -->
-                <section id="payments-section" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-72 md:mr-8 mx-4 md:mx-0">
+                <?php
+                // Database connection
+                $servername = "localhost";
+                $username = "root"; // Replace with your database username
+                $password = ""; // Replace with your database password
+                $dbname = "school_bus_management";
 
+                // Create connection
+                $conn = new mysqli($servername, $username, $password, $dbname);
+
+                // Check connection
+                if ($conn->connect_error) {
+                    die("Connection failed: " . $conn->connect_error);
+                }
+
+                // Get selected child_id (from session, URL parameter, or form submission)
+                $child_id = isset($_GET['child_id']) ? intval($_GET['child_id']) : null;
+
+                // If no child_id is provided, redirect or show error
+                if (!$child_id) {
+                    // Either redirect to a selection page or get the first child of the logged-in parent
+                    // For this example, we'll assume we get the first child
+                    $parent_id = isset($_SESSION['parent_id']) ? intval($_SESSION['parent_id']) : 1; // Default for example
+                    
+                    $sql = "SELECT child_id FROM child WHERE parent_id = ? LIMIT 1";
+                    $stmt = $conn->prepare($sql);
+                    $stmt->bind_param("i", $parent_id);
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+                    
+                    if ($result->num_rows > 0) {
+                        $row = $result->fetch_assoc();
+                        $child_id = $row['child_id'];
+                    } else {
+                        echo "No children found for this parent.";
+                        exit;
+                    }
+                    $stmt->close();
+                }
+
+                // Get child information
+                $child_info = [];
+                $sql = "SELECT child_id, first_name, last_name, joined_date FROM child WHERE child_id = ?";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("i", $child_id);
+                $stmt->execute();
+                $result = $stmt->get_result();
+
+                if ($result->num_rows > 0) {
+                    $child_info = $result->fetch_assoc();
+                } else {
+                    echo "Child not found.";
+                    exit;
+                }
+                $stmt->close();
+
+                // Get the monthly fee for this child (could be in a separate table, using a fixed amount for this example)
+                $monthly_fee = 1000.00;
+
+                // Get current date information
+                $current_date = new DateTime();
+                $current_month = $current_date->format('F');
+                $current_year = $current_date->format('Y');
+                $current_month_name = $current_date->format('F');
+                $due_date = new DateTime();
+                $due_date->setDate($current_year, $current_date->format('n'), 15);
+                $due_date_formatted = $due_date->format('F d, Y');
+
+                // Calculate academic year (assuming September to June)
+                $academic_year_start = $current_date->format('n') >= 9 ? $current_year : $current_year - 1;
+                $academic_year_end = $academic_year_start + 1;
+                $academic_year = $academic_year_start . "-" . $academic_year_end;
+
+                // Get joined date
+                $joined_date = new DateTime($child_info['joined_date']);
+                $joined_month_name = $joined_date->format('M');
+                $joined_year = $joined_date->format('Y');
+
+                // Get payments for this child
+                $payments = [];
+                $sql = "SELECT payment_id, amount, payment_date, payment_method, transaction_id, status, 
+                            month_covered, MONTH(month_covered) as month_num, YEAR(month_covered) as year_num 
+                        FROM payment 
+                        WHERE child_id = ? 
+                        ORDER BY month_covered DESC";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("i", $child_id);
+                $stmt->execute();
+                $result = $stmt->get_result();
+
+                while ($row = $result->fetch_assoc()) {
+                    $payments[] = $row;
+                }
+                $stmt->close();
+
+                // Check if current month is paid
+                $current_month_paid = false;
+                $current_month_start = new DateTime($current_year . '-' . $current_date->format('m') . '-01');
+                $current_month_end = clone $current_month_start;
+                $current_month_end->modify('last day of this month');
+
+                foreach ($payments as $payment) {
+                    $payment_month = new DateTime($payment['month_covered']);
+                    if ($payment_month->format('Y-m') === $current_month_start->format('Y-m') && $payment['status'] === 'completed') {
+                        $current_month_paid = true;
+                        break;
+                    }
+                }
+
+                // Get the last payment date
+                $last_payment_date = !empty($payments) ? new DateTime($payments[0]['payment_date']) : null;
+                $last_payment_formatted = $last_payment_date ? $last_payment_date->format('M d, Y') : "No payments yet";
+
+                // Calculate payment progress based on academic year (January to December or from registration to December)
+                $start_month = 1; // January
+                $end_month = 12; // December
+
+                // If child joined in current year, use joined date as start
+                if ($joined_date->format('Y') == $current_year) {
+                    $start_month = (int)$joined_date->format('n');
+                }
+
+                // Calculate months in current year (or since joining if joined this year)
+                $total_months_this_year = 13 - $start_month; // From start_month to December
+
+                // Count paid months in current year
+                $months_paid_this_year = 0;
+                $paid_months_this_year = [];
+
+                foreach ($payments as $payment) {
+                    if ($payment['status'] === 'completed' && $payment['year_num'] == $current_year) {
+                        $month_key = $payment['month_num'];
+                        if (!in_array($month_key, $paid_months_this_year) && $month_key >= $start_month) {
+                            $paid_months_this_year[] = $month_key;
+                            $months_paid_this_year++;
+                        }
+                    }
+                }
+
+                // Calculate progress percentage for current year
+                $progress_percentage = $total_months_this_year > 0 ? round(($months_paid_this_year / $total_months_this_year) * 100) : 0;
+                $progress_text = $months_paid_this_year . '/' . $total_months_this_year . ' months paid';
+
+                // Format start and end months for display
+                $start_date = new DateTime($current_year . '-' . $start_month . '-01');
+                $end_date = new DateTime($current_year . '-12-31');
+                $start_month_name = $start_date->format('M');
+                $end_month_name = $end_date->format('M');
+
+                // Check if current month is paid
+                $current_month_paid = false;
+                $current_month_num = $current_date->format('m'); // Get just the month number (04 for April)
+
+                foreach ($payments as $payment) {
+                    $payment_month = new DateTime($payment['month_covered']);
+                    $payment_month_num = $payment_month->format('m'); // Get just the payment month number
+                    
+                    // Compare just the month number and check if status is completed
+                    if ($payment_month_num === $current_month_num && $payment['status'] === 'completed') {
+                        $current_month_paid = true;
+                        break;
+                    }
+                }
+
+                // Close connection
+                $conn->close();
+                ?>
+
+                <!-- Payment Section with PHP integration -->
+                <section id="payments-section" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-72 md:mr-8 mx-4 md:mx-0">
+                    <!-- Header with Child Info -->
                     <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
                         <div class="flex items-center space-x-3">
-                            <!-- <div class="h-10 w-1 bg-blue-500 rounded-full"></div> -->
                             <h2 class="text-3xl font-bold heading-brown">Payment History</h2>
+                            <span id="child-name" class="text-lg text-gray-600">for <?php echo htmlspecialchars($child_info['first_name'] . ' ' . $child_info['last_name']); ?></span>
                         </div>
                         <div class="flex items-center mt-4 md:mt-0">
                             <div class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium flex items-center">
                                 <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                                Payment Status
+                                <span id="payment-status"><?php echo $current_month_paid ? 'Current' : 'Payment Due'; ?></span>
                             </div>
-                            <span class="ml-2 text-sm text-gray-500">Last payment: Feb 28, 2025</span>
+                            <span id="last-payment-date" class="ml-2 text-sm text-gray-500">Last payment: <?php echo $last_payment_formatted; ?></span>
                         </div>
                     </div>
 
@@ -1310,69 +1549,88 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                             <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden h-full">
                                 <div class="p-4 border-b border-gray-100 flex justify-between items-center">
                                     <h3 class="text-lg font-semibold heading-brown">Current Payment Status</h3>
-                                    <span class="text-sm text-gray-500">Academic Year 2024-2025</span>
+                                    <span class="text-sm text-gray-500" id="academic-year">For Year <?php echo $academic_year; ?></span>
                                 </div>
                                 
                                 <!-- Current Month Payment Status -->
                                 <div class="p-6">
                                     <div class="flex flex-col md:flex-row md:items-center justify-between">
                                         <div class="flex items-center">
-                                            <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <div class="w-16 h-16 <?php echo $current_month_paid ? 'bg-green-100' : 'bg-red-100'; ?> rounded-full flex items-center justify-center">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 <?php echo $current_month_paid ? 'text-green-600' : 'text-red-600'; ?>" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                 </svg>
                                             </div>
                                             <div class="ml-4">
-                                                <h4 class="text-xl font-semibold text-gray-800">March Payment</h4>
-                                                <p class="text-sm text-gray-600 mt-1">Due by: March 15, 2025</p>
+                                                <h4 class="text-xl font-semibold text-gray-800" id="current-month-payment"><?php echo $current_month_name; ?> Payment</h4>
+                                                <p class="text-sm <?php echo $current_month_paid ? 'text-green-600' : 'text-red-600'; ?> mt-1" id="payment-due-date">
+                                                    <?php echo $current_month_paid ? 'Paid' : 'Due by: ' . $due_date_formatted; ?>
+                                                </p>
                                             </div>
                                         </div>
                                         
                                         <div class="mt-4 md:mt-0 flex flex-col items-end">
                                             <div class="flex items-center">
-                                                <span class="mr-2 text-lg font-bold">$75.00</span>
-                                                <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">Unpaid</span>
+                                                <?php if (!$current_month_paid): ?>
+                                                <span class="mr-2 text-lg font-bold" id="monthly-fee">Rs.<?php echo number_format($monthly_fee, 2); ?></span>
+                                                <span id="current-payment-status" class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">Unpaid</span>
+                                                <?php else: ?>
+                                                <span id="current-payment-status" class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">Paid</span>
+                                                <?php endif; ?>
                                             </div>
-                                            <button class="btn-gradient text-sm px-6 py-2 rounded-lg mt-2 text-white">Pay Now</button>
+                                            <?php if (!$current_month_paid): ?>
+                                            <a href="payment_gateway/payment_gateway.html?child_id=<?php echo $child_id; ?>&month=<?php echo $current_month_name; ?>" 
+                                            class="btn-gradient text-sm px-6 py-2 rounded-lg mt-2 text-white cursor-pointer hover:opacity-90 transition duration-300 ease-in-out inline-block" style="background-image: linear-gradient(to right, #f97316, #facc15); transform: translateZ(0);">
+                                                Pay Now
+                                            </a>
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                     
-                                    <!-- Payment Progress -->
+                                    <!-- Payment Progress (UPDATED) -->
                                     <div class="mt-8">
                                         <div class="flex justify-between items-center mb-2">
-                                            <h4 class="text-sm font-medium text-gray-700">Academic Year Payment Progress</h4>
-                                            <span class="text-sm text-gray-500">6/10 months paid</span>
+                                            <h4 class="text-sm font-medium text-gray-700">Payment Progress <?php echo $current_year; ?></h4>
+                                            <span class="text-sm text-gray-500" id="payment-progress"><?php echo $progress_text; ?></span>
                                         </div>
                                         <div class="w-full bg-gray-200 rounded-full h-2.5">
-                                            <div class="bg-yellow-500 h-2.5 rounded-full" style="width: 60%"></div>
+                                            <div id="progress-bar" class="bg-yellow-500 h-2.5 rounded-full" style="width: <?php echo $progress_percentage; ?>%"></div>
                                         </div>
                                         <div class="flex justify-between text-xs text-gray-500 mt-1">
-                                            <span>Sep 2024</span>
-                                            <span>Jun 2025</span>
+                                            <span id="start-date"><?php echo $start_month_name . ' ' . $current_year; ?></span>
+                                            <span id="end-date"><?php echo $end_month_name . ' ' . $current_year; ?></span>
                                         </div>
                                     </div>
                                 </div>
                                 
-                                <!-- Payment Methods -->
+                                <!-- Payment Methods (UPDATED) -->
                                 <div class="p-4 bg-gray-50 border-t border-gray-100">
                                     <div class="flex flex-wrap gap-4">
                                         <div class="bg-white rounded-lg p-3 shadow-sm flex-1 min-w-max">
-                                            <div class="text-xs text-gray-500">Saved Payment Method</div>
-                                            <div class="text-sm font-medium flex items-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-orange-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <div class="text-xs text-gray-500">Accepted Payment Methods</div>
+                                            <div class="text-sm font-medium flex items-center mt-2">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                                                 </svg>
-                                                VISA •••• 4582
+                                                <span class="mr-3">VISA</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                                </svg>
+                                                <span class="mr-3">Mastercard</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-800 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                                </svg>
+                                                <span>Amex</span>
                                             </div>
                                         </div>
                                         <div class="bg-white rounded-lg p-3 shadow-sm flex-1 min-w-max">
                                             <div class="text-xs text-gray-500">Monthly Fee</div>
-                                            <div class="text-lg font-medium">$75.00</div>
+                                            <div class="text-lg font-medium">Rs. <?php echo number_format($monthly_fee, 2); ?></div>
                                         </div>
-                                        <div class="bg-white rounded-lg p-3 shadow-sm flex-1 min-w-max">
+                                        <!-- <div class="bg-white rounded-lg p-3 shadow-sm flex-1 min-w-max">
                                             <div class="text-xs text-gray-500">Yearly Plan Savings</div>
-                                            <div class="text-sm font-medium text-green-600">Save $75 with yearly plan</div>
-                                        </div>
+                                            <div class="text-sm font-medium text-green-600">Save Rs.<?php echo number_format($monthly_fee, 2); ?> with yearly plan</div>
+                                        </div> -->
                                     </div>
                                 </div>
                             </div>
@@ -1389,18 +1647,18 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                 <div class="p-4 border-b border-gray-100">
                                     <div class="flex items-center justify-between mb-3">
                                         <div class="flex items-center">
-                                            <input id="monthly-plan" name="payment-plan" type="radio" checked class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300">
+                                            <!-- <input id="monthly-plan" name="payment-plan" type="radio" checked class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300"> -->
                                             <label for="monthly-plan" class="ml-2 text-sm font-medium text-gray-700">Monthly Plan</label>
                                         </div>
-                                        <span class="text-sm font-medium">$75/month</span>
+                                        <span class="text-sm font-medium">Rs. <?php echo number_format($monthly_fee, 2); ?>/month</span>
                                     </div>
-                                    <div class="flex items-center justify-between">
+                                    <!-- <div class="flex items-center justify-between">
                                         <div class="flex items-center">
                                             <input id="yearly-plan" name="payment-plan" type="radio" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300">
                                             <label for="yearly-plan" class="ml-2 text-sm font-medium text-gray-700">Yearly Plan</label>
                                         </div>
-                                        <span class="text-sm font-medium">$675/year <span class="text-green-600 text-xs">(Save $75)</span></span>
-                                    </div>
+                                        <span class="text-sm font-medium">Rs.<?php echo number_format($monthly_fee * 9, 2); ?>/year <span class="text-green-600 text-xs">(Save $<?php echo number_format($monthly_fee, 2); ?>)</span></span>
+                                    </div> -->
                                 </div>
                                 
                                 <!-- Payment History -->
@@ -1413,132 +1671,54 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                         
                                         <!-- Timeline Payments -->
                                         <div class="space-y-5">
-                                            <!-- February -->
+                                            <?php if (empty($payments)): ?>
+                                                <p class="ml-8 text-sm text-gray-600">No payment history available.</p>
+                                            <?php else: ?>
+                                                <?php foreach ($payments as $payment): 
+                                                    $payment_date = new DateTime($payment['payment_date']);
+                                                    $month_covered = new DateTime($payment['month_covered']);
+                                                    $month_name = $month_covered->format('F');
+                                                    $transaction_id = $payment['transaction_id'];
+                                                ?>
                                             <div class="relative flex items-start">
-                                                <div class="absolute left-4 w-3 h-3 bg-green-500 rounded-full transform -translate-x-1.5 mt-1.5"></div>
+                                                    <div class="absolute left-4 w-3 h-3 <?php echo $payment['status'] === 'completed' ? 'bg-green-500' : 'bg-yellow-500'; ?> rounded-full transform -translate-x-1.5 mt-1.5"></div>
                                                 <div class="ml-8">
                                                     <div class="flex justify-between items-start">
                                                         <div>
-                                                            <h5 class="text-sm font-medium text-gray-800">February Payment</h5>
-                                                            <p class="text-xs text-gray-500">Transaction ID: BUS-2502-AJ</p>
+                                                                <h5 class="text-sm font-medium text-gray-800"><?php echo $month_name; ?> Payment</h5>
+                                                                <p class="text-xs text-gray-500">Transaction ID: <?php echo htmlspecialchars($transaction_id); ?></p>
                                                         </div>
-                                                        <span class="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">Paid</span>
+                                                            <span class="text-xs <?php echo $payment['status'] === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'; ?> px-2 py-0.5 rounded">
+                                                                <?php echo ucfirst($payment['status']); ?>
+                                                            </span>
                                                     </div>
                                                     <div class="flex justify-between mt-1">
-                                                        <p class="text-xs text-gray-600">Feb 28, 2025</p>
-                                                        <p class="text-xs font-medium">$75.00</p>
+                                                            <p class="text-xs text-gray-600"><?php echo $payment_date->format('M d, Y'); ?></p>
+                                                            <p class="text-xs font-medium">Rs.<?php echo number_format($payment['amount'], 2); ?></p>
                                                     </div>
                                                 </div>
                                             </div>
-                                            
-                                            <!-- January -->
-                                            <div class="relative flex items-start">
-                                                <div class="absolute left-4 w-3 h-3 bg-green-500 rounded-full transform -translate-x-1.5 mt-1.5"></div>
-                                                <div class="ml-8">
-                                                    <div class="flex justify-between items-start">
-                                                        <div>
-                                                            <h5 class="text-sm font-medium text-gray-800">January Payment</h5>
-                                                            <p class="text-xs text-gray-500">Transaction ID: BUS-0115-AJ</p>
+                                                <?php endforeach; ?>
+                                            <?php endif; ?>
                                                         </div>
-                                                        <span class="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">Paid</span>
-                                                    </div>
-                                                    <div class="flex justify-between mt-1">
-                                                        <p class="text-xs text-gray-600">Jan 15, 2025</p>
-                                                        <p class="text-xs font-medium">$75.00</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            <!-- December -->
-                                            <div class="relative flex items-start">
-                                                <div class="absolute left-4 w-3 h-3 bg-green-500 rounded-full transform -translate-x-1.5 mt-1.5"></div>
-                                                <div class="ml-8">
-                                                    <div class="flex justify-between items-start">
-                                                        <div>
-                                                            <h5 class="text-sm font-medium text-gray-800">December Payment</h5>
-                                                            <p class="text-xs text-gray-500">Transaction ID: BUS-1214-AJ</p>
-                                                        </div>
-                                                        <span class="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">Paid</span>
-                                                    </div>
-                                                    <div class="flex justify-between mt-1">
-                                                        <p class="text-xs text-gray-600">Dec 14, 2024</p>
-                                                        <p class="text-xs font-medium">$75.00</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            <!-- November -->
-                                            <div class="relative flex items-start">
-                                                <div class="absolute left-4 w-3 h-3 bg-green-500 rounded-full transform -translate-x-1.5 mt-1.5"></div>
-                                                <div class="ml-8">
-                                                    <div class="flex justify-between items-start">
-                                                        <div>
-                                                            <h5 class="text-sm font-medium text-gray-800">November Payment</h5>
-                                                            <p class="text-xs text-gray-500">Transaction ID: BUS-1105-AJ</p>
-                                                        </div>
-                                                        <span class="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">Paid</span>
-                                                    </div>
-                                                    <div class="flex justify-between mt-1">
-                                                        <p class="text-xs text-gray-600">Nov 5, 2024</p>
-                                                        <p class="text-xs font-medium">$75.00</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            <!-- October -->
-                                            <div class="relative flex items-start">
-                                                <div class="absolute left-4 w-3 h-3 bg-green-500 rounded-full transform -translate-x-1.5 mt-1.5"></div>
-                                                <div class="ml-8">
-                                                    <div class="flex justify-between items-start">
-                                                        <div>
-                                                            <h5 class="text-sm font-medium text-gray-800">October Payment</h5>
-                                                            <p class="text-xs text-gray-500">Transaction ID: BUS-1014-AJ</p>
-                                                        </div>
-                                                        <span class="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">Paid</span>
-                                                    </div>
-                                                    <div class="flex justify-between mt-1">
-                                                        <p class="text-xs text-gray-600">Oct 14, 2024</p>
-                                                        <p class="text-xs font-medium">$75.00</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            <!-- September -->
-                                            <div class="relative flex items-start">
-                                                <div class="absolute left-4 w-3 h-3 bg-green-500 rounded-full transform -translate-x-1.5 mt-1.5"></div>
-                                                <div class="ml-8">
-                                                    <div class="flex justify-between items-start">
-                                                        <div>
-                                                            <h5 class="text-sm font-medium text-gray-800">September Payment</h5>
-                                                            <p class="text-xs text-gray-500">Transaction ID: BUS-0902-AJ</p>
-                                                        </div>
-                                                        <span class="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">Paid</span>
-                                                    </div>
-                                                    <div class="flex justify-between mt-1">
-                                                        <p class="text-xs text-gray-600">Sep 2, 2024</p>
-                                                        <p class="text-xs font-medium">$75.00</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
                                 
                                 <!-- Download Receipts Button -->
-                                <div class="p-4 border-t border-gray-100">
+                                <!-- <div class="p-4 border-t border-gray-100">
                                     <button class="w-full btn-secondary py-3 rounded-xl flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-800">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                         </svg>
                                         Download All Receipts
                                     </button>
-                                </div>
+                                </div> -->
                             </div>
                         </div>
                     </div>
                     
                     <!-- Auto-Pay Section -->
-                    <div class="mt-6 bg-white rounded-2xl shadow-enhanced border border-blue-100 overflow-hidden md:flex md:items-center p-4">
+                    <!-- <div class="mt-6 bg-white rounded-2xl shadow-enhanced border border-blue-100 overflow-hidden md:flex md:items-center p-4">
                         <div class="flex-1">
                             <h3 class="text-lg font-semibold heading-brown">Enable Auto-Pay</h3>
                             <p class="text-sm text-gray-600 mt-1">Never miss a payment with automatic monthly billing</p>
@@ -1552,135 +1732,156 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                 </label>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
                 </section>
             
 
 
 
 
-                <!-- Children Details Section -->
-<section id="children-section" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-72 md:mr-8 mx-4 md:mx-0">
-    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
-        <div class="flex items-center space-x-3">
-            <div class="h-10 w-1 bg-orange-500 rounded-full"></div>
-            <h2 class="text-3xl font-bold heading-brown">Children Details</h2>
-        </div>
-        <div class="mt-4 md:mt-0">
-            <button class="btn-primary text-sm px-4 py-2 rounded-lg">Save Changes</button>
-        </div>
-    </div>
 
-    <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden mb-6">
-        <div class="p-4 border-b border-gray-100 flex justify-between items-center">
-            <h3 class="text-lg font-semibold heading-brown">Your Children</h3>
-            <button class="text-orange-500 text-sm flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                Add Child
-            </button>
-        </div>
-        
-        <!-- Child Card -->
-        <div class="p-6 border-b border-gray-100">
-            <div class="flex flex-col md:flex-row">
-                <div class="w-24 h-24 rounded-full overflow-hidden mb-4 md:mb-0 mx-auto md:mx-0">
-                    <img src="/api/placeholder/100/100" alt="Alex Johnson" class="w-full h-full object-cover" />
-                </div>
-                <div class="md:ml-6 flex-1">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Child's Name</label>
-                            <input type="text" value="Alex Johnson" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+
+                
+
+
+
+                 <!-- Children Details Section -->
+                 <section id="children-section" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-72 md:mr-8 mx-4 md:mx-0">
+                    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
+                        <div class="flex items-center space-x-3">
+                            <div class="h-10 w-1 bg-orange-500 rounded-full"></div>
+                            <h2 class="text-3xl font-bold heading-brown">Children Details</h2>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Grade</label>
-                            <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                <option>Grade 3</option>
-                                <option>Grade 4</option>
-                                <option>Grade 5</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">School</label>
-                            <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                <option>Westfield High School</option>
-                                <option>Eastside Elementary</option>
-                                <option>Central Middle School</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Bus Route</label>
-                            <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                <option>Route #42</option>
-                                <option>Route #36</option>
-                                <option>Route #51</option>
-                            </select>
-                        </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Special Notes (allergies, medical conditions)</label>
-                            <textarea class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition" rows="2"></textarea>
+                        <div class="mt-4 md:mt-0">
+                            <button class="btn-primary text-sm px-4 py-2 rounded-lg">Save Changes</button>
                         </div>
                     </div>
-                </div>
-            </div>
-            <div class="flex justify-end mt-4 space-x-3">
-                <button class="text-red-500 text-sm px-4 py-2 border border-red-200 rounded-lg hover:bg-red-50">Remove Child</button>
-                <button class="text-orange-500 text-sm px-4 py-2 border border-orange-200 rounded-lg hover:bg-orange-50">Update Details</button>
-            </div>
-        </div>
-        
-        <!-- Add another child example -->
-        <div class="p-6">
-            <div class="flex flex-col md:flex-row">
-                <div class="w-24 h-24 rounded-full overflow-hidden mb-4 md:mb-0 mx-auto md:mx-0">
-                    <img src="/api/placeholder/100/100" alt="Emily Johnson" class="w-full h-full object-cover" />
-                </div>
-                <div class="md:ml-6 flex-1">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Child's Name</label>
-                            <input type="text" value="Emily Johnson" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+
+                    <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden mb-6">
+                        <div class="p-4 border-b border-gray-100 flex justify-between items-center">
+                            <h3 class="text-lg font-semibold heading-brown">Your Children</h3>
+                            <button class="text-orange-500 text-sm flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                </svg>
+                                Add Child
+                            </button>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Grade</label>
-                            <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                <option>Grade 1</option>
-                                <option>Grade 2</option>
-                                <option>Grade 3</option>
-                            </select>
+                        
+                        <!-- Child Card -->
+                        <div class="p-6 border-b border-gray-100">
+                            <div class="flex flex-col md:flex-row">
+                                <div class="w-24 h-24 rounded-full overflow-hidden mb-4 md:mb-0 mx-auto md:mx-0">
+                                    <img src="/api/placeholder/100/100" alt="Alex Johnson" class="w-full h-full object-cover" />
+                                </div>
+                                <div class="md:ml-6 flex-1">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Child's Name</label>
+                                            <input type="text" value="Alex Johnson" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Grade</label>
+                                            <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+                                                <option>Grade 3</option>
+                                                <option>Grade 4</option>
+                                                <option>Grade 5</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">School</label>
+                                            <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+                                                <option>Westfield High School</option>
+                                                <option>Eastside Elementary</option>
+                                                <option>Central Middle School</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Bus Route</label>
+                                            <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+                                                <option>Route #42</option>
+                                                <option>Route #36</option>
+                                                <option>Route #51</option>
+                                            </select>
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Special Notes (allergies, medical conditions)</label>
+                                            <textarea class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition" rows="2"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex justify-end mt-4 space-x-3">
+                                <button class="text-red-500 text-sm px-4 py-2 border border-red-200 rounded-lg hover:bg-red-50">Remove Child</button>
+                                <button class="text-orange-500 text-sm px-4 py-2 border border-orange-200 rounded-lg hover:bg-orange-50">Update Details</button>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">School</label>
-                            <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                <option>Eastside Elementary</option>
-                                <option>Westfield High School</option>
-                                <option>Central Middle School</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Bus Route</label>
-                            <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                <option>Route #36</option>
-                                <option>Route #42</option>
-                                <option>Route #51</option>
-                            </select>
-                        </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Special Notes (allergies, medical conditions)</label>
-                            <textarea class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition" rows="2">Mild peanut allergy</textarea>
+                        
+                        <!-- Add another child example -->
+                        <div class="p-6">
+                            <div class="flex flex-col md:flex-row">
+                                <div class="w-24 h-24 rounded-full overflow-hidden mb-4 md:mb-0 mx-auto md:mx-0">
+                                    <img src="/api/placeholder/100/100" alt="Emily Johnson" class="w-full h-full object-cover" />
+                                </div>
+                                <div class="md:ml-6 flex-1">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Child's Name</label>
+                                            <input type="text" value="Emily Johnson" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Grade</label>
+                                            <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+                                                <option>Grade 1</option>
+                                                <option>Grade 2</option>
+                                                <option>Grade 3</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">School</label>
+                                            <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+                                                <option>Eastside Elementary</option>
+                                                <option>Westfield High School</option>
+                                                <option>Central Middle School</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Bus Route</label>
+                                            <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+                                                <option>Route #36</option>
+                                                <option>Route #42</option>
+                                                <option>Route #51</option>
+                                            </select>
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Special Notes (allergies, medical conditions)</label>
+                                            <textarea class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition" rows="2">Mild peanut allergy</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex justify-end mt-4 space-x-3">
+                                <button class="text-red-500 text-sm px-4 py-2 border border-red-200 rounded-lg hover:bg-red-50">Remove Child</button>
+                                <button class="text-orange-500 text-sm px-4 py-2 border border-orange-200 rounded-lg hover:bg-orange-50">Update Details</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-            <div class="flex justify-end mt-4 space-x-3">
-                <button class="text-red-500 text-sm px-4 py-2 border border-red-200 rounded-lg hover:bg-red-50">Remove Child</button>
-                <button class="text-orange-500 text-sm px-4 py-2 border border-orange-200 rounded-lg hover:bg-orange-50">Update Details</button>
-            </div>
-        </div>
-    </div>
-</section>
+                </section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 <!-- Pickup Locations Section -->
 <section id="pickup-section" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-72 md:mr-8 mx-4 md:mx-0">
@@ -1826,6 +2027,30 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
     </div>
 </section>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <!-- Account Settings Section -->
 <section id="settings-section" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-72 md:mr-8 mx-4 md:mx-0">
     <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
@@ -1836,270 +2061,280 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
     </div>
 
     <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden mb-6">
-        <div class="p-6">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-lg font-semibold heading-brown">Personal Information</h3>
-                <!-- <button onclick="openUpdateModal()" class="btn-primary text-sm px-4 py-2 rounded-lg flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                    </svg>
-                    Update Information
-                </button> -->
-            </div>
-
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-6">
+            <h3 class="text-lg font-semibold heading-brown">Personal Information</h3>
+                                <!-- <button onclick="openUpdateModal()" class="btn-primary text-sm px-4 py-2 rounded-lg flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                    </svg>
+                                    Update Information
+                                </button> -->
+        </div>
+        
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label class="block text-sm font-medium text-gray-500">Full Name</label>
-                    <p class="mt-1 text-gray-900">
-                        <?php echo isset($parentInfo['full_name']) ? htmlspecialchars($parentInfo['full_name']) : 'Not available'; ?>
-                    </p>
+                                    <label class="block text-sm font-medium text-gray-500">Full Name</label>
+                                    <p class="mt-1 text-gray-900">
+                                        <?php echo isset($parentInfo['full_name']) ? htmlspecialchars($parentInfo['full_name']) : 'Not available'; ?>
+                                    </p>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-500">Email</label>
-                    <p class="mt-1 text-gray-900">
-                        <?php echo isset($parentInfo['email']) ? htmlspecialchars($parentInfo['email']) : 'Not available'; ?>
-                    </p>
+                                    <label class="block text-sm font-medium text-gray-500">Email</label>
+                                    <p class="mt-1 text-gray-900">
+                                        <?php echo isset($parentInfo['email']) ? htmlspecialchars($parentInfo['email']) : 'Not available'; ?>
+                                    </p>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-500">Phone</label>
-                    <p class="mt-1 text-gray-900">
-                        <?php echo !empty($parentInfo['phone']) ? htmlspecialchars($parentInfo['phone']) : 'Not provided'; ?>
-                    </p>
+                                    <label class="block text-sm font-medium text-gray-500">Phone</label>
+                                    <p class="mt-1 text-gray-900">
+                                        <?php echo !empty($parentInfo['phone']) ? htmlspecialchars($parentInfo['phone']) : 'Not provided'; ?>
+                                    </p>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-500">Home Address</label>
-                    <p class="mt-1 text-gray-900">
-                        <?php echo isset($parentInfo['home_address']) ? htmlspecialchars($parentInfo['home_address']) : 'Not available'; ?>
-                    </p>
+                                    <label class="block text-sm font-medium text-gray-500">Home Address</label>
+                                    <p class="mt-1 text-gray-900">
+                                        <?php echo isset($parentInfo['home_address']) ? htmlspecialchars($parentInfo['home_address']) : 'Not available'; ?>
+                                    </p>
                 </div>
             </div>
 
-            <div class="mt-8 flex flex-col md:flex-row gap-4">
-                <!-- Update Information Button -->
-                <button onclick="openUpdateModal()" 
-                        class="inline-flex items-center justify-center px-6 py-2 bg-yellow-500 text-white rounded-lg 
-                               hover:bg-yellow-600 transform hover:-translate-y-0.5 transition-all duration-200 
-                               focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                    </svg>
-                    Update Information
-                </button>
+                            <div class="mt-8 flex flex-col md:flex-row gap-4">
+                                <!-- Update Information Button -->
+                                <button onclick="openUpdateModal()" 
+                                        class="inline-flex items-center justify-center px-6 py-2 bg-yellow-500 text-white rounded-lg 
+                                            hover:bg-yellow-600 transform hover:-translate-y-0.5 transition-all duration-200 
+                                            focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                    </svg>
+                                    Update Information
+                                </button>
 
-                <!-- Change Password Button -->
-                <button onclick="openChangePasswordModal()" 
-                        class="inline-flex items-center justify-center px-6 py-2 bg-blue-500 text-white rounded-lg 
-                               hover:bg-blue-600 transform hover:-translate-y-0.5 transition-all duration-200 
-                               focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                    Change Password
-                </button>
+                                <!-- Change Password Button -->
+                                <button onclick="openChangePasswordModal()" 
+                                        class="inline-flex items-center justify-center px-6 py-2 bg-blue-500 text-white rounded-lg 
+                                            hover:bg-blue-600 transform hover:-translate-y-0.5 transition-all duration-200 
+                                            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                    </svg>
+                                    Change Password
+                                </button>
 
-                <!-- Delete Account Button -->
-                <button onclick="openDeleteAccountModal()" 
-                        class="inline-flex items-center justify-center px-6 py-2 border-2 bg-red-500 text-white rounded-lg 
-                               hover:bg-red-600 transform hover:-translate-y-0.5 transition-all duration-200 
-                               focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                    Delete Account
-                </button>
+                                <!-- Delete Account Button -->
+                                <button onclick="openDeleteAccountModal()" 
+                                        class="inline-flex items-center justify-center px-6 py-2 border-2 bg-red-500 text-white rounded-lg 
+                                            hover:bg-red-600 transform hover:-translate-y-0.5 transition-all duration-200 
+                                            focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                    Delete Account
+                                </button>
             </div>
         </div>
-    </div>
-</section>
-
-<!-- Update Information Modal -->
-<div id="updateModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-[9999]">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-semibold text-gray-900">Update Information</h3>
-            <button onclick="closeUpdateModal()" class="text-gray-400 hover:text-gray-600">
-                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
         </div>
-        <form id="updateForm" class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Full Name</label>
-                <input type="text" name="full_name" value="<?php echo htmlspecialchars($parentInfo['full_name']); ?>" class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Phone</label>
-                <input type="tel" name="phone" value="<?php echo htmlspecialchars($parentInfo['phone']); ?>" class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Home Address</label>
-                <textarea name="home_address" class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300"><?php echo htmlspecialchars($parentInfo['home_address']); ?></textarea>
-            </div>
-            <div class="flex justify-end space-x-3 mt-6">
-                <button type="button" onclick="closeUpdateModal()" class="px-4 py-2 text-gray-500 hover:text-gray-700">Cancel</button>
-                <button type="submit" class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600">Save Changes</button>
-            </div>
-        </form>
-    </div>
-</div>
+                </section>
 
-<!-- Change Password Modal -->
-<div id="changePasswordModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-[9999]">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-semibold text-gray-900">Change Password</h3>
-            <button onclick="closeChangePasswordModal()" class="text-gray-400 hover:text-gray-600">
-                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
+
+
+
+
+
+
+
+
+
+
+                <!-- Update Information Modal -->
+                <div id="updateModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" style="z-index: 99999;">
+                    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-semibold text-gray-900">Update Information</h3>
+                            <button onclick="closeUpdateModal()" class="text-gray-400 hover:text-gray-600">
+                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <form id="updateForm" class="space-y-4">
+                <div>
+                                <label class="block text-sm font-medium text-gray-700">Full Name</label>
+                                <input type="text" name="full_name" value="<?php echo htmlspecialchars($parentInfo['full_name']); ?>" class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
+                </div>
+                <div>
+                                <label class="block text-sm font-medium text-gray-700">Phone</label>
+                                <input type="tel" name="phone" value="<?php echo htmlspecialchars($parentInfo['phone']); ?>" class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
+                </div>
+                <div>
+                                <label class="block text-sm font-medium text-gray-700">Home Address</label>
+                                <textarea name="home_address" class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300"><?php echo htmlspecialchars($parentInfo['home_address']); ?></textarea>
+                </div>
+                            <div class="flex justify-end space-x-3 mt-6">
+                                <button type="button" onclick="closeUpdateModal()" class="px-4 py-2 text-gray-500 hover:text-gray-700">Cancel</button>
+                                <button type="submit" class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600">Save Changes</button>
+            </div>
+                        </form>
+            </div>
         </div>
-        <form id="changePasswordForm" class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Current Password</label>
-                <input type="password" name="current_password" required class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700">New Password</label>
-                <input type="password" name="new_password" required class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Confirm New Password</label>
-                <input type="password" name="confirm_password" required class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
-            </div>
-            <div class="flex justify-end space-x-3 mt-6">
-                <button type="button" onclick="closeChangePasswordModal()" class="px-4 py-2 text-gray-500 hover:text-gray-700">Cancel</button>
-                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Update Password</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Delete Account Modal -->
-<div id="deleteAccountModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-[9999]">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-semibold text-red-600">Delete Account</h3>
-            <button onclick="closeDeleteAccountModal()" class="text-gray-400 hover:text-gray-600">
-                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
-        <div class="mb-4">
-            <p class="text-gray-600">Are you sure you want to delete your account? This action cannot be undone.</p>
-        </div>
-        <form id="deleteAccountForm" class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Enter your password to confirm</label>
-                <input type="password" name="confirm_password" required class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-red-300">
-            </div>
-            <div class="flex justify-end space-x-3 mt-6">
-                <button type="button" onclick="closeDeleteAccountModal()" class="px-4 py-2 text-gray-500 hover:text-gray-700">Cancel</button>
-                <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Delete Account</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<script>
-    // Modal functions
-    function openUpdateModal() {
-        document.getElementById('updateModal').classList.remove('hidden');
-    }
-
-    function closeUpdateModal() {
-        document.getElementById('updateModal').classList.add('hidden');
-    }
-
-    function openChangePasswordModal() {
-        document.getElementById('changePasswordModal').classList.remove('hidden');
-    }
-
-    function closeChangePasswordModal() {
-        document.getElementById('changePasswordModal').classList.add('hidden');
-    }
-
-    function openDeleteAccountModal() {
-        document.getElementById('deleteAccountModal').classList.remove('hidden');
-    }
-
-    function closeDeleteAccountModal() {
-        document.getElementById('deleteAccountModal').classList.add('hidden');
-    }
-
-    // Form submissions
-    document.getElementById('updateForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
         
-        fetch('update_parent_info.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Information updated successfully');
-                location.reload();
-            } else {
-                alert(data.message || 'Error updating information');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while updating information');
-        });
-    });
-
-    document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
+                <!-- Change Password Modal -->
+                <div id="changePasswordModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" style="z-index: 99999;">
+                    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-semibold text-gray-900">Change Password</h3>
+                            <button onclick="closeChangePasswordModal()" class="text-gray-400 hover:text-gray-600">
+                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <form id="changePasswordForm" class="space-y-4">
+                    <div>
+                                <label class="block text-sm font-medium text-gray-700">Current Password</label>
+                                <input type="password" name="current_password" required class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
+                    </div>
+                    <div>
+                                <label class="block text-sm font-medium text-gray-700">New Password</label>
+                                <input type="password" name="new_password" required class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
+                    </div>
+                    <div>
+                                <label class="block text-sm font-medium text-gray-700">Confirm New Password</label>
+                                <input type="password" name="confirm_password" required class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
+                    </div>
+                            <div class="flex justify-end space-x-3 mt-6">
+                                <button type="button" onclick="closeChangePasswordModal()" class="px-4 py-2 text-gray-500 hover:text-gray-700">Cancel</button>
+                                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Update Password</button>
+                </div>
+                        </form>
+            </div>
+        </div>
         
-        fetch('change_password.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Password changed successfully');
-                closeChangePasswordModal();
-                this.reset();
-            } else {
-                alert(data.message || 'Error changing password');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while changing password');
-        });
-    });
+                <!-- Delete Account Modal -->
+                <div id="deleteAccountModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" style="z-index: 99999;">
+                    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-semibold text-red-600">Delete Account</h3>
+                            <button onclick="closeDeleteAccountModal()" class="text-gray-400 hover:text-gray-600">
+                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                </div>
+                        <div class="mb-4">
+                            <p class="text-gray-600">Are you sure you want to delete your account? This action cannot be undone.</p>
+            </div>
+                        <form id="deleteAccountForm" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Enter your password to confirm</label>
+                                <input type="password" name="confirm_password" required class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-red-300">
+                </div>
+                            <div class="flex justify-end space-x-3 mt-6">
+                                <button type="button" onclick="closeDeleteAccountModal()" class="px-4 py-2 text-gray-500 hover:text-gray-700">Cancel</button>
+                                <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Delete Account</button>
+            </div>
+                        </form>
+        </div>
+    </div>
 
-    document.getElementById('deleteAccountForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        
-        fetch('delete_account.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Account deleted successfully');
-                window.location.href = 'logout.php';
-            } else {
-                alert(data.message || 'Error deleting account');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while deleting account');
-        });
-    });
-</script>
+                <script>
+                    // Modal functions
+                    function openUpdateModal() {
+                        document.getElementById('updateModal').classList.remove('hidden');
+                    }
+
+                    function closeUpdateModal() {
+                        document.getElementById('updateModal').classList.add('hidden');
+                    }
+
+                    function openChangePasswordModal() {
+                        document.getElementById('changePasswordModal').classList.remove('hidden');
+                    }
+
+                    function closeChangePasswordModal() {
+                        document.getElementById('changePasswordModal').classList.add('hidden');
+                    }
+
+                    function openDeleteAccountModal() {
+                        document.getElementById('deleteAccountModal').classList.remove('hidden');
+                    }
+
+                    function closeDeleteAccountModal() {
+                        document.getElementById('deleteAccountModal').classList.add('hidden');
+                    }
+
+                    // Form submissions
+                    document.getElementById('updateForm').addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        const formData = new FormData(this);
+                        
+                        fetch('update_parent_info.php', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert('Information updated successfully');
+                                location.reload();
+                            } else {
+                                alert(data.message || 'Error updating information');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('An error occurred while updating information');
+                        });
+                    });
+
+                    document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        const formData = new FormData(this);
+                        
+                        fetch('change_password.php', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert('Password changed successfully');
+                                closeChangePasswordModal();
+                                this.reset();
+                            } else {
+                                alert(data.message || 'Error changing password');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('An error occurred while changing password');
+                        });
+                    });
+
+                    document.getElementById('deleteAccountForm').addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        const formData = new FormData(this);
+                        
+                        fetch('delete_account.php', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert('Account deleted successfully');
+                                window.location.href = 'logout.php';
+                            } else {
+                                alert(data.message || 'Error deleting account');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('An error occurred while deleting account');
+                        });
+                    });
+                </script>
 
 
 
@@ -2283,77 +2518,79 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
     
 </script>
 
-<!-- Add this JavaScript for handling the modal -->
-<script>
-function openLogoutModal() {
-    const modal = document.getElementById('logoutModal');
-    if (modal) {
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-    }
-}
+                <!-- Add this JavaScript for handling the modal -->
+                <script>
+                function openLogoutModal() {
+                    const modal = document.getElementById('logoutModal');
+                    if (modal) {
+                        modal.classList.remove('hidden');
+                        document.body.style.overflow = 'hidden';
+                    }
+                }
 
-function closeLogoutModal() {
-    const modal = document.getElementById('logoutModal');
-    if (modal) {
-        modal.classList.add('hidden');
-        document.body.style.overflow = 'auto';
-    }
-}
+                function closeLogoutModal() {
+                    const modal = document.getElementById('logoutModal');
+                    if (modal) {
+                        modal.classList.add('hidden');
+                        document.body.style.overflow = 'auto';
+                    }
+                }
 
-// Close modal when clicking outside
-document.addEventListener('DOMContentLoaded', function() {
-    const modal = document.getElementById('logoutModal');
-    if (modal) {
-        modal.addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeLogoutModal();
-            }
-        });
-    }
+                // Close modal when clicking outside
+                document.addEventListener('DOMContentLoaded', function() {
+                    const modal = document.getElementById('logoutModal');
+                    if (modal) {
+                        modal.addEventListener('click', function(e) {
+                            if (e.target === this) {
+                                closeLogoutModal();
+                            }
+                        });
+                    }
 
-    // Close modal on escape key press
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeLogoutModal();
-        }
-    });
-});
-</script>
+                    // Close modal on escape key press
+                    document.addEventListener('keydown', function(e) {
+                        if (e.key === 'Escape') {
+                            closeLogoutModal();
+                        }
+                    });
+                });
+                </script>
 
-<style>
-/* Ensure modal is always on top */
-#logoutModal {
-    z-index: 9999 !important;
-}
 
-/* Add animation for modal */
-@keyframes modalFade {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
 
-#logoutModal > div {
-    animation: modalFade 0.3s ease-out;
-}
+                <style>
+                /* Ensure modal is always on top */
+                #logoutModal {
+                    z-index: 99999 !important;
+                }
 
-/* Hover effects for buttons */
-#logoutModal button:hover,
-#logoutModal a:hover {
-    transform: translateY(-1px);
-    transition: all 0.2s;
-}
+                /* Add animation for modal */
+                @keyframes modalFade {
+                    from {
+                        opacity: 0;
+                        transform: translateY(-20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
 
-/* Add shadow to modal */
-#logoutModal > div {
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-}
-</style>
+                #logoutModal > div {
+                    animation: modalFade 0.3s ease-out;
+                }
+
+                /* Hover effects for buttons */
+                #logoutModal button:hover,
+                #logoutModal a:hover {
+                    transform: translateY(-1px);
+                    transition: all 0.2s;
+                }
+
+                /* Add shadow to modal */
+                #logoutModal > div {
+                    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+                }
+                </style>
 </body>
 </html>

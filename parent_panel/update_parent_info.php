@@ -3,30 +3,33 @@ session_start();
 header('Content-Type: application/json');
 
 if (!isset($_SESSION['parent_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Not authenticated']);
-    exit;
+    die(json_encode(['success' => false, 'message' => 'Not authorized']));
+}
+
+// Validate required fields
+if (empty($_POST['full_name'])) {
+    die(json_encode(['success' => false, 'message' => 'Full name is required']));
 }
 
 try {
-    $pdo = new PDO("mysql:host=localhost;dbname=school_bus_management", "root", "");
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
+    require_once 'db_connection.php';
+    
     $stmt = $pdo->prepare("
         UPDATE parent 
-        SET full_name = :full_name,
-            phone = :phone,
-            home_address = :home_address
-        WHERE parent_id = :parent_id
+        SET full_name = ?, 
+            phone = ?, 
+            home_address = ?
+        WHERE parent_id = ?
     ");
-
-    $stmt->execute([
-        'full_name' => $_POST['full_name'],
-        'phone' => $_POST['phone'],
-        'home_address' => $_POST['home_address'],
-        'parent_id' => $_SESSION['parent_id']
+    
+    $result = $stmt->execute([
+        $_POST['full_name'],
+        $_POST['phone'],
+        $_POST['home_address'],
+        $_SESSION['parent_id']
     ]);
 
-    echo json_encode(['success' => true]);
-} catch (PDOException $e) {
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    echo json_encode(['success' => $result]);
+} catch(PDOException $e) {
+    echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
 } 

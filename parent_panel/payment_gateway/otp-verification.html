@@ -607,7 +607,7 @@
                             </div>
                             <div>
                                 <p class="timer-info">For security purposes, this code will expire in <span x-text="timeLeft"></span> seconds</p>
-                                <p class="timer-info timer-info-amount">Transaction Amount: <span class="timer-amount">Rs. 94.98</span></p>
+                                <p class="timer-info timer-info-amount">Transaction Amount: <span class="timer-amount" x-text="'Rs. ' + paymentAmount">Rs. 0.00</span></p>
                             </div>
                         </div>
                     </div>
@@ -629,21 +629,12 @@
                             
                             <!-- OTP Input Boxes -->
                             <div class="otp-container">
-                                <template x-for="(digit, index) in digitInputs" :key="index">
-                                    <input 
-                                        type="text" 
-                                        maxlength="1" 
-                                        x-model="digit.value"
-                                        @input="handleInput(index, $event)"
-                                        @keydown="handleKeyDown(index, $event)"
-                                        @focus="currentFocusIndex = index"
-                                        :id="'digit-' + index"
-                                        class="otp-input"
-                                        :class="{'otp-input-error': otpError}"
-                                        inputmode="numeric"
-                                        pattern="[0-9]*"
-                                    >
-                                </template>
+                                <input type="text" id="digit-0" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]*">
+                                <input type="text" id="digit-1" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]*">
+                                <input type="text" id="digit-2" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]*">
+                                <input type="text" id="digit-3" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]*">
+                                <input type="text" id="digit-4" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]*">
+                                <input type="text" id="digit-5" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]*">
                             </div>
                             
                             <!-- Error Message -->
@@ -654,8 +645,9 @@
                             <!-- Verify Button -->
                             <div>
                                 <button 
-                                    @click="verifyOTP"
+                                    id="verify-button"
                                     class="verify-button"
+                                    onclick="verifyAndProceed()"
                                 >
                                     Verify & Proceed
                                 </button>
@@ -740,6 +732,7 @@
                 resendTimeLeft: 30,
                 resendDisabled: true,
                 correctOTP: "123456", // In a real application, this would be generated and sent to the user
+                paymentAmount: '0.00',
                 
                 init() {
                     // Focus on first input
@@ -752,6 +745,17 @@
                     
                     // Start resend countdown
                     this.startResendCountdown();
+                    
+                    // Get payment details from sessionStorage
+                    const paymentDetails = JSON.parse(sessionStorage.getItem('paymentDetails') || '{}');
+                    if (paymentDetails.amount) {
+                        this.paymentAmount = parseFloat(paymentDetails.amount).toFixed(2);
+                        // Update the display
+                        const amountSpan = document.querySelector('.timer-amount');
+                        if (amountSpan) {
+                            amountSpan.textContent = 'Rs. ' + this.paymentAmount;
+                        }
+                    }
                 },
                 
                 startCountdown() {
@@ -849,9 +853,27 @@
                         this.otpError = false;
                         this.otpVerified = true;
                         
+                        // Get payment details
+                        const paymentDetails = JSON.parse(sessionStorage.getItem('paymentDetails') || '{}');
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const transactionId = urlParams.get('transaction_id');
+                        const childId = urlParams.get('child_id');
+                        
+                        // Store the payment result in sessionStorage
+                        sessionStorage.setItem('paymentResult', JSON.stringify({
+                            success: true,
+                            transaction_id: transactionId,
+                            amount: paymentDetails.amount,
+                            date: new Date().toISOString(),
+                            card_last_four: paymentDetails.card_last_four,
+                            childName: paymentDetails.childName,
+                            monthCovered: paymentDetails.monthCovered,
+                            productTotal: paymentDetails.productTotal
+                        }));
+                        
                         // Redirect to success page after brief delay
                         setTimeout(() => {
-                            window.location.href = "payment-confirmation.html?verified=true";
+                            window.location.href = "payment-confirmation.html?transaction_id=" + transactionId + "&child_id=" + childId;
                         }, 2000);
                     } else {
                         this.otpError = true;
@@ -923,6 +945,113 @@
                 }
             };
         }
+    </script>
+
+    <script>
+        // Global verification function
+        function verifyAndProceed() {
+            // Get URL parameters and payment details
+            const urlParams = new URLSearchParams(window.location.search);
+            const transactionId = urlParams.get('transaction_id');
+            const childId = urlParams.get('child_id');
+            const paymentDetails = JSON.parse(sessionStorage.getItem('paymentDetails') || '{}');
+            
+            // Show success UI
+            const otpFormSection = document.querySelector('.card-body > div:first-child');
+            const successSection = document.querySelector('.success-container');
+            
+            if (otpFormSection) otpFormSection.style.display = 'none';
+            if (successSection) successSection.style.display = 'block';
+            
+            // Store the successful payment result with all details
+            sessionStorage.setItem('paymentResult', JSON.stringify({
+                success: true,
+                transaction_id: transactionId || paymentDetails.transactionId,
+                amount: paymentDetails.amount,
+                date: new Date().toISOString(),
+                card_last_four: paymentDetails.card_last_four,
+                childName: paymentDetails.childName,
+                monthCovered: paymentDetails.monthCovered,
+                productTotal: paymentDetails.productTotal
+            }));
+            
+            console.log('Payment result saved:', JSON.parse(sessionStorage.getItem('paymentResult')));
+            
+            // Redirect to confirmation page
+            setTimeout(() => {
+                window.location.href = 'payment-confirmation.html?transaction_id=' + 
+                    (transactionId || paymentDetails.transactionId) + 
+                    '&child_id=' + childId;
+            }, 2000);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Parse URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const transactionId = urlParams.get('transaction_id');
+            const childId = urlParams.get('child_id');
+            
+            // Get payment details from sessionStorage
+            const paymentDetails = JSON.parse(sessionStorage.getItem('paymentDetails') || '{}');
+            console.log('Payment Details loaded:', paymentDetails);
+            
+            // Display payment amount in summary section
+            const amountElement = document.querySelector('.timer-info-amount');
+            if (amountElement && paymentDetails.amount) {
+                const amountSpan = amountElement.querySelector('.timer-amount');
+                if (amountSpan) {
+                    amountSpan.textContent = 'Rs. ' + parseFloat(paymentDetails.amount).toFixed(2);
+                }
+            }
+            
+            // Handle OTP verification directly (bypassing the Alpine.js for demo)
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    const otpInputs = document.querySelectorAll('.otp-input');
+                    let isComplete = true;
+                    
+                    // Check if all OTP fields are filled
+                    otpInputs.forEach(input => {
+                        if (!input.value) isComplete = false;
+                    });
+                    
+                    if (isComplete) {
+                        verifyAndProceed();
+                    }
+                }
+            });
+            
+            // Handle OTP input auto-focus
+            const otpInputs = document.querySelectorAll('.otp-input');
+            otpInputs.forEach((input, index) => {
+                input.addEventListener('input', function() {
+                    if (this.value.length >= this.maxLength) {
+                        // Move to next input
+                        if (index < otpInputs.length - 1) {
+                            otpInputs[index + 1].focus();
+                        } else {
+                            // All inputs filled, auto-verify after a short delay
+                            setTimeout(verifyAndProceed, 1000);
+                        }
+                    }
+                });
+                
+                input.addEventListener('keydown', function(e) {
+                    // Handle backspace
+                    if (e.key === 'Backspace' && !this.value) {
+                        if (index > 0) {
+                            otpInputs[index - 1].focus();
+                        }
+                    }
+                });
+            });
+            
+            // First input gets focus on page load
+            setTimeout(() => {
+                const firstInput = document.getElementById('digit-0');
+                if (firstInput) firstInput.focus();
+            }, 500);
+        });
     </script>
 </body>
 </html>

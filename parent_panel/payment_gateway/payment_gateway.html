@@ -204,19 +204,19 @@
                                 <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: #1f2937;">Payment Summary</h2>
                                 <div style="border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem; margin-bottom: 1rem;">
                                     <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                                        <span style="color: #4b5563;">Monthly Fee</span>
-                                        <span style="font-weight: 500;" x-text="'Rs. ' + formatPrice(productTotal)"></span>
+                                        <span style="color: #4b5563;">Child Name:</span>
+                                        <span style="font-weight: 500;" x-text="childName || 'Loading...'"></span>
                                     </div>
                                     <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                                        <span style="color: #4b5563;">Transaction Fee</span>
-                                        <span style="font-weight: 500;" x-text="'Rs. ' + formatPrice(shipping)"></span>
+                                        <span style="color: #4b5563;">Month Covered:</span>
+                                        <span style="font-weight: 500;" x-text="monthCovered || 'Current Month'"></span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                        <span style="color: #4b5563;">Monthly Fee:</span>
+                                        <span style="font-weight: 500;" x-text="'Rs. ' + formatPrice(productTotal)"></span>
                                     </div>
                                     <!-- <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                                        <span style="color: #4b5563;">Tax</span>
-                                        <span style="font-weight: 500;" x-text="'Rs. ' + formatPrice(tax)"></span>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between;" x-show="transactionFee > 0">
-                                        <span style="color: #4b5563;">Transaction Fee</span>
+                                        <span style="color: #4b5563;">Transaction Fee:</span>
                                         <span style="font-weight: 500;" x-text="'Rs. ' + formatPrice(transactionFee)"></span>
                                     </div> -->
                                 </div>
@@ -255,8 +255,8 @@
                                 
                                 <form id="payment-form" @submit.prevent="processPayment">
                                     <!-- Transaction Fee -->
-                                    <div style="margin-bottom: 1.5rem;">
-                                        <label style="display: block; color: #374151; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; margin-left: 1rem;">Transaction Fee</label>
+                                    <!-- <div style="margin-bottom: 1.5rem;">
+                                        <label style="display: block; color: #374151; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; margin-left: 1rem;">Enter Payment Amount</label>
                                         <div style="position: relative;">
                                             <div style="position: absolute; top: 0; bottom: 0; left: 1rem; padding-left: 0.75rem; display: flex; align-items: center; pointer-events: none;">
                                                 <span style="color: #6b7280; padding-bottom: 0.28rem;"><small>Rs.</small></span>
@@ -266,11 +266,11 @@
                                                 x-model="transactionFeeInput" 
                                                 @input="updateTotal"
                                                 @blur="transactionFeeInput = Number(transactionFeeInput).toFixed(2)"
-                                                style="padding-left: 2rem; border: 1px solid #d1d5db; border-radius: 0.375rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-size: 0.875rem; padding: 0.75rem; padding-left: 2rem; width: 85%; margin-left: 1rem; margin-right: 1rem;" 
+                                                style="padding-left: 2rem; border: 2px solid #3b82f6; border-radius: 0.375rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); font-size: 1rem; padding: 0.75rem; padding-left: 2rem; width: 85%; margin-left: 1rem; margin-right: 1rem; font-weight: bold;" 
                                                 placeholder="0.00">
                                         </div>
-                                        <p style="margin-top: 0.25rem; font-size: 0.875rem; color: #6b7280; margin-left: 1rem;">Optional processing fee for your transaction</p>
-                                    </div>
+                                        <p style="margin-top: 0.25rem; font-size: 0.875rem; color: #6b7280; margin-left: 1rem;">Enter the amount you want to pay</p>
+                                    </div> -->
                                     
                                     <!-- Card Preview -->
                                     <div style="margin-bottom: 2rem; position: relative;" class="payment-card">
@@ -387,8 +387,8 @@
                                             x-on:click="if(validateForm()) processing = true"
                                         >
                                             <span x-show="!processing" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                                                <span>Pay Now </span>
-                                                <!-- <span x-text="formatPrice(total)" style="text-shadow: 0 0 10px rgba(255,255,255,0.5)"></span> -->
+                                                <span>Pay Rs. </span>
+                                                <span x-text="formatPrice(total)" style="text-shadow: 0 0 10px rgba(255,255,255,0.5)"></span>
                                             </span>
                                         </button>
 
@@ -515,12 +515,15 @@
         function paymentApp() {
             return {
                 // Payment details
-                productTotal: 89.99,
-                shipping: 4.99,
-                tax: 0.00,
+                productTotal: 1000.00,  // Default to LKR 1000 for monthly fee
+                shipping: 0.00,        // No shipping fee for bus service
+                tax: 0.00,             // Default tax
                 transactionFee: 0,
                 transactionFeeInput: '',
                 total: 0,
+                childName: '',
+                monthCovered: '',
+                childId: null,
                 
                 // Card details
                 cardNumber: '',
@@ -538,7 +541,29 @@
                 
                 // Initialize
                 init() {
+                    // Parse URL parameters
+                    const urlParams = new URLSearchParams(window.location.search);
+                    
+                    // Get child_id, fee, and month from URL
+                    this.childId = urlParams.get('child_id');
+                    const fee = urlParams.get('fee');
+                    this.monthCovered = urlParams.get('month');
+                    
+                    // If fee is provided, use it, otherwise keep default
+                    if (fee) {
+                        this.productTotal = parseFloat(fee);
+                    }
+                    
+                    // Set transaction fee to 0
+                    this.transactionFeeInput = '0.00';
+                    
+                    // Update total
                     this.updateTotal();
+                    
+                    // Fetch child details if childId is available
+                    if (this.childId) {
+                        this.fetchChildDetails();
+                    }
                     
                     // Initialize Cleave.js for card formatting
                     new Cleave('#card-number', {
@@ -576,6 +601,23 @@
                     });
                 },
                 
+                // Fetch child details from server
+                fetchChildDetails() {
+                    // For demo, we'll use a simple AJAX call
+                    // In production, replace with a proper fetch to your backend
+                    fetch(`../get_child_name.php?child_id=${this.childId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                this.childName = data.name;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching child details:', error);
+                            this.childName = 'Child';  // Fallback
+                        });
+                },
+                
                 // Format price to 2 decimal places
                 formatPrice(price) {
                     return price.toFixed(2);
@@ -598,7 +640,17 @@
                     if (this.validateForm()) {
                         this.processing = true;
                         
-                        // Simulate API call
+                        // Prepare payment data
+                        const paymentData = {
+                            child_id: this.childId,
+                            amount: this.total,
+                            month_covered: this.monthCovered,
+                            payment_method: 'Credit Card',
+                            card_last_four: this.cardNumber.slice(-4),
+                            email: this.email
+                        };
+                        
+                        // Simulate API call - in production replace with actual form submission
                         setTimeout(() => {
                             this.processing = false;
                             this.transactionId = 'TXN' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
@@ -608,11 +660,17 @@
                                 amount: this.total,
                                 transactionId: this.transactionId,
                                 email: this.email,
-                                date: new Date().toLocaleDateString()
+                                date: new Date().toLocaleDateString(),
+                                childId: this.childId,
+                                childName: this.childName,
+                                monthCovered: this.monthCovered,
+                                transactionFee: this.transactionFee,
+                                productTotal: this.productTotal,
+                                card_last_four: this.cardNumber.slice(-4)
                             }));
                             
-                            // Navigate to OTP verification page
-                            window.location.href = 'otp-verification.html';
+                            // Navigate to OTP verification page with payment data
+                            window.location.href = `otp-verification.html?transaction_id=${this.transactionId}&child_id=${this.childId}`;
                         }, 2000);
                     }
                 },

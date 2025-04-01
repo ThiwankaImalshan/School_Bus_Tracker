@@ -135,20 +135,95 @@
             transform: translateY(-50%);
             z-index: -1;
         } */
-        /* Add this style section to the head of your document, after your existing styles */
+        /* Update print styles to include header and maintain colors */
         @media print {
+            @page {
+                size: A4;
+                margin: 0;
+            }
+            
             body * {
                 visibility: hidden;
             }
-            header, .payment-details, .payment-details * {
+            
+            .print-container, .print-container * {
                 visibility: visible;
             }
+            
+            header, header *, .payment-details, .payment-details * {
+                visibility: visible;
+            }
+            
             .payment-details {
                 position: absolute;
-                left: 5rem;
-                top: 10rem;
-                width: 100%;
+                left: 50%;
+                transform: translateX(-50%);
+                top: 220px;
+                width: 80%;
+                max-width: 500px;
                 padding: 20px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                border-radius: 10px;
+            }
+            
+            header {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                padding: 20px 0;
+                /* Ensure gradient prints */
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+            
+            /* Add company details for the receipt */
+            .receipt-title {
+                visibility: visible;
+                position: absolute;
+                top: 150px;
+                left: 0;
+                width: 100%;
+                text-align: center;
+                font-size: 24px;
+                font-weight: bold;
+                color: #1f2937;
+            }
+            
+            .receipt-logo {
+                visibility: visible;
+                position: absolute;
+                top: 120px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 40px;
+                height: 40px;
+                color: #2563eb;
+            }
+            
+            /* Style the confirmation checkmark */
+            .receipt-confirmed {
+                visibility: visible;
+                position: absolute;
+                top: 520px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 80px;
+                height: 80px;
+                color: #10b981;
+            }
+            
+            /* Add receipt footer */
+            .receipt-footer {
+                visibility: visible;
+                position: absolute;
+                bottom: 50px;
+                left: 0;
+                width: 100%;
+                text-align: center;
+                font-size: 12px;
+                color: #6b7280;
             }
         }
     </style>
@@ -211,41 +286,46 @@
                     <p style="color: #4b5563; font-size: 1.125rem; max-width: 36rem; margin: 0 auto 2rem;">Your transaction has been processed successfully. A confirmation email has been sent to your email address.</p>
 
                     <!-- Payment Details -->
-                    <div style="background-color: #f3f4f6; border-radius: 0.75rem; padding: 1.5rem; max-width: 32rem; margin: 0 auto 2rem; text-align: left;">
+                    <div style="background-color: #f3f4f6; border-radius: 0.75rem; padding: 1.5rem; max-width: 32rem; margin: 0 auto 2rem; text-align: left;" class="payment-details">
                         <h3 style="font-size: 1.25rem; font-weight: 600; color: #1f2937; margin-bottom: 1rem;">Payment Details</h3>
                         
                         <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem; font-size: 1rem;">
                             <span style="color: #4b5563;">Transaction ID:</span>
-                            <span style="font-weight: 500; color: #111827;">TXN384926</span>
+                            <span style="font-weight: 500; color: #111827;" id="transaction-id">-</span>
                         </div>
                         
                         <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem; font-size: 1rem;">
                             <span style="color: #4b5563;">Date:</span>
-                            <span style="font-weight: 500; color: #111827;">March 30, 2025</span>
+                            <span style="font-weight: 500; color: #111827;" id="payment-date">-</span>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem; font-size: 1rem;">
+                            <span style="color: #4b5563;">Child Name:</span>
+                            <span style="font-weight: 500; color: #111827;" id="child-name">-</span>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem; font-size: 1rem;">
+                            <span style="color: #4b5563;">Month Covered:</span>
+                            <span style="font-weight: 500; color: #111827;" id="month-covered">-</span>
                         </div>
                         
                         <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem; font-size: 1rem;">
                             <span style="color: #4b5563;">Payment Method:</span>
-                            <span style="font-weight: 500; color: #111827;">Credit Card (**** 3456)</span>
+                            <span style="font-weight: 500; color: #111827;" id="payment-method">-</span>
                         </div>
                         
                         <div style="border-top: 1px solid #e5e7eb; margin: 1rem 0; padding-top: 1rem;"></div>
                         
                         <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 1rem;">
                             <span style="color: #4b5563;">Monthly Fee:</span>
-                            <span style="font-weight: 500;">Rs. 89.99</span>
-                        </div>
-                        
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 1rem;">
-                            <span style="color: #4b5563;">Transaction Fee:</span>
-                            <span style="font-weight: 500;">Rs. 4.99</span>
+                            <span style="font-weight: 500;" id="monthly-fee">-</span>
                         </div>
                         
                         <div style="border-top: 1px solid #e5e7eb; margin: 1rem 0; padding-top: 1rem;"></div>
                         
                         <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 1.125rem;">
-                            <span>Total</span>
-                            <span style="color: #2563eb;">Rs. 94.98</span>
+                            <span>Total Paid</span>
+                            <span style="color: #2563eb;" id="payment-amount">-</span>
                         </div>
                     </div>
 
@@ -255,8 +335,8 @@
                             style="width: 100%; padding: 1rem; background: linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #60a5fa 100%); color: white; font-size: 1.125rem; font-weight: 600; border-radius: 0.75rem; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); transform: translateY(0); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);"
                             onmouseover="this.style.background='linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%)'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(37, 99, 235, 0.4), 0 0 15px rgba(37, 99, 235, 0.3)'; this.style.border='1px solid rgba(255, 255, 255, 0.2)'"
                             onmouseout="this.style.background='linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #60a5fa 100%)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(37, 99, 235, 0.3)'; this.style.border='1px solid rgba(255, 255, 255, 0.1)'"
-                            onclick="window.location.href='payment_gateway.html'">
-                            Return to Home
+                            onclick="window.location.href='../dashboard.php'">
+                            Return to Dashboard
                         </button>
                         
                         <button 
@@ -280,6 +360,22 @@
                     <a href="mailto:support@securepay.com" style="color: #2563eb; font-weight: 500; text-decoration: none; font-size: 0.875rem;">support@securepay.com</a>
                 </div>
             </div>
+            
+            <!-- Hidden elements for printing only -->
+            <div style="display: none;">
+                <h2 class="receipt-title">PAYMENT RECEIPT</h2>
+                <svg class="receipt-logo" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 8h6m-5 0a2 2 0 110 4h5a2 2 0 100-4M9 12h6m-5 0a2 2 0 110 4h5a2 2 0 100-4M9 16h6m-5 0a2 2 0 110 4h5a2 2 0 100-4M4 5h16a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V7a2 2 0 012-2z" />
+                </svg>
+                <svg class="receipt-confirmed" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div class="receipt-footer">
+                    <p>Thank you for your payment</p>
+                    <p>School Bus Tracker System © 2024</p>
+                    <p>For inquiries, please contact support@schoolbustracker.com</p>
+                </div>
+            </div>
         </main>
 
         <!-- Footer -->
@@ -300,18 +396,107 @@
         </footer>
     </div>
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get payment result and details from sessionStorage
+            const paymentResult = JSON.parse(sessionStorage.getItem('paymentResult') || '{}');
+            const paymentDetails = JSON.parse(sessionStorage.getItem('paymentDetails') || '{}');
+            
+            // Debug info
+            console.log('Payment Result:', paymentResult);
+            console.log('Payment Details:', paymentDetails);
+            
+            // Get URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const transactionId = urlParams.get('transaction_id');
+            console.log('Transaction ID from URL:', transactionId);
+            
+            // Set transaction ID
+            const transactionIdElement = document.getElementById('transaction-id');
+            if (transactionIdElement) {
+                if (paymentResult.transaction_id) {
+                    transactionIdElement.textContent = paymentResult.transaction_id;
+                } else if (transactionId) {
+                    transactionIdElement.textContent = transactionId;
+                } else if (paymentDetails.transactionId) {
+                    transactionIdElement.textContent = paymentDetails.transactionId;
+                }
+            }
+            
+            // Set payment amount
+            const paymentAmountElement = document.getElementById('payment-amount');
+            if (paymentAmountElement) {
+                if (paymentResult.amount) {
+                    paymentAmountElement.textContent = 'Rs. ' + parseFloat(paymentResult.amount).toFixed(2);
+                } else if (paymentDetails.amount) {
+                    paymentAmountElement.textContent = 'Rs. ' + parseFloat(paymentDetails.amount).toFixed(2);
+                }
+            }
+            
+            // Set payment date (today's date)
+            const paymentDateElement = document.getElementById('payment-date');
+            if (paymentDateElement) {
+                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                paymentDateElement.textContent = new Date().toLocaleDateString('en-US', options);
+            }
+            
+            // Set month covered
+            const monthCoveredElement = document.getElementById('month-covered');
+            if (monthCoveredElement && paymentDetails.monthCovered) {
+                monthCoveredElement.textContent = paymentDetails.monthCovered;
+            }
+            
+            // Set child name
+            const childNameElement = document.getElementById('child-name');
+            if (childNameElement && paymentDetails.childName) {
+                childNameElement.textContent = paymentDetails.childName;
+            }
+            
+            // Set monthly fee
+            const monthlyFeeElement = document.getElementById('monthly-fee');
+            if (monthlyFeeElement && paymentDetails.productTotal) {
+                monthlyFeeElement.textContent = 'Rs. ' + parseFloat(paymentDetails.productTotal).toFixed(2);
+            }
+            
+            // Set payment method
+            const paymentMethodElement = document.getElementById('payment-method');
+            if (paymentMethodElement) {
+                let card_last_four = '';
+                
+                // First check payment result for last four digits
+                if (paymentResult.card_last_four) {
+                    card_last_four = paymentResult.card_last_four;
+                } 
+                // Then fallback to payment details
+                else if (paymentDetails.card_last_four) {
+                    card_last_four = paymentDetails.card_last_four;
+                }
+                
+                if (card_last_four) {
+                    paymentMethodElement.textContent = 'Credit Card (**** ' + card_last_four + ')';
+                } else {
+                    paymentMethodElement.textContent = 'Credit Card';
+                }
+            }
+        });
+
         // Update your onclick handler for the Print Receipt button
         function printReceipt() {
             // Add a class to the payment details div for targeting in print styles
-            const paymentDetails = document.querySelector('div[style*="background-color: #f3f4f6; border-radius: 0.75rem;"]');
-            paymentDetails.classList.add('payment-details');
+            const paymentDetails = document.querySelector('.payment-details');
             
-            // Print the page (only header and payment details will be visible)
+            // Create a print container to hold all elements we want to print
+            const printContainer = document.createElement('div');
+            printContainer.className = 'print-container';
+            
+            // Add print container to body
+            document.body.appendChild(printContainer);
+            
+            // Print the page
             window.print();
             
-            // Remove the class after printing
+            // Clean up after printing
             setTimeout(() => {
-                paymentDetails.classList.remove('payment-details');
+                document.body.removeChild(printContainer);
             }, 500);
         }
     </script>
