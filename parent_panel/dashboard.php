@@ -381,7 +381,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
 
 
 
-
+    
     <!-- Main Content -->
     <div class="md:pl-64">
         <!-- Top Header Bar -->
@@ -600,10 +600,10 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                     <div class="flex flex-col">
                                         <div id="attendanceStatus" class="bg-green-50 rounded-xl p-4 mb-4">
                                             <div class="flex justify-between items-center">
-                                            <div>
-                                                <h4 class="text-sm font-medium text-gray-800">Today's Attendance</h4>
+                                                <div>
+                                                    <h4 class="text-sm font-medium text-gray-800">Today's Attendance</h4>
                                                     <p id="currentDate" class="text-xs text-gray-500"></p>
-                                            </div>
+                                                </div>
                                                 <div id="attendanceLabel" class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
                                                     Today's Present
                                                 </div>
@@ -611,13 +611,13 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                         </div>
                                         <div class="flex space-x-3 justify-end">
                                             <button onclick="markAttendance('present')" class="py-2 px-4 bg-green-500 text-white rounded-xl text-sm font-medium shadow-lg transform transition-all duration-200 hover:shadow-green-200 hover:-translate-y-1 active:translate-y-0 active:shadow-inner border border-green-600">
-                                                    Present
-                                                </button>
+                                                Present
+                                            </button>
                                             <button onclick="markAttendance('absent')" class="py-2 px-4 bg-red-500 text-white rounded-xl text-sm font-medium shadow-lg transform transition-all duration-200 hover:shadow-red-200 hover:-translate-y-1 active:translate-y-0 active:shadow-inner border border-red-600">
-                                                    Absent
-                                                </button>
-                                            </div>
+                                                Absent
+                                            </button>
                                         </div>
+                                    </div>
                                     
                                     <script>
                                         // Display current date
@@ -658,26 +658,26 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                     <?php else: ?>
                                         <span class="px-3 py-1 text-sm bg-yellow-100 text-yellow-800 rounded-full">Not Assigned</span>
                                     <?php endif; ?>
-                                    </div>
+                                </div>
 
                                 <?php if ($childDetails['bus_id']): ?>
                                     <div class="space-y-4">
-                                    <!-- Bus Details -->
+                                        <!-- Bus Details -->
                                         <div class="flex items-start space-x-4">
                                             <div class="flex-shrink-0">
                                                 <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v6a2 2 0 002 2h2" />
                                                     </svg>
-                                        </div>
-                                        </div>
+                                                </div>
+                                            </div>
                                             <div class="flex-1">
                                                 <h4 class="text-sm font-medium text-gray-900">Bus Information</h4>
                                                 <div class="mt-2 grid grid-cols-2 gap-4 text-sm">
                                                     <div>
                                                         <p class="text-gray-500">Bus Number</p>
                                                         <p class="font-medium text-gray-900"><?php echo htmlspecialchars($childDetails['bus_number']); ?></p>
-                                        </div>
+                                                    </div>
                                                     <div>
                                                         <p class="text-gray-500">License Plate</p>
                                                         <p class="font-medium text-gray-900"><?php echo htmlspecialchars($childDetails['license_plate']); ?></p>
@@ -685,7 +685,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         <!-- Route Details -->
                                         <div class="flex items-start space-x-4">
                                             <div class="flex-shrink-0">
@@ -714,7 +714,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         <!-- Pickup Location -->
                                         <!-- <div class="flex items-start space-x-4">
                                             <div class="flex-shrink-0">
@@ -723,14 +723,14 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                                     </svg>
-                                        </div>
-                                    </div>
+                                                </div>
+                                            </div>
                                             <div class="flex-1">
                                                 <h4 class="text-sm font-medium text-gray-900">Pickup Location</h4>
                                                 <div class="mt-2 text-sm">
                                                     <p class="text-gray-500">Current Pickup Point</p>
                                                     <p class="font-medium text-gray-900"><?php echo htmlspecialchars($childDetails['pickup_location']); ?></p>
-                                </div>
+                                                </div>
                                             </div>
                                         </div> -->
                                     </div>
@@ -780,7 +780,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
 
 
 
-                
+
 
                 <!-- Tracker Section -->
                 <section id="tracker-section" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-72 md:mr-8 mx-4 md:mx-0">
@@ -1055,301 +1055,301 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
 
                 <!-- Previous Routings Section -->
                 <section id="history-section" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-72 md:mr-8 mx-4 md:mx-0">
-    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
-        <div class="flex items-center space-x-3">
-            <!-- <div class="h-10 w-1 bg-blue-500 rounded-full"></div> -->
-            <h2 class="text-3xl font-bold heading-brown">Previous Routings</h2>
-        </div>
-        <div class="flex items-center mt-4 md:mt-0">
-            <div class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium flex items-center">
-                <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                Historical Data
-            </div>
-            <button class="ml-3 text-sm text-gray-500 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
-                </svg>
-                Filter
-            </button>
-        </div>
-    </div>
-
-    <!-- Main Content Area -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Previous Routes List (2/3 width on large screens) -->
-        <div class="lg:col-span-2">
-            <div class="bg-white rounded-2xl shadow-enhanced border border-blue-100 overflow-hidden h-full">
-                <div class="p-4 border-b border-gray-100 flex justify-between items-center">
-                    <h3 class="text-lg font-semibold heading-brown">Past 7 Days</h3>
-                    <div class="flex space-x-2">
-                        <button class="text-sm px-3 py-1 rounded-lg bg-gray-100 text-gray-700">Week</button>
-                        <button class="text-sm px-3 py-1 rounded-lg bg-gray-50 text-gray-500">Month</button>
-                    </div>
-                </div>
-                <div class="overflow-y-auto" style="max-height: 400px;">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Driver</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Arrival</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            <!-- Day 1 -->
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900">Mar 12, 2025</div>
-                                    <div class="text-xs text-gray-500">Wednesday</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <div class="flex-shrink-0 h-8 w-8 rounded-full overflow-hidden border border-gray-200">
-                                            <img src="/api/placeholder/100/100" alt="Driver" class="h-full w-full" />
-                                        </div>
-                                        <div class="ml-3">
-                                            <div class="text-sm font-medium text-gray-900">Robert Davis</div>
-                                            <div class="text-xs text-gray-500">Bus #42</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">3:43 PM</div>
-                                    <div class="text-xs text-gray-500">2 min early</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                        On Time
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <button class="text-blue-600 hover:text-blue-800">View Route</button>
-                                </td>
-                            </tr>
-                            <!-- Day 2 -->
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900">Mar 11, 2025</div>
-                                    <div class="text-xs text-gray-500">Tuesday</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <div class="flex-shrink-0 h-8 w-8 rounded-full overflow-hidden border border-gray-200">
-                                            <img src="/api/placeholder/100/100" alt="Driver" class="h-full w-full" />
-                                        </div>
-                                        <div class="ml-3">
-                                            <div class="text-sm font-medium text-gray-900">Robert Davis</div>
-                                            <div class="text-xs text-gray-500">Bus #42</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">3:48 PM</div>
-                                    <div class="text-xs text-gray-500">3 min late</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                        Slight Delay
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <button class="text-blue-600 hover:text-blue-800">View Route</button>
-                                </td>
-                            </tr>
-                            <!-- Day 3 -->
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900">Mar 10, 2025</div>
-                                    <div class="text-xs text-gray-500">Monday</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <div class="flex-shrink-0 h-8 w-8 rounded-full overflow-hidden border border-gray-200">
-                                            <img src="/api/placeholder/100/100" alt="Driver" class="h-full w-full" />
-                                        </div>
-                                        <div class="ml-3">
-                                            <div class="text-sm font-medium text-gray-900">Sarah Johnson</div>
-                                            <div class="text-xs text-gray-500">Bus #42</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">3:52 PM</div>
-                                    <div class="text-xs text-gray-500">7 min late</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                        Delayed
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <button class="text-blue-600 hover:text-blue-800">View Route</button>
-                                </td>
-                            </tr>
-                            <!-- Days 4-7 -->
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900">Mar 7, 2025</div>
-                                    <div class="text-xs text-gray-500">Friday</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <div class="flex-shrink-0 h-8 w-8 rounded-full overflow-hidden border border-gray-200">
-                                            <img src="/api/placeholder/100/100" alt="Driver" class="h-full w-full" />
-                                        </div>
-                                        <div class="ml-3">
-                                            <div class="text-sm font-medium text-gray-900">Robert Davis</div>
-                                            <div class="text-xs text-gray-500">Bus #42</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">3:44 PM</div>
-                                    <div class="text-xs text-gray-500">1 min early</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                        On Time
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <button class="text-blue-600 hover:text-blue-800">View Route</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Statistics & Analysis (1/3 width on large screens) -->
-        <div class="lg:col-span-1">
-            <div class="bg-white rounded-2xl shadow-enhanced border border-blue-100 overflow-hidden h-full">
-                <div class="p-4 border-b border-gray-100">
-                    <h3 class="text-lg font-semibold heading-brown">Route Statistics</h3>
-                </div>
-                
-                <!-- Statistics Summary -->
-                <div class="p-4">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-gray-50 rounded-lg p-3">
-                            <div class="text-xs text-gray-500">On-Time Rate</div>
-                            <div class="text-xl font-medium text-gray-800">85%</div>
-                            <div class="text-xs text-green-600 flex items-center mt-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
+                        <div class="flex items-center space-x-3">
+                            <!-- <div class="h-10 w-1 bg-blue-500 rounded-full"></div> -->
+                            <h2 class="text-3xl font-bold heading-brown">Previous Routings</h2>
+                        </div>
+                        <div class="flex items-center mt-4 md:mt-0">
+                            <div class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium flex items-center">
+                                <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                                Historical Data
+                            </div>
+                            <button class="ml-3 text-sm text-gray-500 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
                                 </svg>
-                                5% from last week
+                                Filter
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Main Content Area -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Previous Routes List (2/3 width on large screens) -->
+                        <div class="lg:col-span-2">
+                            <div class="bg-white rounded-2xl shadow-enhanced border border-blue-100 overflow-hidden h-full">
+                                <div class="p-4 border-b border-gray-100 flex justify-between items-center">
+                                    <h3 class="text-lg font-semibold heading-brown">Past 7 Days</h3>
+                                    <div class="flex space-x-2">
+                                        <button class="text-sm px-3 py-1 rounded-lg bg-gray-100 text-gray-700">Week</button>
+                                        <button class="text-sm px-3 py-1 rounded-lg bg-gray-50 text-gray-500">Month</button>
+                                    </div>
+                                </div>
+                                <div class="overflow-y-auto" style="max-height: 400px;">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Driver</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Arrival</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200">
+                                            <!-- Day 1 -->
+                                            <tr>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="text-sm font-medium text-gray-900">Mar 12, 2025</div>
+                                                    <div class="text-xs text-gray-500">Wednesday</div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="flex items-center">
+                                                        <div class="flex-shrink-0 h-8 w-8 rounded-full overflow-hidden border border-gray-200">
+                                                            <img src="/api/placeholder/100/100" alt="Driver" class="h-full w-full" />
+                                                        </div>
+                                                        <div class="ml-3">
+                                                            <div class="text-sm font-medium text-gray-900">Robert Davis</div>
+                                                            <div class="text-xs text-gray-500">Bus #42</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="text-sm text-gray-900">3:43 PM</div>
+                                                    <div class="text-xs text-gray-500">2 min early</div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                        On Time
+                                                    </span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    <button class="text-blue-600 hover:text-blue-800">View Route</button>
+                                                </td>
+                                            </tr>
+                                            <!-- Day 2 -->
+                                            <tr>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="text-sm font-medium text-gray-900">Mar 11, 2025</div>
+                                                    <div class="text-xs text-gray-500">Tuesday</div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="flex items-center">
+                                                        <div class="flex-shrink-0 h-8 w-8 rounded-full overflow-hidden border border-gray-200">
+                                                            <img src="/api/placeholder/100/100" alt="Driver" class="h-full w-full" />
+                                                        </div>
+                                                        <div class="ml-3">
+                                                            <div class="text-sm font-medium text-gray-900">Robert Davis</div>
+                                                            <div class="text-xs text-gray-500">Bus #42</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="text-sm text-gray-900">3:48 PM</div>
+                                                    <div class="text-xs text-gray-500">3 min late</div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                        Slight Delay
+                                                    </span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    <button class="text-blue-600 hover:text-blue-800">View Route</button>
+                                                </td>
+                                            </tr>
+                                            <!-- Day 3 -->
+                                            <tr>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="text-sm font-medium text-gray-900">Mar 10, 2025</div>
+                                                    <div class="text-xs text-gray-500">Monday</div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="flex items-center">
+                                                        <div class="flex-shrink-0 h-8 w-8 rounded-full overflow-hidden border border-gray-200">
+                                                            <img src="/api/placeholder/100/100" alt="Driver" class="h-full w-full" />
+                                                        </div>
+                                                        <div class="ml-3">
+                                                            <div class="text-sm font-medium text-gray-900">Sarah Johnson</div>
+                                                            <div class="text-xs text-gray-500">Bus #42</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="text-sm text-gray-900">3:52 PM</div>
+                                                    <div class="text-xs text-gray-500">7 min late</div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                                        Delayed
+                                                    </span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    <button class="text-blue-600 hover:text-blue-800">View Route</button>
+                                                </td>
+                                            </tr>
+                                            <!-- Days 4-7 -->
+                                            <tr>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="text-sm font-medium text-gray-900">Mar 7, 2025</div>
+                                                    <div class="text-xs text-gray-500">Friday</div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="flex items-center">
+                                                        <div class="flex-shrink-0 h-8 w-8 rounded-full overflow-hidden border border-gray-200">
+                                                            <img src="/api/placeholder/100/100" alt="Driver" class="h-full w-full" />
+                                                        </div>
+                                                        <div class="ml-3">
+                                                            <div class="text-sm font-medium text-gray-900">Robert Davis</div>
+                                                            <div class="text-xs text-gray-500">Bus #42</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="text-sm text-gray-900">3:44 PM</div>
+                                                    <div class="text-xs text-gray-500">1 min early</div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                        On Time
+                                                    </span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    <button class="text-blue-600 hover:text-blue-800">View Route</button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
-                        <div class="bg-gray-50 rounded-lg p-3">
-                            <div class="text-xs text-gray-500">Avg. Arrival Time</div>
-                            <div class="text-xl font-medium text-gray-800">3:46 PM</div>
-                            <div class="text-xs text-gray-600 mt-1">1 min late avg.</div>
+
+                        <!-- Statistics & Analysis (1/3 width on large screens) -->
+                        <div class="lg:col-span-1">
+                            <div class="bg-white rounded-2xl shadow-enhanced border border-blue-100 overflow-hidden h-full">
+                                <div class="p-4 border-b border-gray-100">
+                                    <h3 class="text-lg font-semibold heading-brown">Route Statistics</h3>
+                                </div>
+                                
+                                <!-- Statistics Summary -->
+                                <div class="p-4">
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="bg-gray-50 rounded-lg p-3">
+                                            <div class="text-xs text-gray-500">On-Time Rate</div>
+                                            <div class="text-xl font-medium text-gray-800">85%</div>
+                                            <div class="text-xs text-green-600 flex items-center mt-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                                                </svg>
+                                                5% from last week
+                                            </div>
+                                        </div>
+                                        <div class="bg-gray-50 rounded-lg p-3">
+                                            <div class="text-xs text-gray-500">Avg. Arrival Time</div>
+                                            <div class="text-xl font-medium text-gray-800">3:46 PM</div>
+                                            <div class="text-xs text-gray-600 mt-1">1 min late avg.</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Route Time Trends Graph -->
+                                    <div class="mt-4 p-3 bg-white border border-gray-100 rounded-lg">
+                                        <h4 class="text-sm font-medium text-gray-700 mb-2">7-Day Arrival Trend</h4>
+                                        <div class="h-40 w-full bg-gray-50 rounded">
+                                            <!-- Placeholder for graph - would be a real chart in production -->
+                                            <img src="/api/placeholder/300/160" alt="Arrival trend graph" class="w-full h-full object-cover" />
+                                        </div>
+                                    </div>
+                                    
+                                <!-- Performance Summary -->
+                                    <div class="mt-4">
+                                        <h4 class="text-sm font-medium text-gray-700 mb-2">Performance Summary</h4>
+                                        <div class="space-y-3">
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-xs text-gray-600">On Time (±2 min)</span>
+                                                <span class="text-xs font-medium">4 days</span>
+                                                <div class="w-32 bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-green-500 h-2 rounded-full" style="width: 57%"></div>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-xs text-gray-600">Slight Delay (3-5 min)</span>
+                                                <span class="text-xs font-medium">2 days</span>
+                                                <div class="w-32 bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-yellow-500 h-2 rounded-full" style="width: 29%"></div>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-xs text-gray-600">Delayed (>5 min)</span>
+                                                <span class="text-xs font-medium">1 day</span>
+                                                <div class="w-32 bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-red-500 h-2 rounded-full" style="width: 14%"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Driver Performance -->
+                                        <div class="mt-4 p-3 bg-blue-50 rounded-lg">
+                                            <div class="flex items-center">
+                                                <div class="w-10 h-10 rounded-full overflow-hidden mr-3 flex-shrink-0 border-2 border-blue-300">
+                                                    <img src="/api/placeholder/100/100" alt="Driver" class="w-full h-full object-cover" />
+                                                </div>
+                                                <div>
+                                                    <h5 class="text-sm font-medium text-gray-800">Robert Davis</h5>
+                                                    <div class="flex items-center mt-1">
+                                                        <div class="flex items-center text-yellow-500">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
+                                                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                                            </svg>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
+                                                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                                            </svg>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
+                                                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                                            </svg>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
+                                                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                                            </svg>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="gray" viewBox="0 0 24 24">
+                                                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                                            </svg>
+                                                            <span class="text-xs text-gray-600 ml-1">4.0/5.0</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Weather Impact Analysis -->
+                                    <div class="mt-4 p-4 border-t border-gray-100">
+                                        <h4 class="text-sm font-medium text-gray-700 mb-2">Weather Impact</h4>
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="flex items-center">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+                                                </svg>
+                                                <span class="text-xs text-gray-700">Rain on March 10</span>
+                                            </div>
+                                            <span class="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">+7 min delay</span>
+                                        </div>
+                                        <p class="text-xs text-gray-500">Weather conditions contributed to the delay on Monday due to reduced visibility and traffic congestion.</p>
+                                    </div>
+
+                                    <!-- Download Report Button -->
+                                    <div class="p-4 border-t border-gray-100">
+                                        <button class="w-full bg-blue-500 text-white py-2 rounded-lg flex items-center justify-center hover:bg-blue-600 transition duration-200">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                            </svg>
+                                            Download Weekly Report
+                                        </button>
+                                    </div>
+                                </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    
-                    <!-- Route Time Trends Graph -->
-                    <div class="mt-4 p-3 bg-white border border-gray-100 rounded-lg">
-                        <h4 class="text-sm font-medium text-gray-700 mb-2">7-Day Arrival Trend</h4>
-                        <div class="h-40 w-full bg-gray-50 rounded">
-                            <!-- Placeholder for graph - would be a real chart in production -->
-                            <img src="/api/placeholder/300/160" alt="Arrival trend graph" class="w-full h-full object-cover" />
-                        </div>
-                    </div>
-                    
-                   <!-- Performance Summary -->
-<div class="mt-4">
-    <h4 class="text-sm font-medium text-gray-700 mb-2">Performance Summary</h4>
-    <div class="space-y-3">
-        <div class="flex items-center justify-between">
-            <span class="text-xs text-gray-600">On Time (±2 min)</span>
-            <span class="text-xs font-medium">4 days</span>
-            <div class="w-32 bg-gray-200 rounded-full h-2">
-                <div class="bg-green-500 h-2 rounded-full" style="width: 57%"></div>
-            </div>
-        </div>
-        <div class="flex items-center justify-between">
-            <span class="text-xs text-gray-600">Slight Delay (3-5 min)</span>
-            <span class="text-xs font-medium">2 days</span>
-            <div class="w-32 bg-gray-200 rounded-full h-2">
-                <div class="bg-yellow-500 h-2 rounded-full" style="width: 29%"></div>
-            </div>
-        </div>
-        <div class="flex items-center justify-between">
-            <span class="text-xs text-gray-600">Delayed (>5 min)</span>
-            <span class="text-xs font-medium">1 day</span>
-            <div class="w-32 bg-gray-200 rounded-full h-2">
-                <div class="bg-red-500 h-2 rounded-full" style="width: 14%"></div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Driver Performance -->
-    <div class="mt-4 p-3 bg-blue-50 rounded-lg">
-        <div class="flex items-center">
-            <div class="w-10 h-10 rounded-full overflow-hidden mr-3 flex-shrink-0 border-2 border-blue-300">
-                <img src="/api/placeholder/100/100" alt="Driver" class="w-full h-full object-cover" />
-            </div>
-            <div>
-                <h5 class="text-sm font-medium text-gray-800">Robert Davis</h5>
-                <div class="flex items-center mt-1">
-                    <div class="flex items-center text-yellow-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                        </svg>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                        </svg>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                        </svg>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                        </svg>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="gray" viewBox="0 0 24 24">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                        </svg>
-                        <span class="text-xs text-gray-600 ml-1">4.0/5.0</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Weather Impact Analysis -->
-<div class="mt-4 p-4 border-t border-gray-100">
-    <h4 class="text-sm font-medium text-gray-700 mb-2">Weather Impact</h4>
-    <div class="flex items-center justify-between mb-2">
-        <div class="flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
-            </svg>
-            <span class="text-xs text-gray-700">Rain on March 10</span>
-        </div>
-        <span class="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">+7 min delay</span>
-    </div>
-    <p class="text-xs text-gray-500">Weather conditions contributed to the delay on Monday due to reduced visibility and traffic congestion.</p>
-</div>
-
-<!-- Download Report Button -->
-<div class="p-4 border-t border-gray-100">
-    <button class="w-full bg-blue-500 text-white py-2 rounded-lg flex items-center justify-center hover:bg-blue-600 transition duration-200">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-        </svg>
-        Download Weekly Report
-    </button>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</section>
+                </section>
 
 
 
@@ -1680,27 +1680,27 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                                     $month_name = $month_covered->format('F');
                                                     $transaction_id = $payment['transaction_id'];
                                                 ?>
-                                            <div class="relative flex items-start">
+                                                <div class="relative flex items-start">
                                                     <div class="absolute left-4 w-3 h-3 <?php echo $payment['status'] === 'completed' ? 'bg-green-500' : 'bg-yellow-500'; ?> rounded-full transform -translate-x-1.5 mt-1.5"></div>
-                                                <div class="ml-8">
-                                                    <div class="flex justify-between items-start">
-                                                        <div>
+                                                    <div class="ml-8">
+                                                        <div class="flex justify-between items-start">
+                                                            <div>
                                                                 <h5 class="text-sm font-medium text-gray-800"><?php echo $month_name; ?> Payment</h5>
                                                                 <p class="text-xs text-gray-500">Transaction ID: <?php echo htmlspecialchars($transaction_id); ?></p>
-                                                        </div>
+                                                            </div>
                                                             <span class="text-xs <?php echo $payment['status'] === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'; ?> px-2 py-0.5 rounded">
                                                                 <?php echo ucfirst($payment['status']); ?>
                                                             </span>
-                                                    </div>
-                                                    <div class="flex justify-between mt-1">
+                                                        </div>
+                                                        <div class="flex justify-between mt-1">
                                                             <p class="text-xs text-gray-600"><?php echo $payment_date->format('M d, Y'); ?></p>
                                                             <p class="text-xs font-medium">Rs.<?php echo number_format($payment['amount'], 2); ?></p>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
                                                 <?php endforeach; ?>
                                             <?php endif; ?>
-                                                        </div>
+                                        </div>
                                     </div>
                                 </div>
                                 
@@ -1734,7 +1734,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                         </div>
                     </div> -->
                 </section>
-            
+
 
 
 
@@ -1745,778 +1745,468 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
 
 
 
-                 <!-- Children Details Section -->
-                 <section id="children-section" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-72 md:mr-8 mx-4 md:mx-0">
+                <!-- Children Details Section -->
+                <section id="children-section" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-72 md:mr-8 mx-4 md:mx-0">
                     <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
                         <div class="flex items-center space-x-3">
                             <div class="h-10 w-1 bg-orange-500 rounded-full"></div>
                             <h2 class="text-3xl font-bold heading-brown">Children Details</h2>
-                        </div>
-                        <div class="mt-4 md:mt-0">
-                            <button class="btn-primary text-sm px-4 py-2 rounded-lg">Save Changes</button>
                         </div>
                     </div>
 
                     <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden mb-6">
                         <div class="p-4 border-b border-gray-100 flex justify-between items-center">
                             <h3 class="text-lg font-semibold heading-brown">Your Children</h3>
-                            <button class="text-orange-500 text-sm flex items-center">
+                            <a href="add_child.php" class="bg-yellow-500 text-white text-sm flex items-center px-4 py-2 rounded-lg hover:bg-yellow-600 transition duration-300 transform hover:scale-105 shadow-sm cursor-pointer">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                 </svg>
                                 Add Child
-                            </button>
+                            </a>
                         </div>
                         
+                        <?php
+                        // Get parent's children with more detailed information
+                        $childrenStmt = $pdo->prepare("
+                            SELECT c.child_id, c.first_name, c.last_name, c.grade, c.medical_notes, 
+                                   c.photo_url, c.pickup_location, c.emergency_contact,
+                                   s.name as school_name, s.school_id,
+                                   b.bus_number, b.bus_id
+                            FROM child c 
+                            LEFT JOIN school s ON c.school_id = s.school_id 
+                            LEFT JOIN bus b ON c.bus_id = b.bus_id 
+                            WHERE c.parent_id = :parent_id
+                        ");
+                        $childrenStmt->execute(['parent_id' => $_SESSION['parent_id']]);
+                        $children = $childrenStmt->fetchAll(PDO::FETCH_ASSOC);
+                        
+                        // Fetch all schools for dropdown
+                        $schoolStmt = $pdo->prepare("SELECT school_id, name FROM school ORDER BY name");
+                        $schoolStmt->execute();
+                        $schools = $schoolStmt->fetchAll(PDO::FETCH_ASSOC);
+                        
+                        // Fetch all buses for dropdown
+                        $busStmt = $pdo->prepare("SELECT bus_id, bus_number FROM bus WHERE is_active = 1 ORDER BY bus_number");
+                        $busStmt->execute();
+                        $buses = $busStmt->fetchAll(PDO::FETCH_ASSOC);
+                        
+                        if (count($children) > 0) {
+                            foreach ($children as $index => $child) {
+                                $borderClass = $index < count($children) - 1 ? 'border-b border-gray-100' : '';
+                        ?>
                         <!-- Child Card -->
-                        <div class="p-6 border-b border-gray-100">
+                        <div class="p-6 <?php echo $borderClass; ?>">
                             <div class="flex flex-col md:flex-row">
-                                <div class="w-24 h-24 rounded-full overflow-hidden mb-4 md:mb-0 mx-auto md:mx-0">
-                                    <img src="/api/placeholder/100/100" alt="Alex Johnson" class="w-full h-full object-cover" />
-                                </div>
+                                <!-- <div class="w-24 h-24 rounded-full overflow-hidden mb-4 md:mb-0 mx-auto md:mx-0 bg-gray-200 flex items-center justify-center">
+                                    <?php if (!empty($child['photo_url'])): ?>
+                                    <img src="<?php echo htmlspecialchars($child['photo_url']); ?>" alt="<?php echo htmlspecialchars($child['first_name'] . ' ' . $child['last_name']); ?>" class="w-full h-full object-cover" />
+                                    <?php else: ?>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                    <?php endif; ?>
+                                </div> -->
                                 <div class="md:ml-6 flex-1">
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 mb-1">Child's Name</label>
-                                            <input type="text" value="Alex Johnson" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+                                            <p class="p-2 border border-gray-300 rounded-lg bg-gray-50"><?php echo htmlspecialchars($child['first_name'] . ' ' . $child['last_name']); ?></p>
                                         </div>
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 mb-1">Grade</label>
-                                            <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                                <option>Grade 3</option>
-                                                <option>Grade 4</option>
-                                                <option>Grade 5</option>
-                                            </select>
+                                            <p class="p-2 border border-gray-300 rounded-lg bg-gray-50"><?php echo htmlspecialchars($child['grade']); ?></p>
                                         </div>
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 mb-1">School</label>
-                                            <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                                <option>Westfield High School</option>
-                                                <option>Eastside Elementary</option>
-                                                <option>Central Middle School</option>
-                                            </select>
+                                            <p class="p-2 border border-gray-300 rounded-lg bg-gray-50"><?php echo htmlspecialchars($child['school_name'] ?? 'Not assigned'); ?></p>
                                         </div>
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 mb-1">Bus Route</label>
-                                            <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                                <option>Route #42</option>
-                                                <option>Route #36</option>
-                                                <option>Route #51</option>
-                                            </select>
+                                            <p class="p-2 border border-gray-300 rounded-lg bg-gray-50"><?php echo htmlspecialchars($child['bus_number'] ?? 'Not assigned'); ?></p>
                                         </div>
+                                        <?php if (!empty($child['medical_notes'])): ?>
                                         <div class="md:col-span-2">
                                             <label class="block text-sm font-medium text-gray-700 mb-1">Special Notes (allergies, medical conditions)</label>
-                                            <textarea class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition" rows="2"></textarea>
+                                            <p class="p-2 border border-gray-300 rounded-lg bg-gray-50 min-h-[60px]"><?php echo htmlspecialchars($child['medical_notes']); ?></p>
                                         </div>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </div>
                             <div class="flex justify-end mt-4 space-x-3">
-                                <button class="text-red-500 text-sm px-4 py-2 border border-red-200 rounded-lg hover:bg-red-50">Remove Child</button>
-                                <button class="text-orange-500 text-sm px-4 py-2 border border-orange-200 rounded-lg hover:bg-orange-50">Update Details</button>
+                            <button type="button" onclick="openDeleteChildModal(<?php echo $child['child_id']; ?>, '<?php echo htmlspecialchars($child['first_name'] . ' ' . $child['last_name']); ?>')" 
+                                        class="text-red-500 text-sm px-4 py-2 border border-red-200 rounded-lg hover:bg-red-50 transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-300 cursor-pointer">
+                                    <span class="flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                        Delete Child
+                                    </span>
+                                </button>
+                                <button type="button" onclick="openEditChildModal(<?php echo $child['child_id']; ?>)" 
+                                        class="text-orange-500 text-sm px-4 py-2 border border-orange-200 rounded-lg hover:bg-orange-50 transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-300 cursor-pointer">
+                                    <span class="flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                        </svg>
+                                        Edit Details
+                                    </span>
+                                </button>
                             </div>
                         </div>
-                        
-                        <!-- Add another child example -->
-                        <div class="p-6">
-                            <div class="flex flex-col md:flex-row">
-                                <div class="w-24 h-24 rounded-full overflow-hidden mb-4 md:mb-0 mx-auto md:mx-0">
-                                    <img src="/api/placeholder/100/100" alt="Emily Johnson" class="w-full h-full object-cover" />
+                        <?php
+                            }
+                        } else {
+                        ?>
+                        <div class="p-6 text-center">
+                            <p class="text-gray-500">You haven't added any children yet.</p>
+                            <a href="add_child.php" class="inline-block mt-4 px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600">Add Your First Child</a>
                                 </div>
-                                <div class="md:ml-6 flex-1">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Child's Name</label>
-                                            <input type="text" value="Emily Johnson" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Grade</label>
-                                            <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                                <option>Grade 1</option>
-                                                <option>Grade 2</option>
-                                                <option>Grade 3</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">School</label>
-                                            <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                                <option>Eastside Elementary</option>
-                                                <option>Westfield High School</option>
-                                                <option>Central Middle School</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Bus Route</label>
-                                            <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                                <option>Route #36</option>
-                                                <option>Route #42</option>
-                                                <option>Route #51</option>
-                                            </select>
-                                        </div>
-                                        <div class="md:col-span-2">
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Special Notes (allergies, medical conditions)</label>
-                                            <textarea class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition" rows="2">Mild peanut allergy</textarea>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex justify-end mt-4 space-x-3">
-                                <button class="text-red-500 text-sm px-4 py-2 border border-red-200 rounded-lg hover:bg-red-50">Remove Child</button>
-                                <button class="text-orange-500 text-sm px-4 py-2 border border-orange-200 rounded-lg hover:bg-orange-50">Update Details</button>
-                            </div>
-                        </div>
+                        <?php } ?>
                     </div>
                 </section>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!-- Pickup Locations Section -->
-<section id="pickup-section" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-72 md:mr-8 mx-4 md:mx-0">
-    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
-        <div class="flex items-center space-x-3">
-            <div class="h-10 w-1 bg-orange-500 rounded-full"></div>
-            <h2 class="text-3xl font-bold heading-brown">Pickup Locations</h2>
-        </div>
-        <div class="mt-4 md:mt-0">
-            <button class="btn-primary text-sm px-4 py-2 rounded-lg">Save Changes</button>
-        </div>
-    </div>
-
-    <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden mb-6">
-        <div class="p-4 border-b border-gray-100 flex justify-between items-center">
-            <h3 class="text-lg font-semibold heading-brown">Manage Pickup Locations</h3>
-            <button class="text-orange-500 text-sm flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                Add Location
-            </button>
-        </div>
-        
-        <!-- Primary Location -->
-        <div class="p-6 border-b border-gray-100">
-            <div class="flex items-start mb-4">
-                <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                    </svg>
-                </div>
-                <div class="ml-3 flex-1">
-                    <div class="flex justify-between">
-                        <h4 class="font-medium text-gray-800">Home (Primary)</h4>
-                        <span class="text-xs bg-orange-100 text-orange-800 px-2 py-0.5 rounded">Default</span>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                            <input type="text" value="123 Education Lane" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
-                            <input type="text" value="Springfield" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">State</label>
-                            <input type="text" value="IL" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
-                            <input type="text" value="62704" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="flex justify-end mt-2 space-x-3">
-                <button class="text-orange-500 text-sm px-4 py-2 border border-orange-200 rounded-lg hover:bg-orange-50">Update Location</button>
-            </div>
-        </div>
-        
-        <!-- Alternative Location -->
-        <div class="p-6 border-b border-gray-100">
-            <div class="flex items-start mb-4">
-                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                    </svg>
-                </div>
-                <div class="ml-3 flex-1">
-                    <div class="flex justify-between">
-                        <h4 class="font-medium text-gray-800">Grandparents' House</h4>
-                        <button class="text-xs text-blue-600 hover:text-blue-800">Make Default</button>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                            <input type="text" value="456 Maple Avenue" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
-                            <input type="text" value="Springfield" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">State</label>
-                            <input type="text" value="IL" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
-                            <input type="text" value="62704" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="flex justify-end mt-2 space-x-3">
-                <button class="text-red-500 text-sm px-4 py-2 border border-red-200 rounded-lg hover:bg-red-50">Remove</button>
-                <button class="text-orange-500 text-sm px-4 py-2 border border-orange-200 rounded-lg hover:bg-orange-50">Update Location</button>
-            </div>
-        </div>
-        
-        <!-- After School Activities Location -->
-        <div class="p-6">
-            <div class="flex items-start mb-4">
-                <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                </div>
-                <div class="ml-3 flex-1">
-                    <div class="flex justify-between">
-                        <h4 class="font-medium text-gray-800">After School Program</h4>
-                        <button class="text-xs text-blue-600 hover:text-blue-800">Make Default</button>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                            <input type="text" value="789 Community Center Road" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
-                            <input type="text" value="Springfield" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">State</label>
-                            <input type="text" value="IL" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
-                            <input type="text" value="62704" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="flex justify-end mt-2 space-x-3">
-                <button class="text-red-500 text-sm px-4 py-2 border border-red-200 rounded-lg hover:bg-red-50">Remove</button>
-                <button class="text-orange-500 text-sm px-4 py-2 border border-orange-200 rounded-lg hover:bg-orange-50">Update Location</button>
-            </div>
-        </div>
-    </div>
-</section>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!-- Account Settings Section -->
-<section id="settings-section" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-72 md:mr-8 mx-4 md:mx-0">
-    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
-        <div class="flex items-center space-x-3">
-            <div class="h-10 w-1 bg-orange-500 rounded-full"></div>
-            <h2 class="text-3xl font-bold heading-brown">Account Settings</h2>
-        </div>
-    </div>
-
-    <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden mb-6">
-                        <div class="p-6">
-                            <div class="flex justify-between items-center mb-6">
-            <h3 class="text-lg font-semibold heading-brown">Personal Information</h3>
-                                <!-- <button onclick="openUpdateModal()" class="btn-primary text-sm px-4 py-2 rounded-lg flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                    </svg>
-                                    Update Information
-                                </button> -->
-        </div>
-        
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                                    <label class="block text-sm font-medium text-gray-500">Full Name</label>
-                                    <p class="mt-1 text-gray-900">
-                                        <?php echo isset($parentInfo['full_name']) ? htmlspecialchars($parentInfo['full_name']) : 'Not available'; ?>
-                                    </p>
-                </div>
-                <div>
-                                    <label class="block text-sm font-medium text-gray-500">Email</label>
-                                    <p class="mt-1 text-gray-900">
-                                        <?php echo isset($parentInfo['email']) ? htmlspecialchars($parentInfo['email']) : 'Not available'; ?>
-                                    </p>
-                </div>
-                <div>
-                                    <label class="block text-sm font-medium text-gray-500">Phone</label>
-                                    <p class="mt-1 text-gray-900">
-                                        <?php echo !empty($parentInfo['phone']) ? htmlspecialchars($parentInfo['phone']) : 'Not provided'; ?>
-                                    </p>
-                </div>
-                <div>
-                                    <label class="block text-sm font-medium text-gray-500">Home Address</label>
-                                    <p class="mt-1 text-gray-900">
-                                        <?php echo isset($parentInfo['home_address']) ? htmlspecialchars($parentInfo['home_address']) : 'Not available'; ?>
-                                    </p>
-                </div>
-            </div>
-
-                            <div class="mt-8 flex flex-col md:flex-row gap-4">
-                                <!-- Update Information Button -->
-                                <button onclick="openUpdateModal()" 
-                                        class="inline-flex items-center justify-center px-6 py-2 bg-yellow-500 text-white rounded-lg 
-                                            hover:bg-yellow-600 transform hover:-translate-y-0.5 transition-all duration-200 
-                                            focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                    </svg>
-                                    Update Information
-                                </button>
-
-                                <!-- Change Password Button -->
-                                <button onclick="openChangePasswordModal()" 
-                                        class="inline-flex items-center justify-center px-6 py-2 bg-blue-500 text-white rounded-lg 
-                                            hover:bg-blue-600 transform hover:-translate-y-0.5 transition-all duration-200 
-                                            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                    </svg>
-                                    Change Password
-                                </button>
-
-                                <!-- Delete Account Button -->
-                                <button onclick="openDeleteAccountModal()" 
-                                        class="inline-flex items-center justify-center px-6 py-2 border-2 bg-red-500 text-white rounded-lg 
-                                            hover:bg-red-600 transform hover:-translate-y-0.5 transition-all duration-200 
-                                            focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                    Delete Account
-                                </button>
-            </div>
-        </div>
-        </div>
-                </section>
-
-
-
-
-
-
-
-
-
-
-
-                <!-- Update Information Modal -->
-                <div id="updateModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" style="z-index: 99999;">
-                    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-xl font-semibold text-gray-900">Update Information</h3>
-                            <button onclick="closeUpdateModal()" class="text-gray-400 hover:text-gray-600">
+                <!-- Edit Child Modal -->
+                <div id="editChildModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-[99999]">
+                    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-lg bg-white">
+                        <div class="flex justify-between items-center pb-3 border-b">
+                            <h3 class="text-xl font-semibold text-gray-700">Edit Child Information</h3>
+                            <button onclick="closeEditChildModal()" class="text-gray-400 hover:text-gray-600">
                                 <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                 </svg>
                             </button>
                         </div>
-                        <form id="updateForm" class="space-y-4">
-                <div>
-                                <label class="block text-sm font-medium text-gray-700">Full Name</label>
-                                <input type="text" name="full_name" value="<?php echo htmlspecialchars($parentInfo['full_name']); ?>" class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
-                </div>
-                <div>
-                                <label class="block text-sm font-medium text-gray-700">Phone</label>
-                                <input type="tel" name="phone" value="<?php echo htmlspecialchars($parentInfo['phone']); ?>" class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
-                </div>
-                <div>
-                                <label class="block text-sm font-medium text-gray-700">Home Address</label>
-                                <textarea name="home_address" class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300"><?php echo htmlspecialchars($parentInfo['home_address']); ?></textarea>
-                </div>
-                            <div class="flex justify-end space-x-3 mt-6">
-                                <button type="button" onclick="closeUpdateModal()" class="px-4 py-2 text-gray-500 hover:text-gray-700">Cancel</button>
+                        <form id="editChildForm" method="post" action="update_child.php">
+                            <input type="hidden" id="edit_child_id" name="child_id" value="">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                        <div>
+                                    <label for="first_name" class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                                    <input type="text" id="edit_first_name" name="first_name" class="w-full p-2 border border-gray-300 rounded-lg">
+                                        </div>
+                                        <div>
+                                    <label for="last_name" class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                                    <input type="text" id="edit_last_name" name="last_name" class="w-full p-2 border border-gray-300 rounded-lg">
+                                        </div>
+                                        <div>
+                                    <label for="grade" class="block text-sm font-medium text-gray-700 mb-1">Grade</label>
+                                    <input type="text" id="edit_grade" name="grade" class="w-full p-2 border border-gray-300 rounded-lg">
+                                        </div>
+                                        <div>
+                                    <label for="school_id" class="block text-sm font-medium text-gray-700 mb-1">School</label>
+                                    <select id="edit_school_id" name="school_id" class="w-full p-2 border border-gray-300 rounded-lg">
+                                        <option value="">Select School</option>
+                                        <?php foreach ($schools as $school): ?>
+                                        <option value="<?php echo $school['school_id']; ?>"><?php echo htmlspecialchars($school['name']); ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                        </div>
+                                        <div>
+                                    <label for="bus_id" class="block text-sm font-medium text-gray-700 mb-1">Bus</label>
+                                    <select id="edit_bus_id" name="bus_id" class="w-full p-2 border border-gray-300 rounded-lg">
+                                        <option value="">Select Bus</option>
+                                        <?php foreach ($buses as $bus): ?>
+                                        <option value="<?php echo $bus['bus_id']; ?>"><?php echo htmlspecialchars($bus['bus_number']); ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                        </div>
+                                        <div>
+                                    <label for="emergency_contact" class="block text-sm font-medium text-gray-700 mb-1">Emergency Contact</label>
+                                    <input type="text" id="edit_emergency_contact" name="emergency_contact" class="w-full p-2 border border-gray-300 rounded-lg">
+                                        </div>
+                                <div class="md:col-span-2">
+                                    <label for="medical_notes" class="block text-sm font-medium text-gray-700 mb-1">Medical Notes</label>
+                                    <textarea id="edit_medical_notes" name="medical_notes" class="w-full p-2 border border-gray-300 rounded-lg" rows="3"></textarea>
+                                        </div>
+                                        </div>
+                            <div class="flex justify-end mt-6 space-x-3">
+                                <button type="button" onclick="closeEditChildModal()" class="px-4 py-2 text-gray-500 hover:text-gray-700">Cancel</button>
                                 <button type="submit" class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600">Save Changes</button>
-            </div>
+                            </div>
                         </form>
-            </div>
-        </div>
-        
-                <!-- Change Password Modal -->
-                <div id="changePasswordModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" style="z-index: 99999;">
-                    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-xl font-semibold text-gray-900">Change Password</h3>
-                            <button onclick="closeChangePasswordModal()" class="text-gray-400 hover:text-gray-600">
+                    </div>
+                </div>
+
+                <!-- Delete Child Modal -->
+                <div id="deleteChildModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-[99999]">
+                    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-96 shadow-lg rounded-lg bg-white">
+                        <div class="flex justify-between items-center pb-3 border-b">
+                            <h3 class="text-xl font-semibold text-gray-700">Confirm Deletion</h3>
+                            <button onclick="closeDeleteChildModal()" class="text-gray-400 hover:text-gray-600">
                                 <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                 </svg>
                             </button>
                         </div>
-                        <form id="changePasswordForm" class="space-y-4">
-                    <div>
-                                <label class="block text-sm font-medium text-gray-700">Current Password</label>
-                                <input type="password" name="current_password" required class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
-                    </div>
-                    <div>
-                                <label class="block text-sm font-medium text-gray-700">New Password</label>
-                                <input type="password" name="new_password" required class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
-                    </div>
-                    <div>
-                                <label class="block text-sm font-medium text-gray-700">Confirm New Password</label>
-                                <input type="password" name="confirm_password" required class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
-                    </div>
-                            <div class="flex justify-end space-x-3 mt-6">
-                                <button type="button" onclick="closeChangePasswordModal()" class="px-4 py-2 text-gray-500 hover:text-gray-700">Cancel</button>
-                                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Update Password</button>
-                </div>
+                        <div class="py-4">
+                            <p class="text-gray-700" id="deleteChildText">Are you sure you want to delete this child?</p>
+                            </div>
+                        <form id="deleteChildForm" method="post" action="delete_child.php">
+                            <input type="hidden" id="delete_child_id" name="child_id" value="">
+                            <div class="flex justify-end space-x-3">
+                                <button type="button" onclick="closeDeleteChildModal()" class="px-4 py-2 text-gray-500 hover:text-gray-700">Cancel</button>
+                                <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Delete</button>
+                            </div>
                         </form>
-            </div>
-        </div>
-        
-                <!-- Delete Account Modal -->
-                <div id="deleteAccountModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" style="z-index: 99999;">
-                    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-xl font-semibold text-red-600">Delete Account</h3>
-                            <button onclick="closeDeleteAccountModal()" class="text-gray-400 hover:text-gray-600">
-                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
+                    </div>
                 </div>
-                        <div class="mb-4">
-                            <p class="text-gray-600">Are you sure you want to delete your account? This action cannot be undone.</p>
-            </div>
-                        <form id="deleteAccountForm" class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Enter your password to confirm</label>
-                                <input type="password" name="confirm_password" required class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-red-300">
-                </div>
-                            <div class="flex justify-end space-x-3 mt-6">
-                                <button type="button" onclick="closeDeleteAccountModal()" class="px-4 py-2 text-gray-500 hover:text-gray-700">Cancel</button>
-                                <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Delete Account</button>
-            </div>
-                        </form>
-        </div>
-    </div>
 
                 <script>
-                    // Modal functions
-                    function openUpdateModal() {
-                        document.getElementById('updateModal').classList.remove('hidden');
-                    }
-
-                    function closeUpdateModal() {
-                        document.getElementById('updateModal').classList.add('hidden');
-                    }
-
-                    function openChangePasswordModal() {
-                        document.getElementById('changePasswordModal').classList.remove('hidden');
-                    }
-
-                    function closeChangePasswordModal() {
-                        document.getElementById('changePasswordModal').classList.add('hidden');
-                    }
-
-                    function openDeleteAccountModal() {
-                        document.getElementById('deleteAccountModal').classList.remove('hidden');
-                    }
-
-                    function closeDeleteAccountModal() {
-                        document.getElementById('deleteAccountModal').classList.add('hidden');
-                    }
-
-                    // Form submissions
-                    document.getElementById('updateForm').addEventListener('submit', function(e) {
-                        e.preventDefault();
-                        const formData = new FormData(this);
-                        
-                        fetch('update_parent_info.php', {
-                            method: 'POST',
-                            body: formData
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                alert('Information updated successfully');
-                                location.reload();
+                    // ... existing code ...
+                    
+                    // Child modals functions
+                    function openEditChildModal(childId) {
+                        // Fetch child details via AJAX
+                        fetch(`get_child_details.php?child_id=${childId}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    const child = data.child;
+                                    // Populate the form
+                                    document.getElementById('edit_child_id').value = child.child_id;
+                                    document.getElementById('edit_first_name').value = child.first_name;
+                                    document.getElementById('edit_last_name').value = child.last_name;
+                                    document.getElementById('edit_grade').value = child.grade;
+                                    document.getElementById('edit_emergency_contact').value = child.emergency_contact || '';
+                                    document.getElementById('edit_medical_notes').value = child.medical_notes || '';
+                                    
+                                    // Set select options
+                                    if (child.school_id) {
+                                        document.getElementById('edit_school_id').value = child.school_id;
+                                    }
+                                    if (child.bus_id) {
+                                        document.getElementById('edit_bus_id').value = child.bus_id;
+                                    }
+                                    
+                                    // Show the modal
+                                    document.getElementById('editChildModal').classList.remove('hidden');
                             } else {
-                                alert(data.message || 'Error updating information');
+                                    alert('Error fetching child details');
                             }
                         })
                         .catch(error => {
                             console.error('Error:', error);
-                            alert('An error occurred while updating information');
-                        });
+                                alert('Error fetching child details');
+                            });
+                    }
+                    
+                    function closeEditChildModal() {
+                        document.getElementById('editChildModal').classList.add('hidden');
+                    }
+                    
+                    function openDeleteChildModal(childId, childName) {
+                        document.getElementById('delete_child_id').value = childId;
+                        document.getElementById('deleteChildText').textContent = `Are you sure you want to delete ${childName}?`;
+                        document.getElementById('deleteChildModal').classList.remove('hidden');
+                    }
+                    
+                    function closeDeleteChildModal() {
+                        document.getElementById('deleteChildModal').classList.add('hidden');
+                    }
+                    
+                    // Close modals when clicking outside
+                    document.getElementById('editChildModal').addEventListener('click', function(e) {
+                        if (e.target === this) {
+                            closeEditChildModal();
+                        }
                     });
-
-                    document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
-                        e.preventDefault();
-                        const formData = new FormData(this);
-                        
-                        fetch('change_password.php', {
-                            method: 'POST',
-                            body: formData
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                alert('Password changed successfully');
-                                closeChangePasswordModal();
-                                this.reset();
-                            } else {
-                                alert(data.message || 'Error changing password');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('An error occurred while changing password');
-                        });
+                    
+                    document.getElementById('deleteChildModal').addEventListener('click', function(e) {
+                        if (e.target === this) {
+                            closeDeleteChildModal();
+                        }
                     });
-
-                    document.getElementById('deleteAccountForm').addEventListener('submit', function(e) {
-                        e.preventDefault();
-                        const formData = new FormData(this);
-                        
-                        fetch('delete_account.php', {
-                            method: 'POST',
-                            body: formData
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                alert('Account deleted successfully');
-                                window.location.href = 'logout.php';
-                            } else {
-                                alert(data.message || 'Error deleting account');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('An error occurred while deleting account');
-                        });
+                    
+                    // Close modals on escape key press
+                    document.addEventListener('keydown', function(e) {
+                        if (e.key === 'Escape') {
+                            closeEditChildModal();
+                            closeDeleteChildModal();
+                        }
                     });
                 </script>
 
 
 
-            </div>
-        </main>
-    </div>
+                            </div>
+                        </main>
+                    </div>
 
-<script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-<script>
-    // Function to show selected section and hide others
-    function showSection(sectionId) {
-        // Hide all dashboard sections
-        const sections = document.querySelectorAll('.dashboard-section');
-        sections.forEach(section => {
-            section.style.display = 'none';
-        });
-        
-        // Show the selected section
-        const selectedSection = document.getElementById(sectionId + '-section');
-        if (selectedSection) {
-            selectedSection.style.display = 'block';
-        }
-        
-        // Update active navigation item styling for desktop
-        const navItems = document.querySelectorAll('.nav-item');
-        navItems.forEach(item => {
-            item.classList.remove('active');
-        });
-        
-        // Find the nav item that corresponds to the selected section and make it active
-        const navItemsArray = Array.from(navItems);
-        const activeNavItem = navItemsArray.find(item => item.textContent.trim().toLowerCase().includes(sectionId.toLowerCase()));
-        if (activeNavItem) {
-            activeNavItem.classList.add('active');
-        }
-        
-        // Update mobile navigation styling
-        const mobileNavItems = document.querySelectorAll('.mobile-nav-item');
-        mobileNavItems.forEach(item => {
-            item.classList.remove('text-orange-500');
-            item.classList.add('text-gray-700');
-        });
-        
-        // Find the mobile nav item that corresponds to the selected section and make it active
-        const mobileNavItemsArray = Array.from(mobileNavItems);
-        const activeMobileNavItem = mobileNavItemsArray.find(item => 
-            item.textContent.trim().toLowerCase().includes(sectionId.toLowerCase()));
-        if (activeMobileNavItem) {
-            activeMobileNavItem.classList.remove('text-gray-700');
-            activeMobileNavItem.classList.add('text-orange-500');
-        }
-    }
-    
-    // Initialize the dashboard to show the home section by default
-    document.addEventListener('DOMContentLoaded', function() {
-        // Create placeholder sections for other pages if they don't exist
-        const sectionIds = ['tracker', 'payments','history', 'settings'];
-        const mainContent = document.querySelector('main');
-        
-        sectionIds.forEach(id => {
-            if (!document.getElementById(id + '-section')) {
-                const section = document.createElement('section');
-                section.id = id + '-section';
-                section.className = 'dashboard-section';
-                section.style.display = 'none';
-                
-                const header = document.createElement('div');
-                header.className = 'flex flex-col md:flex-row items-start md:items-center justify-between mb-8';
-                header.innerHTML = `
-                    <div class="flex items-center space-x-3">
-                        <div class="h-10 w-1 bg-orange-500 rounded-full"></div>
-                        <h2 class="text-3xl font-bold text-orange-800">${id.charAt(0).toUpperCase() + id.slice(1)}</h2>
-                    </div>
-                `;
-                
-                const content = document.createElement('div');
-                content.className = 'bg-white rounded-2xl p-8 shadow-sm border border-orange-100';
-                content.innerHTML = `<p>Content for ${id} section will be displayed here.</p>`;
-                
-                section.appendChild(header);
-                section.appendChild(content);
-                mainContent.appendChild(section);
-            }
-        });
-        
-        // Profile dropdown functionality
-        const profileButton = document.getElementById('profile-menu-button');
-        if (profileButton) {
-            let isMenuOpen = false;
-            let menuElement = null;
-            
-            profileButton.addEventListener('click', function() {
-                if (isMenuOpen && menuElement) {
-                    menuElement.remove();
-                    isMenuOpen = false;
-                    return;
-                }
-                
-                menuElement = document.createElement('div');
-                menuElement.className = 'origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50';
-                menuElement.innerHTML = `
-                    <div class="py-1" role="menu" aria-orientation="vertical">
-                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Your Profile</a>
-                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Account Settings</a>
-                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Sign out</a>
-                    </div>
-                `;
-                
-                document.querySelector('.flex-shrink-0.relative').appendChild(menuElement);
-                isMenuOpen = true;
-                
-                // Close menu when clicking outside
-                document.addEventListener('click', function closeMenu(e) {
-                    if (!profileButton.contains(e.target) && !menuElement.contains(e.target)) {
-                        menuElement.remove();
-                        isMenuOpen = false;
-                        document.removeEventListener('click', closeMenu);
+                <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+                <script>
+                    // Function to show selected section and hide others
+                    function showSection(sectionId) {
+                        // Hide all dashboard sections
+                        const sections = document.querySelectorAll('.dashboard-section');
+                        sections.forEach(section => {
+                            section.style.display = 'none';
+                        });
+                        
+                        // Show the selected section
+                        const selectedSection = document.getElementById(sectionId + '-section');
+                        if (selectedSection) {
+                            selectedSection.style.display = 'block';
+                        }
+                        
+                        // Update active navigation item styling for desktop
+                        const navItems = document.querySelectorAll('.nav-item');
+                        navItems.forEach(item => {
+                            item.classList.remove('active');
+                        });
+                        
+                        // Find the nav item that corresponds to the selected section and make it active
+                        const navItemsArray = Array.from(navItems);
+                        const activeNavItem = navItemsArray.find(item => item.textContent.trim().toLowerCase().includes(sectionId.toLowerCase()));
+                        if (activeNavItem) {
+                            activeNavItem.classList.add('active');
+                        }
+                        
+                        // Update mobile navigation styling
+                        const mobileNavItems = document.querySelectorAll('.mobile-nav-item');
+                        mobileNavItems.forEach(item => {
+                            item.classList.remove('text-orange-500');
+                            item.classList.add('text-gray-700');
+                        });
+                        
+                        // Find the mobile nav item that corresponds to the selected section and make it active
+                        const mobileNavItemsArray = Array.from(mobileNavItems);
+                        const activeMobileNavItem = mobileNavItemsArray.find(item => 
+                            item.textContent.trim().toLowerCase().includes(sectionId.toLowerCase()));
+                        if (activeMobileNavItem) {
+                            activeMobileNavItem.classList.remove('text-gray-700');
+                            activeMobileNavItem.classList.add('text-orange-500');
+                        }
                     }
-                });
-            });
+                    
+                    // Initialize the dashboard to show the home section by default
+                    document.addEventListener('DOMContentLoaded', function() {
+                        // Create placeholder sections for other pages if they don't exist
+                        const sectionIds = ['tracker', 'payments','history', 'settings'];
+                        const mainContent = document.querySelector('main');
+                        
+                        sectionIds.forEach(id => {
+                            if (!document.getElementById(id + '-section')) {
+                                const section = document.createElement('section');
+                                section.id = id + '-section';
+                                section.className = 'dashboard-section';
+                                section.style.display = 'none';
+                                
+                                const header = document.createElement('div');
+                                header.className = 'flex flex-col md:flex-row items-start md:items-center justify-between mb-8';
+                                header.innerHTML = `
+                                    <div class="flex items-center space-x-3">
+                                        <div class="h-10 w-1 bg-orange-500 rounded-full"></div>
+                                        <h2 class="text-3xl font-bold text-orange-800">${id.charAt(0).toUpperCase() + id.slice(1)}</h2>
+                                    </div>
+                                `;
+                                
+                                const content = document.createElement('div');
+                                content.className = 'bg-white rounded-2xl p-8 shadow-sm border border-orange-100';
+                                content.innerHTML = `<p>Content for ${id} section will be displayed here.</p>`;
+                                
+                                section.appendChild(header);
+                                section.appendChild(content);
+                                mainContent.appendChild(section);
+                            }
+                        });
+                        
+                        // Profile dropdown functionality
+                        const profileButton = document.getElementById('profile-menu-button');
+                        if (profileButton) {
+                            let isMenuOpen = false;
+                            let menuElement = null;
+                            
+                            profileButton.addEventListener('click', function() {
+                                if (isMenuOpen && menuElement) {
+                                    menuElement.remove();
+                                    isMenuOpen = false;
+                                    return;
+                                }
+                                
+                                menuElement = document.createElement('div');
+                                menuElement.className = 'origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50';
+                                menuElement.innerHTML = `
+                                    <div class="py-1" role="menu" aria-orientation="vertical">
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Your Profile</a>
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Account Settings</a>
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Sign out</a>
+                                    </div>
+                                `;
+                                
+                                document.querySelector('.flex-shrink-0.relative').appendChild(menuElement);
+                                isMenuOpen = true;
+                                
+                                // Close menu when clicking outside
+                                document.addEventListener('click', function closeMenu(e) {
+                                    if (!profileButton.contains(e.target) && !menuElement.contains(e.target)) {
+                                        menuElement.remove();
+                                        isMenuOpen = false;
+                                        document.removeEventListener('click', closeMenu);
+                                    }
+                                });
+                            });
 
-            const historyButton = document.querySelector('button[onclick="showSection(\'history\')"]');
-            if (historyButton) {
-                historyButton.addEventListener('click', function() {
-                    const sections = document.querySelectorAll('.dashboard-section');
-                    sections.forEach(section => {
-                        section.style.display = 'none';
+                            const historyButton = document.querySelector('button[onclick="showSection(\'history\')"]');
+                            if (historyButton) {
+                                historyButton.addEventListener('click', function() {
+                                    const sections = document.querySelectorAll('.dashboard-section');
+                                    sections.forEach(section => {
+                                        section.style.display = 'none';
+                                    });
+                                    
+                                    const historySection = document.getElementById('history');
+                                    if (historySection) {
+                                        historySection.style.display = 'block';
+                                    }
+                                    
+                                    // Update active states
+                                    const navItems = document.querySelectorAll('.nav-item');
+                                    navItems.forEach(item => item.classList.remove('active'));
+                                    historyButton.classList.add('active');
+                                });
+                            }
+                        }
+                        
+                        // Show home section by default
+                        showSection('home');
                     });
-                    
-                    const historySection = document.getElementById('history');
-                    if (historySection) {
-                        historySection.style.display = 'block';
+
+                    function switchProfile(childId) {
+                        // Example profiles data - in production this would come from your backend
+                        const profiles = {
+                            alex: {
+                                name: 'Alex Johnson',
+                                grade: '10',
+                                busNo: '42',
+                                image: '/api/placeholder/200/200'
+                            },
+                            emma: {
+                                name: 'Emma Johnson',
+                                grade: '8',
+                                busNo: '43',
+                                image: '/api/placeholder/200/200'
+                            },
+                            ryan: {
+                                name: 'Ryan Johnson',
+                                grade: '6',
+                                busNo: '44',
+                                image: '/api/placeholder/200/200'
+                            }
+                        };
+
+                        const profile = profiles[childId];
+                        const profileDisplay = document.getElementById('currentChildProfile');
+                        
+                        profileDisplay.innerHTML = `
+                            <img src="${profile.image}" alt="${profile.name}" class="w-20 h-20 rounded-full object-cover border-4 border-orange-200"/>
+                            <div>
+                                <h4 class="text-xl font-medium text-gray-800">${profile.name}</h4>
+                                <p class="text-gray-500">Grade ${profile.grade} • Bus #${profile.busNo}</p>
+                            </div>
+                        `;
                     }
                     
-                    // Update active states
-                    const navItems = document.querySelectorAll('.nav-item');
-                    navItems.forEach(item => item.classList.remove('active'));
-                    historyButton.classList.add('active');
-                });
-            }
-        }
-        
-        // Show home section by default
-        showSection('home');
-    });
-
-    function switchProfile(childId) {
-        // Example profiles data - in production this would come from your backend
-        const profiles = {
-            alex: {
-                name: 'Alex Johnson',
-                grade: '10',
-                busNo: '42',
-                image: '/api/placeholder/200/200'
-            },
-            emma: {
-                name: 'Emma Johnson',
-                grade: '8',
-                busNo: '43',
-                image: '/api/placeholder/200/200'
-            },
-            ryan: {
-                name: 'Ryan Johnson',
-                grade: '6',
-                busNo: '44',
-                image: '/api/placeholder/200/200'
-            }
-        };
-
-        const profile = profiles[childId];
-        const profileDisplay = document.getElementById('currentChildProfile');
-        
-        profileDisplay.innerHTML = `
-            <img src="${profile.image}" alt="${profile.name}" class="w-20 h-20 rounded-full object-cover border-4 border-orange-200"/>
-            <div>
-                <h4 class="text-xl font-medium text-gray-800">${profile.name}</h4>
-                <p class="text-gray-500">Grade ${profile.grade} • Bus #${profile.busNo}</p>
-            </div>
-        `;
-    }
-    
-</script>
+                </script>
 
                 <!-- Add this JavaScript for handling the modal -->
                 <script>
@@ -2560,7 +2250,12 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
 
                 <style>
                 /* Ensure modal is always on top */
-                #logoutModal {
+                #logoutModal,
+                #updateModal,
+                #changePasswordModal,
+                #deleteAccountModal,
+                #editChildModal,
+                #deleteChildModal {
                     z-index: 99999 !important;
                 }
 
@@ -2576,21 +2271,469 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                     }
                 }
 
-                #logoutModal > div {
+                #logoutModal > div,
+                #updateModal > div,
+                #changePasswordModal > div,
+                #deleteAccountModal > div,
+                #editChildModal > div,
+                #deleteChildModal > div {
                     animation: modalFade 0.3s ease-out;
                 }
 
                 /* Hover effects for buttons */
                 #logoutModal button:hover,
-                #logoutModal a:hover {
+                #logoutModal a:hover,
+                #updateModal button:hover,
+                #changePasswordModal button:hover,
+                #deleteAccountModal button:hover,
+                #editChildModal button:hover,
+                #deleteChildModal button:hover {
                     transform: translateY(-1px);
                     transition: all 0.2s;
                 }
 
                 /* Add shadow to modal */
-                #logoutModal > div {
+                #logoutModal > div,
+                #updateModal > div,
+                #changePasswordModal > div,
+                #deleteAccountModal > div,
+                #editChildModal > div,
+                #deleteChildModal > div {
                     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
                 }
                 </style>
-</body>
+
+                <script>
+                function openLogoutModal() {
+                    const modal = document.getElementById('logoutModal');
+                    if (modal) {
+                        modal.classList.remove('hidden');
+                        document.body.style.overflow = 'hidden';
+                    }
+                }
+
+                function closeLogoutModal() {
+                    const modal = document.getElementById('logoutModal');
+                    if (modal) {
+                        modal.classList.add('hidden');
+                        document.body.style.overflow = 'auto';
+                    }
+                }
+
+                // Modal functions for Account Settings
+                function openUpdateModal() {
+                    document.getElementById('updateModal').classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                }
+
+                function closeUpdateModal() {
+                    document.getElementById('updateModal').classList.add('hidden');
+                    document.body.style.overflow = 'auto';
+                }
+
+                function openChangePasswordModal() {
+                    document.getElementById('changePasswordModal').classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                }
+
+                function closeChangePasswordModal() {
+                    document.getElementById('changePasswordModal').classList.add('hidden');
+                    document.body.style.overflow = 'auto';
+                }
+
+                function openDeleteAccountModal() {
+                    document.getElementById('deleteAccountModal').classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                }
+
+                function closeDeleteAccountModal() {
+                    document.getElementById('deleteAccountModal').classList.add('hidden');
+                    document.body.style.overflow = 'auto';
+                }
+
+                // Child modals functions
+                function openEditChildModal(childId) {
+                    // Fetch child details via AJAX
+                    fetch(`get_child_details.php?child_id=${childId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                const child = data.child;
+                                // Populate the form
+                                document.getElementById('edit_child_id').value = child.child_id;
+                                document.getElementById('edit_first_name').value = child.first_name;
+                                document.getElementById('edit_last_name').value = child.last_name;
+                                document.getElementById('edit_grade').value = child.grade;
+                                document.getElementById('edit_emergency_contact').value = child.emergency_contact || '';
+                                document.getElementById('edit_medical_notes').value = child.medical_notes || '';
+                                
+                                // Set select options
+                                if (child.school_id) {
+                                    document.getElementById('edit_school_id').value = child.school_id;
+                                }
+                                if (child.bus_id) {
+                                    document.getElementById('edit_bus_id').value = child.bus_id;
+                                }
+                                
+                                // Show the modal
+                                document.getElementById('editChildModal').classList.remove('hidden');
+                                document.body.style.overflow = 'hidden';
+                            } else {
+                                alert('Error fetching child details');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Error fetching child details');
+                        });
+                }
+                
+                function closeEditChildModal() {
+                    document.getElementById('editChildModal').classList.add('hidden');
+                    document.body.style.overflow = 'auto';
+                }
+                
+                function openDeleteChildModal(childId, childName) {
+                    document.getElementById('delete_child_id').value = childId;
+                    document.getElementById('deleteChildText').textContent = `Are you sure you want to delete ${childName}?`;
+                    document.getElementById('deleteChildModal').classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                }
+                
+                function closeDeleteChildModal() {
+                    document.getElementById('deleteChildModal').classList.add('hidden');
+                    document.body.style.overflow = 'auto';
+                }
+
+                // Close modals when clicking outside
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Setup for existing modals
+                    const modals = [
+                        { id: 'logoutModal', closeFn: closeLogoutModal },
+                        { id: 'updateModal', closeFn: closeUpdateModal },
+                        { id: 'changePasswordModal', closeFn: closeChangePasswordModal },
+                        { id: 'deleteAccountModal', closeFn: closeDeleteAccountModal },
+                        { id: 'editChildModal', closeFn: closeEditChildModal },
+                        { id: 'deleteChildModal', closeFn: closeDeleteChildModal }
+                    ];
+                    
+                    modals.forEach(modal => {
+                        const el = document.getElementById(modal.id);
+                        if (el) {
+                            el.addEventListener('click', function(e) {
+                                if (e.target === this) {
+                                    modal.closeFn();
+                                }
+                            });
+                        }
+                    });
+
+                    // Close all modals on escape key press
+                    document.addEventListener('keydown', function(e) {
+                        if (e.key === 'Escape') {
+                            modals.forEach(modal => {
+                                const el = document.getElementById(modal.id);
+                                if (el && !el.classList.contains('hidden')) {
+                                    modal.closeFn();
+                                }
+                            });
+                        }
+                    });
+                });
+                </script>
+
+                <!-- Account Settings Section -->
+                <section id="settings-section" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-72 md:mr-8 mx-4 md:mx-0">
+                    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
+                        <div class="flex items-center space-x-3">
+                            <div class="h-10 w-1 bg-orange-500 rounded-full"></div>
+                            <h2 class="text-3xl font-bold heading-brown">Account Settings</h2>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden mb-6">
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="text-lg font-semibold heading-brown">Personal Information</h3>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-500">Full Name</label>
+                                    <p class="mt-1 text-gray-900">
+                                        <?php echo isset($parentInfo['full_name']) ? htmlspecialchars($parentInfo['full_name']) : 'Not available'; ?>
+                                    </p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-500">Email</label>
+                                    <p class="mt-1 text-gray-900">
+                                        <?php echo isset($parentInfo['email']) ? htmlspecialchars($parentInfo['email']) : 'Not available'; ?>
+                                    </p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-500">Phone</label>
+                                    <p class="mt-1 text-gray-900">
+                                        <?php echo !empty($parentInfo['phone']) ? htmlspecialchars($parentInfo['phone']) : 'Not provided'; ?>
+                                    </p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-500">Home Address</label>
+                                    <p class="mt-1 text-gray-900">
+                                        <?php echo isset($parentInfo['home_address']) ? htmlspecialchars($parentInfo['home_address']) : 'Not available'; ?>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="mt-8 flex flex-col md:flex-row gap-4">
+                                <!-- Update Information Button -->
+                                <button onclick="openUpdateModal()" 
+                                        class="inline-flex items-center justify-center px-6 py-2 bg-yellow-500 text-white rounded-lg 
+                                            hover:bg-yellow-600 transform hover:-translate-y-0.5 transition-all duration-200 
+                                            focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                    </svg>
+                                    Update Information
+                                </button>
+
+                                <!-- Change Password Button -->
+                                <button onclick="openChangePasswordModal()" 
+                                        class="inline-flex items-center justify-center px-6 py-2 bg-blue-500 text-white rounded-lg 
+                                            hover:bg-blue-600 transform hover:-translate-y-0.5 transition-all duration-200 
+                                            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                    </svg>
+                                    Change Password
+                                </button>
+
+                                <!-- Delete Account Button -->
+                                <button onclick="openDeleteAccountModal()" 
+                                        class="inline-flex items-center justify-center px-6 py-2 border-2 bg-red-500 text-white rounded-lg 
+                                            hover:bg-red-600 transform hover:-translate-y-0.5 transition-all duration-200 
+                                            focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                    Delete Account
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Update Information Modal -->
+                <div id="updateModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-[99999]">
+                    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-semibold text-gray-900">Update Information</h3>
+                            <button onclick="closeUpdateModal()" class="text-gray-400 hover:text-gray-600">
+                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <form id="updateForm" class="space-y-4" method="post" action="update_parent_info.php">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Full Name</label>
+                                <input type="text" name="full_name" value="<?php echo htmlspecialchars($parentInfo['full_name']); ?>" class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Phone</label>
+                                <input type="tel" name="phone" value="<?php echo htmlspecialchars($parentInfo['phone']); ?>" class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Home Address</label>
+                                <textarea name="home_address" class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300"><?php echo htmlspecialchars($parentInfo['home_address']); ?></textarea>
+                            </div>
+                            <div class="flex justify-end space-x-3 mt-6">
+                                <button type="button" onclick="closeUpdateModal()" class="px-4 py-2 text-gray-500 hover:text-gray-700">Cancel</button>
+                                <button type="submit" class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Change Password Modal -->
+                <div id="changePasswordModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-[99999]">
+                    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-semibold text-gray-900">Change Password</h3>
+                            <button onclick="closeChangePasswordModal()" class="text-gray-400 hover:text-gray-600">
+                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <form id="changePasswordForm" class="space-y-4" method="post" action="change_password.php">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Current Password</label>
+                                <input type="password" name="current_password" required class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">New Password</label>
+                                <input type="password" name="new_password" required class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Confirm New Password</label>
+                                <input type="password" name="confirm_password" required class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
+                            </div>
+                            <div class="flex justify-end space-x-3 mt-6">
+                                <button type="button" onclick="closeChangePasswordModal()" class="px-4 py-2 text-gray-500 hover:text-gray-700">Cancel</button>
+                                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Update Password</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Delete Account Modal -->
+                <div id="deleteAccountModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-[99999]">
+                    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-semibold text-red-600">Delete Account</h3>
+                            <button onclick="closeDeleteAccountModal()" class="text-gray-400 hover:text-gray-600">
+                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="mb-4">
+                            <p class="text-gray-600">Are you sure you want to delete your account? This action cannot be undone.</p>
+                        </div>
+                        <form id="deleteAccountForm" class="space-y-4" method="post" action="delete_account.php">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Enter your password to confirm</label>
+                                <input type="password" name="confirm_password" required class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-red-300">
+                            </div>
+                            <div class="flex justify-end space-x-3 mt-6">
+                                <button type="button" onclick="closeDeleteAccountModal()" class="px-4 py-2 text-gray-500 hover:text-gray-700">Cancel</button>
+                                <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Delete Account</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <script>
+                    // Modal functions for both Children and Settings sections
+                    function openEditChildModal(childId) {
+                        // Fetch child details via AJAX
+                        fetch(`get_child_details.php?child_id=${childId}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    const child = data.child;
+                                    // Populate the form
+                                    document.getElementById('edit_child_id').value = child.child_id;
+                                    document.getElementById('edit_first_name').value = child.first_name;
+                                    document.getElementById('edit_last_name').value = child.last_name;
+                                    document.getElementById('edit_grade').value = child.grade;
+                                    document.getElementById('edit_emergency_contact').value = child.emergency_contact || '';
+                                    document.getElementById('edit_medical_notes').value = child.medical_notes || '';
+                                    
+                                    // Set select options
+                                    if (child.school_id) {
+                                        document.getElementById('edit_school_id').value = child.school_id;
+                                    }
+                                    if (child.bus_id) {
+                                        document.getElementById('edit_bus_id').value = child.bus_id;
+                                    }
+                                    
+                                    // Show the modal
+                                    document.getElementById('editChildModal').classList.remove('hidden');
+                                    document.body.style.overflow = 'hidden';
+                                } else {
+                                    alert('Error fetching child details');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                alert('Error fetching child details');
+                            });
+                    }
+                    
+                    function closeEditChildModal() {
+                        document.getElementById('editChildModal').classList.add('hidden');
+                        document.body.style.overflow = 'auto';
+                    }
+                    
+                    function openDeleteChildModal(childId, childName) {
+                        document.getElementById('delete_child_id').value = childId;
+                        document.getElementById('deleteChildText').textContent = `Are you sure you want to delete ${childName}?`;
+                        document.getElementById('deleteChildModal').classList.remove('hidden');
+                        document.body.style.overflow = 'hidden';
+                    }
+                    
+                    function closeDeleteChildModal() {
+                        document.getElementById('deleteChildModal').classList.add('hidden');
+                        document.body.style.overflow = 'auto';
+                    }
+
+                    // Account settings modal functions
+                    function openUpdateModal() {
+                        document.getElementById('updateModal').classList.remove('hidden');
+                        document.body.style.overflow = 'hidden';
+                    }
+
+                    function closeUpdateModal() {
+                        document.getElementById('updateModal').classList.add('hidden');
+                        document.body.style.overflow = 'auto';
+                    }
+
+                    function openChangePasswordModal() {
+                        document.getElementById('changePasswordModal').classList.remove('hidden');
+                        document.body.style.overflow = 'hidden';
+                    }
+
+                    function closeChangePasswordModal() {
+                        document.getElementById('changePasswordModal').classList.add('hidden');
+                        document.body.style.overflow = 'auto';
+                    }
+
+                    function openDeleteAccountModal() {
+                        document.getElementById('deleteAccountModal').classList.remove('hidden');
+                        document.body.style.overflow = 'hidden';
+                    }
+
+                    function closeDeleteAccountModal() {
+                        document.getElementById('deleteAccountModal').classList.add('hidden');
+                        document.body.style.overflow = 'auto';
+                    }
+
+                    // Document ready handler for all modals
+                    document.addEventListener('DOMContentLoaded', function() {
+                        // Setup for all modals
+                        const modals = [
+                            { id: 'logoutModal', closeFn: closeLogoutModal },
+                            { id: 'updateModal', closeFn: closeUpdateModal },
+                            { id: 'changePasswordModal', closeFn: closeChangePasswordModal },
+                            { id: 'deleteAccountModal', closeFn: closeDeleteAccountModal },
+                            { id: 'editChildModal', closeFn: closeEditChildModal },
+                            { id: 'deleteChildModal', closeFn: closeDeleteChildModal }
+                        ];
+                        
+                        modals.forEach(modal => {
+                            const el = document.getElementById(modal.id);
+                            if (el) {
+                                el.addEventListener('click', function(e) {
+                                    if (e.target === this) {
+                                        modal.closeFn();
+                                    }
+                                });
+                            }
+                        });
+
+                        // Close all modals on escape key press
+                        document.addEventListener('keydown', function(e) {
+                            if (e.key === 'Escape') {
+                                modals.forEach(modal => {
+                                    const el = document.getElementById(modal.id);
+                                    if (el && !el.classList.contains('hidden')) {
+                                        modal.closeFn();
+                                    }
+                                });
+                            }
+                        });
+                    });
+                </script>
+    </body>
 </html>
