@@ -1752,277 +1752,588 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                             <div class="h-10 w-1 bg-orange-500 rounded-full"></div>
                             <h2 class="text-3xl font-bold heading-brown">Children Details</h2>
                         </div>
+                        <div class="mt-4 md:mt-0">
+                            <button class="btn-primary text-sm px-4 py-2 rounded-lg">Save Changes</button>
+                        </div>
                     </div>
 
                     <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden mb-6">
                         <div class="p-4 border-b border-gray-100 flex justify-between items-center">
                             <h3 class="text-lg font-semibold heading-brown">Your Children</h3>
-                            <a href="add_child.php" class="bg-yellow-500 text-white text-sm flex items-center px-4 py-2 rounded-lg hover:bg-yellow-600 transition duration-300 transform hover:scale-105 shadow-sm cursor-pointer">
+                            <button class="text-orange-500 text-sm flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                 </svg>
                                 Add Child
-                            </a>
+                            </button>
                         </div>
                         
-                        <?php
-                        // Get parent's children with more detailed information
-                        $childrenStmt = $pdo->prepare("
-                            SELECT c.child_id, c.first_name, c.last_name, c.grade, c.medical_notes, 
-                                   c.photo_url, c.pickup_location, c.emergency_contact,
-                                   s.name as school_name, s.school_id,
-                                   b.bus_number, b.bus_id
-                            FROM child c 
-                            LEFT JOIN school s ON c.school_id = s.school_id 
-                            LEFT JOIN bus b ON c.bus_id = b.bus_id 
-                            WHERE c.parent_id = :parent_id
-                        ");
-                        $childrenStmt->execute(['parent_id' => $_SESSION['parent_id']]);
-                        $children = $childrenStmt->fetchAll(PDO::FETCH_ASSOC);
-                        
-                        // Fetch all schools for dropdown
-                        $schoolStmt = $pdo->prepare("SELECT school_id, name FROM school ORDER BY name");
-                        $schoolStmt->execute();
-                        $schools = $schoolStmt->fetchAll(PDO::FETCH_ASSOC);
-                        
-                        // Fetch all buses for dropdown
-                        $busStmt = $pdo->prepare("SELECT bus_id, bus_number FROM bus WHERE is_active = 1 ORDER BY bus_number");
-                        $busStmt->execute();
-                        $buses = $busStmt->fetchAll(PDO::FETCH_ASSOC);
-                        
-                        if (count($children) > 0) {
-                            foreach ($children as $index => $child) {
-                                $borderClass = $index < count($children) - 1 ? 'border-b border-gray-100' : '';
-                        ?>
                         <!-- Child Card -->
-                        <div class="p-6 <?php echo $borderClass; ?>">
+                        <div class="p-6 border-b border-gray-100">
                             <div class="flex flex-col md:flex-row">
-                                <!-- <div class="w-24 h-24 rounded-full overflow-hidden mb-4 md:mb-0 mx-auto md:mx-0 bg-gray-200 flex items-center justify-center">
-                                    <?php if (!empty($child['photo_url'])): ?>
-                                    <img src="<?php echo htmlspecialchars($child['photo_url']); ?>" alt="<?php echo htmlspecialchars($child['first_name'] . ' ' . $child['last_name']); ?>" class="w-full h-full object-cover" />
-                                    <?php else: ?>
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                    </svg>
-                                    <?php endif; ?>
-                                </div> -->
+                                <div class="w-24 h-24 rounded-full overflow-hidden mb-4 md:mb-0 mx-auto md:mx-0">
+                                    <img src="/api/placeholder/100/100" alt="Alex Johnson" class="w-full h-full object-cover" />
+                                </div>
                                 <div class="md:ml-6 flex-1">
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 mb-1">Child's Name</label>
-                                            <p class="p-2 border border-gray-300 rounded-lg bg-gray-50"><?php echo htmlspecialchars($child['first_name'] . ' ' . $child['last_name']); ?></p>
+                                            <input type="text" value="Alex Johnson" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
                                         </div>
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 mb-1">Grade</label>
-                                            <p class="p-2 border border-gray-300 rounded-lg bg-gray-50"><?php echo htmlspecialchars($child['grade']); ?></p>
+                                            <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+                                                <option>Grade 3</option>
+                                                <option>Grade 4</option>
+                                                <option>Grade 5</option>
+                                            </select>
                                         </div>
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 mb-1">School</label>
-                                            <p class="p-2 border border-gray-300 rounded-lg bg-gray-50"><?php echo htmlspecialchars($child['school_name'] ?? 'Not assigned'); ?></p>
+                                            <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+                                                <option>Westfield High School</option>
+                                                <option>Eastside Elementary</option>
+                                                <option>Central Middle School</option>
+                                            </select>
                                         </div>
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 mb-1">Bus Route</label>
-                                            <p class="p-2 border border-gray-300 rounded-lg bg-gray-50"><?php echo htmlspecialchars($child['bus_number'] ?? 'Not assigned'); ?></p>
+                                            <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+                                                <option>Route #42</option>
+                                                <option>Route #36</option>
+                                                <option>Route #51</option>
+                                            </select>
                                         </div>
-                                        <?php if (!empty($child['medical_notes'])): ?>
                                         <div class="md:col-span-2">
                                             <label class="block text-sm font-medium text-gray-700 mb-1">Special Notes (allergies, medical conditions)</label>
-                                            <p class="p-2 border border-gray-300 rounded-lg bg-gray-50 min-h-[60px]"><?php echo htmlspecialchars($child['medical_notes']); ?></p>
+                                            <textarea class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition" rows="2"></textarea>
                                         </div>
-                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </div>
                             <div class="flex justify-end mt-4 space-x-3">
-                            <button type="button" onclick="openDeleteChildModal(<?php echo $child['child_id']; ?>, '<?php echo htmlspecialchars($child['first_name'] . ' ' . $child['last_name']); ?>')" 
-                                        class="text-red-500 text-sm px-4 py-2 border border-red-200 rounded-lg hover:bg-red-50 transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-300 cursor-pointer">
-                                    <span class="flex items-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                        Delete Child
-                                    </span>
-                                </button>
-                                <button type="button" onclick="openEditChildModal(<?php echo $child['child_id']; ?>)" 
-                                        class="text-orange-500 text-sm px-4 py-2 border border-orange-200 rounded-lg hover:bg-orange-50 transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-300 cursor-pointer">
-                                    <span class="flex items-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                        </svg>
-                                        Edit Details
-                                    </span>
-                                </button>
+                                <button class="text-red-500 text-sm px-4 py-2 border border-red-200 rounded-lg hover:bg-red-50">Remove Child</button>
+                                <button class="text-orange-500 text-sm px-4 py-2 border border-orange-200 rounded-lg hover:bg-orange-50">Update Details</button>
                             </div>
                         </div>
-                        <?php
-                            }
-                        } else {
-                        ?>
-                        <div class="p-6 text-center">
-                            <p class="text-gray-500">You haven't added any children yet.</p>
-                            <a href="add_child.php" class="inline-block mt-4 px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600">Add Your First Child</a>
+                        
+                        <!-- Add another child example -->
+                        <div class="p-6">
+                            <div class="flex flex-col md:flex-row">
+                                <div class="w-24 h-24 rounded-full overflow-hidden mb-4 md:mb-0 mx-auto md:mx-0">
+                                    <img src="/api/placeholder/100/100" alt="Emily Johnson" class="w-full h-full object-cover" />
                                 </div>
-                        <?php } ?>
+                                <div class="md:ml-6 flex-1">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Child's Name</label>
+                                            <input type="text" value="Emily Johnson" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Grade</label>
+                                            <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+                                                <option>Grade 1</option>
+                                                <option>Grade 2</option>
+                                                <option>Grade 3</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">School</label>
+                                            <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+                                                <option>Eastside Elementary</option>
+                                                <option>Westfield High School</option>
+                                                <option>Central Middle School</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Bus Route</label>
+                                            <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+                                                <option>Route #36</option>
+                                                <option>Route #42</option>
+                                                <option>Route #51</option>
+                                            </select>
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Special Notes (allergies, medical conditions)</label>
+                                            <textarea class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition" rows="2">Mild peanut allergy</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex justify-end mt-4 space-x-3">
+                                <button class="text-red-500 text-sm px-4 py-2 border border-red-200 rounded-lg hover:bg-red-50">Remove Child</button>
+                                <button class="text-orange-500 text-sm px-4 py-2 border border-orange-200 rounded-lg hover:bg-orange-50">Update Details</button>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
-                <!-- Edit Child Modal -->
-                <div id="editChildModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-[99999]">
-                    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-lg bg-white">
-                        <div class="flex justify-between items-center pb-3 border-b">
-                            <h3 class="text-xl font-semibold text-gray-700">Edit Child Information</h3>
-                            <button onclick="closeEditChildModal()" class="text-gray-400 hover:text-gray-600">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                <!-- Pickup Locations Section -->
+                <section id="pickup-section" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-72 md:mr-8 mx-4 md:mx-0">
+                    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
+                        <div class="flex items-center space-x-3">
+                            <div class="h-10 w-1 bg-orange-500 rounded-full"></div>
+                            <h2 class="text-3xl font-bold heading-brown">Pickup Locations</h2>
+                        </div>
+                        <div class="mt-4 md:mt-0">
+                            <button class="btn-primary text-sm px-4 py-2 rounded-lg">Save Changes</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden mb-6">
+                        <div class="p-4 border-b border-gray-100 flex justify-between items-center">
+                            <h3 class="text-lg font-semibold heading-brown">Manage Pickup Locations</h3>
+                            <button class="text-orange-500 text-sm flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                </svg>
+                                Add Location
+                            </button>
+                        </div>
+                        
+                        <!-- Primary Location -->
+                        <div class="p-6 border-b border-gray-100">
+                            <div class="flex items-start mb-4">
+                                <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3 flex-1">
+                                    <div class="flex justify-between">
+                                        <h4 class="font-medium text-gray-800">Home (Primary)</h4>
+                                        <span class="text-xs bg-orange-100 text-orange-800 px-2 py-0.5 rounded">Default</span>
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                                            <input type="text" value="123 Education Lane" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
+                                            <input type="text" value="Springfield" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">State</label>
+                                            <input type="text" value="IL" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
+                                            <input type="text" value="62704" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex justify-end mt-2 space-x-3">
+                                <button class="text-orange-500 text-sm px-4 py-2 border border-orange-200 rounded-lg hover:bg-orange-50">Update Location</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Alternative Location -->
+                        <div class="p-6 border-b border-gray-100">
+                            <div class="flex items-start mb-4">
+                                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3 flex-1">
+                                    <div class="flex justify-between">
+                                        <h4 class="font-medium text-gray-800">Grandparents' House</h4>
+                                        <button class="text-xs text-blue-600 hover:text-blue-800">Make Default</button>
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                                            <input type="text" value="456 Maple Avenue" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
+                                            <input type="text" value="Springfield" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">State</label>
+                                            <input type="text" value="IL" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
+                                            <input type="text" value="62704" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex justify-end mt-2 space-x-3">
+                                <button class="text-red-500 text-sm px-4 py-2 border border-red-200 rounded-lg hover:bg-red-50">Remove</button>
+                                <button class="text-orange-500 text-sm px-4 py-2 border border-orange-200 rounded-lg hover:bg-orange-50">Update Location</button>
+                            </div>
+                        </div>
+                        
+                        <!-- After School Activities Location -->
+                        <div class="p-6">
+                            <div class="flex items-start mb-4">
+                                <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3 flex-1">
+                                    <div class="flex justify-between">
+                                        <h4 class="font-medium text-gray-800">After School Program</h4>
+                                        <button class="text-xs text-blue-600 hover:text-blue-800">Make Default</button>
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                                            <input type="text" value="789 Community Center Road" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
+                                            <input type="text" value="Springfield" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">State</label>
+                                            <input type="text" value="IL" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
+                                            <input type="text" value="62704" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex justify-end mt-2 space-x-3">
+                                <button class="text-red-500 text-sm px-4 py-2 border border-red-200 rounded-lg hover:bg-red-50">Remove</button>
+                                <button class="text-orange-500 text-sm px-4 py-2 border border-orange-200 rounded-lg hover:bg-orange-50">Update Location</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                <!-- Account Settings Section -->
+                <section id="settings-section" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-72 md:mr-8 mx-4 md:mx-0">
+                    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
+                        <div class="flex items-center space-x-3">
+                            <div class="h-10 w-1 bg-orange-500 rounded-full"></div>
+                            <h2 class="text-3xl font-bold heading-brown">Account Settings</h2>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden mb-6">
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="text-lg font-semibold heading-brown">Personal Information</h3>
+                                <!-- <button onclick="openUpdateModal()" class="btn-primary text-sm px-4 py-2 rounded-lg flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                    </svg>
+                                    Update Information
+                                </button> -->
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-500">Full Name</label>
+                                    <p class="mt-1 text-gray-900">
+                                        <?php echo isset($parentInfo['full_name']) ? htmlspecialchars($parentInfo['full_name']) : 'Not available'; ?>
+                                    </p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-500">Email</label>
+                                    <p class="mt-1 text-gray-900">
+                                        <?php echo isset($parentInfo['email']) ? htmlspecialchars($parentInfo['email']) : 'Not available'; ?>
+                                    </p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-500">Phone</label>
+                                    <p class="mt-1 text-gray-900">
+                                        <?php echo !empty($parentInfo['phone']) ? htmlspecialchars($parentInfo['phone']) : 'Not provided'; ?>
+                                    </p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-500">Home Address</label>
+                                    <p class="mt-1 text-gray-900">
+                                        <?php echo isset($parentInfo['home_address']) ? htmlspecialchars($parentInfo['home_address']) : 'Not available'; ?>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="mt-8 flex flex-col md:flex-row gap-4">
+                                <!-- Update Information Button -->
+                                <button onclick="openUpdateModal()" 
+                                        class="inline-flex items-center justify-center px-6 py-2 bg-yellow-500 text-white rounded-lg 
+                                            hover:bg-yellow-600 transform hover:-translate-y-0.5 transition-all duration-200 
+                                            focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                    </svg>
+                                    Update Information
+                                </button>
+
+                                <!-- Change Password Button -->
+                                <button onclick="openChangePasswordModal()" 
+                                        class="inline-flex items-center justify-center px-6 py-2 bg-blue-500 text-white rounded-lg 
+                                            hover:bg-blue-600 transform hover:-translate-y-0.5 transition-all duration-200 
+                                            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                    </svg>
+                                    Change Password
+                                </button>
+
+                                <!-- Delete Account Button -->
+                                <button onclick="openDeleteAccountModal()" 
+                                        class="inline-flex items-center justify-center px-6 py-2 border-2 bg-red-500 text-white rounded-lg 
+                                            hover:bg-red-600 transform hover:-translate-y-0.5 transition-all duration-200 
+                                            focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                    Delete Account
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+
+
+
+
+
+
+
+
+
+
+                <!-- Update Information Modal -->
+                <div id="updateModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-[9999]">
+                    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-semibold text-gray-900">Update Information</h3>
+                            <button onclick="closeUpdateModal()" class="text-gray-400 hover:text-gray-600">
                                 <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
                         </div>
-                        <form id="editChildForm" method="post" action="update_child.php">
-                            <input type="hidden" id="edit_child_id" name="child_id" value="">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                                        <div>
-                                    <label for="first_name" class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                                    <input type="text" id="edit_first_name" name="first_name" class="w-full p-2 border border-gray-300 rounded-lg">
-                                        </div>
-                                        <div>
-                                    <label for="last_name" class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                                    <input type="text" id="edit_last_name" name="last_name" class="w-full p-2 border border-gray-300 rounded-lg">
-                                        </div>
-                                        <div>
-                                    <label for="grade" class="block text-sm font-medium text-gray-700 mb-1">Grade</label>
-                                    <input type="text" id="edit_grade" name="grade" class="w-full p-2 border border-gray-300 rounded-lg">
-                                        </div>
-                                        <div>
-                                    <label for="school_id" class="block text-sm font-medium text-gray-700 mb-1">School</label>
-                                    <select id="edit_school_id" name="school_id" class="w-full p-2 border border-gray-300 rounded-lg">
-                                        <option value="">Select School</option>
-                                        <?php foreach ($schools as $school): ?>
-                                        <option value="<?php echo $school['school_id']; ?>"><?php echo htmlspecialchars($school['name']); ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                        </div>
-                                        <div>
-                                    <label for="bus_id" class="block text-sm font-medium text-gray-700 mb-1">Bus</label>
-                                    <select id="edit_bus_id" name="bus_id" class="w-full p-2 border border-gray-300 rounded-lg">
-                                        <option value="">Select Bus</option>
-                                        <?php foreach ($buses as $bus): ?>
-                                        <option value="<?php echo $bus['bus_id']; ?>"><?php echo htmlspecialchars($bus['bus_number']); ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                        </div>
-                                        <div>
-                                    <label for="emergency_contact" class="block text-sm font-medium text-gray-700 mb-1">Emergency Contact</label>
-                                    <input type="text" id="edit_emergency_contact" name="emergency_contact" class="w-full p-2 border border-gray-300 rounded-lg">
-                                        </div>
-                                <div class="md:col-span-2">
-                                    <label for="medical_notes" class="block text-sm font-medium text-gray-700 mb-1">Medical Notes</label>
-                                    <textarea id="edit_medical_notes" name="medical_notes" class="w-full p-2 border border-gray-300 rounded-lg" rows="3"></textarea>
-                                        </div>
-                                        </div>
-                            <div class="flex justify-end mt-6 space-x-3">
-                                <button type="button" onclick="closeEditChildModal()" class="px-4 py-2 text-gray-500 hover:text-gray-700">Cancel</button>
+                        <form id="updateForm" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Full Name</label>
+                                <input type="text" name="full_name" value="<?php echo htmlspecialchars($parentInfo['full_name']); ?>" class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Phone</label>
+                                <input type="tel" name="phone" value="<?php echo htmlspecialchars($parentInfo['phone']); ?>" class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Home Address</label>
+                                <textarea name="home_address" class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300"><?php echo htmlspecialchars($parentInfo['home_address']); ?></textarea>
+                            </div>
+                            <div class="flex justify-end space-x-3 mt-6">
+                                <button type="button" onclick="closeUpdateModal()" class="px-4 py-2 text-gray-500 hover:text-gray-700">Cancel</button>
                                 <button type="submit" class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600">Save Changes</button>
                             </div>
                         </form>
                     </div>
                 </div>
 
-                <!-- Delete Child Modal -->
-                <div id="deleteChildModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-[99999]">
-                    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-96 shadow-lg rounded-lg bg-white">
-                        <div class="flex justify-between items-center pb-3 border-b">
-                            <h3 class="text-xl font-semibold text-gray-700">Confirm Deletion</h3>
-                            <button onclick="closeDeleteChildModal()" class="text-gray-400 hover:text-gray-600">
+                <!-- Change Password Modal -->
+                <div id="changePasswordModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-[9999]">
+                    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-semibold text-gray-900">Change Password</h3>
+                            <button onclick="closeChangePasswordModal()" class="text-gray-400 hover:text-gray-600">
                                 <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
                         </div>
-                        <div class="py-4">
-                            <p class="text-gray-700" id="deleteChildText">Are you sure you want to delete this child?</p>
+                        <form id="changePasswordForm" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Current Password</label>
+                                <input type="password" name="current_password" required class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
                             </div>
-                        <form id="deleteChildForm" method="post" action="delete_child.php">
-                            <input type="hidden" id="delete_child_id" name="child_id" value="">
-                            <div class="flex justify-end space-x-3">
-                                <button type="button" onclick="closeDeleteChildModal()" class="px-4 py-2 text-gray-500 hover:text-gray-700">Cancel</button>
-                                <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Delete</button>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">New Password</label>
+                                <input type="password" name="new_password" required class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Confirm New Password</label>
+                                <input type="password" name="confirm_password" required class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
+                            </div>
+                            <div class="flex justify-end space-x-3 mt-6">
+                                <button type="button" onclick="closeChangePasswordModal()" class="px-4 py-2 text-gray-500 hover:text-gray-700">Cancel</button>
+                                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Update Password</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Delete Account Modal -->
+                <div id="deleteAccountModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-[9999]">
+                    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-semibold text-red-600">Delete Account</h3>
+                            <button onclick="closeDeleteAccountModal()" class="text-gray-400 hover:text-gray-600">
+                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="mb-4">
+                            <p class="text-gray-600">Are you sure you want to delete your account? This action cannot be undone.</p>
+                        </div>
+                        <form id="deleteAccountForm" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Enter your password to confirm</label>
+                                <input type="password" name="confirm_password" required class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-red-300">
+                            </div>
+                            <div class="flex justify-end space-x-3 mt-6">
+                                <button type="button" onclick="closeDeleteAccountModal()" class="px-4 py-2 text-gray-500 hover:text-gray-700">Cancel</button>
+                                <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Delete Account</button>
                             </div>
                         </form>
                     </div>
                 </div>
 
                 <script>
-                    // ... existing code ...
-                    
-                    // Child modals functions
-                    function openEditChildModal(childId) {
-                        // Fetch child details via AJAX
-                        fetch(`get_child_details.php?child_id=${childId}`)
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    const child = data.child;
-                                    // Populate the form
-                                    document.getElementById('edit_child_id').value = child.child_id;
-                                    document.getElementById('edit_first_name').value = child.first_name;
-                                    document.getElementById('edit_last_name').value = child.last_name;
-                                    document.getElementById('edit_grade').value = child.grade;
-                                    document.getElementById('edit_emergency_contact').value = child.emergency_contact || '';
-                                    document.getElementById('edit_medical_notes').value = child.medical_notes || '';
-                                    
-                                    // Set select options
-                                    if (child.school_id) {
-                                        document.getElementById('edit_school_id').value = child.school_id;
-                                    }
-                                    if (child.bus_id) {
-                                        document.getElementById('edit_bus_id').value = child.bus_id;
-                                    }
-                                    
-                                    // Show the modal
-                                    document.getElementById('editChildModal').classList.remove('hidden');
+                    // Modal functions
+                    function openUpdateModal() {
+                        document.getElementById('updateModal').classList.remove('hidden');
+                    }
+
+                    function closeUpdateModal() {
+                        document.getElementById('updateModal').classList.add('hidden');
+                    }
+
+                    function openChangePasswordModal() {
+                        document.getElementById('changePasswordModal').classList.remove('hidden');
+                    }
+
+                    function closeChangePasswordModal() {
+                        document.getElementById('changePasswordModal').classList.add('hidden');
+                    }
+
+                    function openDeleteAccountModal() {
+                        document.getElementById('deleteAccountModal').classList.remove('hidden');
+                    }
+
+                    function closeDeleteAccountModal() {
+                        document.getElementById('deleteAccountModal').classList.add('hidden');
+                    }
+
+                    // Form submissions
+                    document.getElementById('updateForm').addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        const formData = new FormData(this);
+                        
+                        fetch('update_parent_info.php', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert('Information updated successfully');
+                                location.reload();
                             } else {
-                                    alert('Error fetching child details');
+                                alert(data.message || 'Error updating information');
                             }
                         })
                         .catch(error => {
                             console.error('Error:', error);
-                                alert('Error fetching child details');
-                            });
-                    }
-                    
-                    function closeEditChildModal() {
-                        document.getElementById('editChildModal').classList.add('hidden');
-                    }
-                    
-                    function openDeleteChildModal(childId, childName) {
-                        document.getElementById('delete_child_id').value = childId;
-                        document.getElementById('deleteChildText').textContent = `Are you sure you want to delete ${childName}?`;
-                        document.getElementById('deleteChildModal').classList.remove('hidden');
-                    }
-                    
-                    function closeDeleteChildModal() {
-                        document.getElementById('deleteChildModal').classList.add('hidden');
-                    }
-                    
-                    // Close modals when clicking outside
-                    document.getElementById('editChildModal').addEventListener('click', function(e) {
-                        if (e.target === this) {
-                            closeEditChildModal();
-                        }
+                            alert('An error occurred while updating information');
+                        });
                     });
-                    
-                    document.getElementById('deleteChildModal').addEventListener('click', function(e) {
-                        if (e.target === this) {
-                            closeDeleteChildModal();
-                        }
+
+                    document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        const formData = new FormData(this);
+                        
+                        fetch('change_password.php', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert('Password changed successfully');
+                                closeChangePasswordModal();
+                                this.reset();
+                            } else {
+                                alert(data.message || 'Error changing password');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('An error occurred while changing password');
+                        });
                     });
-                    
-                    // Close modals on escape key press
-                    document.addEventListener('keydown', function(e) {
-                        if (e.key === 'Escape') {
-                            closeEditChildModal();
-                            closeDeleteChildModal();
-                        }
+
+                    document.getElementById('deleteAccountForm').addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        const formData = new FormData(this);
+                        
+                        fetch('delete_account.php', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert('Account deleted successfully');
+                                window.location.href = 'logout.php';
+                            } else {
+                                alert(data.message || 'Error deleting account');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('An error occurred while deleting account');
+                        });
                     });
                 </script>
 
@@ -2250,13 +2561,8 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
 
                 <style>
                 /* Ensure modal is always on top */
-                #logoutModal,
-                #updateModal,
-                #changePasswordModal,
-                #deleteAccountModal,
-                #editChildModal,
-                #deleteChildModal {
-                    z-index: 99999 !important;
+                #logoutModal {
+                    z-index: 9999 !important;
                 }
 
                 /* Add animation for modal */
@@ -2271,469 +2577,21 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                     }
                 }
 
-                #logoutModal > div,
-                #updateModal > div,
-                #changePasswordModal > div,
-                #deleteAccountModal > div,
-                #editChildModal > div,
-                #deleteChildModal > div {
+                #logoutModal > div {
                     animation: modalFade 0.3s ease-out;
                 }
 
                 /* Hover effects for buttons */
                 #logoutModal button:hover,
-                #logoutModal a:hover,
-                #updateModal button:hover,
-                #changePasswordModal button:hover,
-                #deleteAccountModal button:hover,
-                #editChildModal button:hover,
-                #deleteChildModal button:hover {
+                #logoutModal a:hover {
                     transform: translateY(-1px);
                     transition: all 0.2s;
                 }
 
                 /* Add shadow to modal */
-                #logoutModal > div,
-                #updateModal > div,
-                #changePasswordModal > div,
-                #deleteAccountModal > div,
-                #editChildModal > div,
-                #deleteChildModal > div {
+                #logoutModal > div {
                     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
                 }
                 </style>
-
-                <script>
-                function openLogoutModal() {
-                    const modal = document.getElementById('logoutModal');
-                    if (modal) {
-                        modal.classList.remove('hidden');
-                        document.body.style.overflow = 'hidden';
-                    }
-                }
-
-                function closeLogoutModal() {
-                    const modal = document.getElementById('logoutModal');
-                    if (modal) {
-                        modal.classList.add('hidden');
-                        document.body.style.overflow = 'auto';
-                    }
-                }
-
-                // Modal functions for Account Settings
-                function openUpdateModal() {
-                    document.getElementById('updateModal').classList.remove('hidden');
-                    document.body.style.overflow = 'hidden';
-                }
-
-                function closeUpdateModal() {
-                    document.getElementById('updateModal').classList.add('hidden');
-                    document.body.style.overflow = 'auto';
-                }
-
-                function openChangePasswordModal() {
-                    document.getElementById('changePasswordModal').classList.remove('hidden');
-                    document.body.style.overflow = 'hidden';
-                }
-
-                function closeChangePasswordModal() {
-                    document.getElementById('changePasswordModal').classList.add('hidden');
-                    document.body.style.overflow = 'auto';
-                }
-
-                function openDeleteAccountModal() {
-                    document.getElementById('deleteAccountModal').classList.remove('hidden');
-                    document.body.style.overflow = 'hidden';
-                }
-
-                function closeDeleteAccountModal() {
-                    document.getElementById('deleteAccountModal').classList.add('hidden');
-                    document.body.style.overflow = 'auto';
-                }
-
-                // Child modals functions
-                function openEditChildModal(childId) {
-                    // Fetch child details via AJAX
-                    fetch(`get_child_details.php?child_id=${childId}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                const child = data.child;
-                                // Populate the form
-                                document.getElementById('edit_child_id').value = child.child_id;
-                                document.getElementById('edit_first_name').value = child.first_name;
-                                document.getElementById('edit_last_name').value = child.last_name;
-                                document.getElementById('edit_grade').value = child.grade;
-                                document.getElementById('edit_emergency_contact').value = child.emergency_contact || '';
-                                document.getElementById('edit_medical_notes').value = child.medical_notes || '';
-                                
-                                // Set select options
-                                if (child.school_id) {
-                                    document.getElementById('edit_school_id').value = child.school_id;
-                                }
-                                if (child.bus_id) {
-                                    document.getElementById('edit_bus_id').value = child.bus_id;
-                                }
-                                
-                                // Show the modal
-                                document.getElementById('editChildModal').classList.remove('hidden');
-                                document.body.style.overflow = 'hidden';
-                            } else {
-                                alert('Error fetching child details');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('Error fetching child details');
-                        });
-                }
-                
-                function closeEditChildModal() {
-                    document.getElementById('editChildModal').classList.add('hidden');
-                    document.body.style.overflow = 'auto';
-                }
-                
-                function openDeleteChildModal(childId, childName) {
-                    document.getElementById('delete_child_id').value = childId;
-                    document.getElementById('deleteChildText').textContent = `Are you sure you want to delete ${childName}?`;
-                    document.getElementById('deleteChildModal').classList.remove('hidden');
-                    document.body.style.overflow = 'hidden';
-                }
-                
-                function closeDeleteChildModal() {
-                    document.getElementById('deleteChildModal').classList.add('hidden');
-                    document.body.style.overflow = 'auto';
-                }
-
-                // Close modals when clicking outside
-                document.addEventListener('DOMContentLoaded', function() {
-                    // Setup for existing modals
-                    const modals = [
-                        { id: 'logoutModal', closeFn: closeLogoutModal },
-                        { id: 'updateModal', closeFn: closeUpdateModal },
-                        { id: 'changePasswordModal', closeFn: closeChangePasswordModal },
-                        { id: 'deleteAccountModal', closeFn: closeDeleteAccountModal },
-                        { id: 'editChildModal', closeFn: closeEditChildModal },
-                        { id: 'deleteChildModal', closeFn: closeDeleteChildModal }
-                    ];
-                    
-                    modals.forEach(modal => {
-                        const el = document.getElementById(modal.id);
-                        if (el) {
-                            el.addEventListener('click', function(e) {
-                                if (e.target === this) {
-                                    modal.closeFn();
-                                }
-                            });
-                        }
-                    });
-
-                    // Close all modals on escape key press
-                    document.addEventListener('keydown', function(e) {
-                        if (e.key === 'Escape') {
-                            modals.forEach(modal => {
-                                const el = document.getElementById(modal.id);
-                                if (el && !el.classList.contains('hidden')) {
-                                    modal.closeFn();
-                                }
-                            });
-                        }
-                    });
-                });
-                </script>
-
-                <!-- Account Settings Section -->
-                <section id="settings-section" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-72 md:mr-8 mx-4 md:mx-0">
-                    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
-                        <div class="flex items-center space-x-3">
-                            <div class="h-10 w-1 bg-orange-500 rounded-full"></div>
-                            <h2 class="text-3xl font-bold heading-brown">Account Settings</h2>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden mb-6">
-                        <div class="p-6">
-                            <div class="flex justify-between items-center mb-6">
-                                <h3 class="text-lg font-semibold heading-brown">Personal Information</h3>
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-500">Full Name</label>
-                                    <p class="mt-1 text-gray-900">
-                                        <?php echo isset($parentInfo['full_name']) ? htmlspecialchars($parentInfo['full_name']) : 'Not available'; ?>
-                                    </p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-500">Email</label>
-                                    <p class="mt-1 text-gray-900">
-                                        <?php echo isset($parentInfo['email']) ? htmlspecialchars($parentInfo['email']) : 'Not available'; ?>
-                                    </p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-500">Phone</label>
-                                    <p class="mt-1 text-gray-900">
-                                        <?php echo !empty($parentInfo['phone']) ? htmlspecialchars($parentInfo['phone']) : 'Not provided'; ?>
-                                    </p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-500">Home Address</label>
-                                    <p class="mt-1 text-gray-900">
-                                        <?php echo isset($parentInfo['home_address']) ? htmlspecialchars($parentInfo['home_address']) : 'Not available'; ?>
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div class="mt-8 flex flex-col md:flex-row gap-4">
-                                <!-- Update Information Button -->
-                                <button onclick="openUpdateModal()" 
-                                        class="inline-flex items-center justify-center px-6 py-2 bg-yellow-500 text-white rounded-lg 
-                                            hover:bg-yellow-600 transform hover:-translate-y-0.5 transition-all duration-200 
-                                            focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                    </svg>
-                                    Update Information
-                                </button>
-
-                                <!-- Change Password Button -->
-                                <button onclick="openChangePasswordModal()" 
-                                        class="inline-flex items-center justify-center px-6 py-2 bg-blue-500 text-white rounded-lg 
-                                            hover:bg-blue-600 transform hover:-translate-y-0.5 transition-all duration-200 
-                                            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                    </svg>
-                                    Change Password
-                                </button>
-
-                                <!-- Delete Account Button -->
-                                <button onclick="openDeleteAccountModal()" 
-                                        class="inline-flex items-center justify-center px-6 py-2 border-2 bg-red-500 text-white rounded-lg 
-                                            hover:bg-red-600 transform hover:-translate-y-0.5 transition-all duration-200 
-                                            focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                    Delete Account
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Update Information Modal -->
-                <div id="updateModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-[99999]">
-                    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-xl font-semibold text-gray-900">Update Information</h3>
-                            <button onclick="closeUpdateModal()" class="text-gray-400 hover:text-gray-600">
-                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-                        <form id="updateForm" class="space-y-4" method="post" action="update_parent_info.php">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Full Name</label>
-                                <input type="text" name="full_name" value="<?php echo htmlspecialchars($parentInfo['full_name']); ?>" class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Phone</label>
-                                <input type="tel" name="phone" value="<?php echo htmlspecialchars($parentInfo['phone']); ?>" class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Home Address</label>
-                                <textarea name="home_address" class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300"><?php echo htmlspecialchars($parentInfo['home_address']); ?></textarea>
-                            </div>
-                            <div class="flex justify-end space-x-3 mt-6">
-                                <button type="button" onclick="closeUpdateModal()" class="px-4 py-2 text-gray-500 hover:text-gray-700">Cancel</button>
-                                <button type="submit" class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600">Save Changes</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Change Password Modal -->
-                <div id="changePasswordModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-[99999]">
-                    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-xl font-semibold text-gray-900">Change Password</h3>
-                            <button onclick="closeChangePasswordModal()" class="text-gray-400 hover:text-gray-600">
-                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-                        <form id="changePasswordForm" class="space-y-4" method="post" action="change_password.php">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Current Password</label>
-                                <input type="password" name="current_password" required class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">New Password</label>
-                                <input type="password" name="new_password" required class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Confirm New Password</label>
-                                <input type="password" name="confirm_password" required class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-orange-300">
-                            </div>
-                            <div class="flex justify-end space-x-3 mt-6">
-                                <button type="button" onclick="closeChangePasswordModal()" class="px-4 py-2 text-gray-500 hover:text-gray-700">Cancel</button>
-                                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Update Password</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Delete Account Modal -->
-                <div id="deleteAccountModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-[99999]">
-                    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-xl font-semibold text-red-600">Delete Account</h3>
-                            <button onclick="closeDeleteAccountModal()" class="text-gray-400 hover:text-gray-600">
-                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="mb-4">
-                            <p class="text-gray-600">Are you sure you want to delete your account? This action cannot be undone.</p>
-                        </div>
-                        <form id="deleteAccountForm" class="space-y-4" method="post" action="delete_account.php">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Enter your password to confirm</label>
-                                <input type="password" name="confirm_password" required class="mt-1 w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-red-300">
-                            </div>
-                            <div class="flex justify-end space-x-3 mt-6">
-                                <button type="button" onclick="closeDeleteAccountModal()" class="px-4 py-2 text-gray-500 hover:text-gray-700">Cancel</button>
-                                <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Delete Account</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <script>
-                    // Modal functions for both Children and Settings sections
-                    function openEditChildModal(childId) {
-                        // Fetch child details via AJAX
-                        fetch(`get_child_details.php?child_id=${childId}`)
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    const child = data.child;
-                                    // Populate the form
-                                    document.getElementById('edit_child_id').value = child.child_id;
-                                    document.getElementById('edit_first_name').value = child.first_name;
-                                    document.getElementById('edit_last_name').value = child.last_name;
-                                    document.getElementById('edit_grade').value = child.grade;
-                                    document.getElementById('edit_emergency_contact').value = child.emergency_contact || '';
-                                    document.getElementById('edit_medical_notes').value = child.medical_notes || '';
-                                    
-                                    // Set select options
-                                    if (child.school_id) {
-                                        document.getElementById('edit_school_id').value = child.school_id;
-                                    }
-                                    if (child.bus_id) {
-                                        document.getElementById('edit_bus_id').value = child.bus_id;
-                                    }
-                                    
-                                    // Show the modal
-                                    document.getElementById('editChildModal').classList.remove('hidden');
-                                    document.body.style.overflow = 'hidden';
-                                } else {
-                                    alert('Error fetching child details');
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error:', error);
-                                alert('Error fetching child details');
-                            });
-                    }
-                    
-                    function closeEditChildModal() {
-                        document.getElementById('editChildModal').classList.add('hidden');
-                        document.body.style.overflow = 'auto';
-                    }
-                    
-                    function openDeleteChildModal(childId, childName) {
-                        document.getElementById('delete_child_id').value = childId;
-                        document.getElementById('deleteChildText').textContent = `Are you sure you want to delete ${childName}?`;
-                        document.getElementById('deleteChildModal').classList.remove('hidden');
-                        document.body.style.overflow = 'hidden';
-                    }
-                    
-                    function closeDeleteChildModal() {
-                        document.getElementById('deleteChildModal').classList.add('hidden');
-                        document.body.style.overflow = 'auto';
-                    }
-
-                    // Account settings modal functions
-                    function openUpdateModal() {
-                        document.getElementById('updateModal').classList.remove('hidden');
-                        document.body.style.overflow = 'hidden';
-                    }
-
-                    function closeUpdateModal() {
-                        document.getElementById('updateModal').classList.add('hidden');
-                        document.body.style.overflow = 'auto';
-                    }
-
-                    function openChangePasswordModal() {
-                        document.getElementById('changePasswordModal').classList.remove('hidden');
-                        document.body.style.overflow = 'hidden';
-                    }
-
-                    function closeChangePasswordModal() {
-                        document.getElementById('changePasswordModal').classList.add('hidden');
-                        document.body.style.overflow = 'auto';
-                    }
-
-                    function openDeleteAccountModal() {
-                        document.getElementById('deleteAccountModal').classList.remove('hidden');
-                        document.body.style.overflow = 'hidden';
-                    }
-
-                    function closeDeleteAccountModal() {
-                        document.getElementById('deleteAccountModal').classList.add('hidden');
-                        document.body.style.overflow = 'auto';
-                    }
-
-                    // Document ready handler for all modals
-                    document.addEventListener('DOMContentLoaded', function() {
-                        // Setup for all modals
-                        const modals = [
-                            { id: 'logoutModal', closeFn: closeLogoutModal },
-                            { id: 'updateModal', closeFn: closeUpdateModal },
-                            { id: 'changePasswordModal', closeFn: closeChangePasswordModal },
-                            { id: 'deleteAccountModal', closeFn: closeDeleteAccountModal },
-                            { id: 'editChildModal', closeFn: closeEditChildModal },
-                            { id: 'deleteChildModal', closeFn: closeDeleteChildModal }
-                        ];
-                        
-                        modals.forEach(modal => {
-                            const el = document.getElementById(modal.id);
-                            if (el) {
-                                el.addEventListener('click', function(e) {
-                                    if (e.target === this) {
-                                        modal.closeFn();
-                                    }
-                                });
-                            }
-                        });
-
-                        // Close all modals on escape key press
-                        document.addEventListener('keydown', function(e) {
-                            if (e.key === 'Escape') {
-                                modals.forEach(modal => {
-                                    const el = document.getElementById(modal.id);
-                                    if (el && !el.classList.contains('hidden')) {
-                                        modal.closeFn();
-                                    }
-                                });
-                            }
-                        });
-                    });
-                </script>
     </body>
 </html>
