@@ -269,6 +269,56 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
             cursor: not-allowed;
             pointer-events: none;
         }
+
+        /* Update modal styles to ensure proper layering */
+        #updateModal,
+        #changePasswordModal,
+        #deleteAccountModal,
+        #logoutModal {
+            z-index: 99999 !important;  /* Highest z-index */
+        }
+
+        /* Modal backdrop styling */
+        #updateModal::before,
+        #changePasswordModal::before,
+        #deleteAccountModal::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: -1;
+        }
+
+        /* Modal content animation and positioning */
+        #updateModal > div,
+        #changePasswordModal > div,
+        #deleteAccountModal > div {
+            position: relative;
+            animation: modalFade 0.3s ease-out;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            background: white;
+            transform: translateZ(1000px); /* Force 3D rendering */
+        }
+
+        /* Ensure modal containers are always on top */
+        .fixed {
+            isolation: isolate;
+        }
+
+        @keyframes modalFade {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 <body class="bg-gradient-to-b from-orange-50 to-orange-100 min-h-screen">
@@ -299,18 +349,20 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                     </svg>
                     Home
                 </button>
-                <button onclick="showSection('tracker')" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2c3.866 0 7 3.134 7 7 0 5.25-7 11-7 11s-7-5.75-7-11c0-3.866 3.134-7 7-7zM12 9a2 2 0 110 4 2 2 0 010-4z" />
-                    </svg>
-                    Tracker
-                </button>
-                <button onclick="showSection('history')" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
+                <!-- Bus Tracking Button -->
+                <a href="bus_location_tracker.php?child_id=<?php echo $selectedChildId; ?>" 
+                    class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2c3.866 0 7 3.134 7 7 0 5.25-7 11-7 11s-7-5.75-7-11c0-3.866 3.134-7 7-7zM12 9a2 2 0 110 4 2 2 0 010-4z" />
+                     </svg>
+                     Track
+                </a>
+                <!-- <button onclick="showSection('history')" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
                     History
-                </button>
+                </button> -->
                 <button onclick="showSection('payments')" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -343,18 +395,19 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                 </svg>
                 <span>Home</span>
             </button>
-            <button onclick="showSection('tracker')" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2c3.866 0 7 3.134 7 7 0 5.25-7 11-7 11s-7-5.75-7-11c0-3.866 3.134-7 7-7zM12 9a2 2 0 110 4 2 2 0 010-4z" />
-                </svg>
-                <span>Tracker</span>
-            </button>
-            <button onclick="showSection('history')" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
+            <a href="bus_location_tracker.php?child_id=<?php echo $selectedChildId; ?>" 
+                class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2c3.866 0 7 3.134 7 7 0 5.25-7 11-7 11s-7-5.75-7-11c0-3.866 3.134-7 7-7zM12 9a2 2 0 110 4 2 2 0 010-4z" />
+                 </svg>
+                 <span>Track</span>
+            </a>
+            <!-- <button onclick="showSection('history')" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
                 <span>History</span>
-            </button>
+            </button> -->
             <button onclick="showSection('payments')" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -583,65 +636,278 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                     <h3 class="text-lg font-semibold heading-brown">Attendance & Fee Status</h3>
                                 </div>
                                 <div class="p-6">
+                                   
                                     <!-- Fee Status Box -->
-                                    <div class="bg-green-50 rounded-xl p-4 mb-6">
+                                    <?php 
+                                    // Get current month and year
+                                    $currentMonth = date('F Y');
+                                    $currentMonthNumber = date('m');
+
+                                    // Check payment status for the selected child for current month
+                                    $paymentSql = "SELECT * FROM payment 
+                                                WHERE child_id = ? 
+                                                AND DATE_FORMAT(month_covered, '%m') = ? 
+                                                AND status = 'completed'
+                                                ORDER BY payment_date DESC LIMIT 1";
+                                    $paymentStmt = $pdo->prepare($paymentSql);
+                                    $paymentStmt->execute([$selectedChildId, $currentMonthNumber]);
+                                    $paymentData = $paymentStmt->fetch(PDO::FETCH_ASSOC);
+
+                                    $isPaid = !empty($paymentData);
+                                    ?>
+                                    <div class="<?php echo ($isPaid ? 'bg-green-50' : 'bg-red-50'); ?> rounded-xl p-4 mb-6">
                                         <div class="flex justify-between items-center">
                                             <div>
-                                                <h4 class="text-sm font-medium text-gray-800">March 2025 Fees</h4>
+                                                <h4 class="text-sm font-medium text-gray-800"><?php echo $currentMonth; ?> Fees</h4>
                                                 <p class="mt-1 text-xs text-gray-600">Due: 5th of every month</p>
                                             </div>
+                                            <?php if ($isPaid): ?>
                                             <div class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
                                                 PAID
                                             </div>
+                                            <?php else: ?>
+                                            <div class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">
+                                                UNPAID
+                                            </div>
+                                            <?php endif; ?>
                                         </div>
+                                        <?php if ($isPaid): ?>
+                                        <!-- <div class="mt-3 text-xs text-gray-600">
+                                            <p>Payment Date: <?php echo date('M d, Y', strtotime($paymentData['payment_date'])); ?></p>
+                                            <p>Amount: Rs.<?php echo number_format($paymentData['amount'], 2); ?></p>
+                                            <p>Method: <?php echo htmlspecialchars($paymentData['payment_method']); ?></p>
+                                        </div> -->
+                                        <?php endif; ?>
                                     </div>
+
 
                                     <!-- Attendance Marking -->
                                     <div class="flex flex-col">
-                                        <div id="attendanceStatus" class="bg-green-50 rounded-xl p-4 mb-4">
+                                        <?php
+                                        // Get the current date in YYYY-MM-DD format
+                                        $today = date('Y-m-d');
+                                        
+                                        // Check if there's an attendance record for the selected child for today
+                                        $attendanceSql = "SELECT * FROM attendance WHERE child_id = ? AND attendance_date = ?";
+                                        $attendanceStmt = $pdo->prepare($attendanceSql);
+                                        $attendanceStmt->execute([$selectedChildId, $today]);
+                                        $attendanceData = $attendanceStmt->fetch(PDO::FETCH_ASSOC);
+                                        
+                                        // If no record exists for today, create one
+                                        if (!$attendanceData) {
+                                            // Get bus_seat_id from child_reservation
+                                            $reservationSql = "SELECT seat_id FROM child_reservation WHERE child_id = ? AND is_active = 1 ORDER BY reservation_date DESC LIMIT 1";
+                                            $reservationStmt = $pdo->prepare($reservationSql);
+                                            $reservationStmt->execute([$selectedChildId]);
+                                            $reservationData = $reservationStmt->fetch(PDO::FETCH_ASSOC);
+                                            
+                                            $busSeatId = $reservationData ? $reservationData['seat_id'] : null;
+                                            
+                                            // Insert new attendance record with status 'pending'
+                                            $insertSql = "INSERT INTO attendance (child_id, bus_seat_id, attendance_date, status) 
+                                                        VALUES (?, ?, ?, 'pending')
+                                                        ON DUPLICATE KEY UPDATE status = 'pending'";
+                                            $insertStmt = $pdo->prepare($insertSql);
+                                            $insertStmt->execute([$selectedChildId, $busSeatId, $today]);
+                                            
+                                            // Get the newly created record
+                                            $attendanceStmt->execute([$selectedChildId, $today]);
+                                            $attendanceData = $attendanceStmt->fetch(PDO::FETCH_ASSOC);
+                                        }
+                                        
+                                        // Determine the status and appropriate colors
+                                        $status = $attendanceData ? $attendanceData['status'] : 'pending';
+                                        
+                                        // Set colors based on status
+                                        $bgColor = 'bg-yellow-50';
+                                        $textColor = 'text-yellow-800';
+                                        $statusBg = 'bg-yellow-100';
+                                        $statusLabel = "Today's Pending";
+                                        
+                                        if ($status == 'present') {
+                                            $bgColor = 'bg-green-50';
+                                            $textColor = 'text-green-800';
+                                            $statusBg = 'bg-green-100';
+                                            $statusLabel = "Today's Present";
+                                        } else if ($status == 'absent') {
+                                            $bgColor = 'bg-red-50';
+                                            $textColor = 'text-red-800';
+                                            $statusBg = 'bg-red-100';
+                                            $statusLabel = "Today's Absent";
+                                        }
+                                        ?>
+                                        
+                                        <div id="attendanceStatus" class="<?php echo $bgColor; ?> rounded-xl p-4 mb-4">
                                             <div class="flex justify-between items-center">
                                                 <div>
                                                     <h4 class="text-sm font-medium text-gray-800">Today's Attendance</h4>
-                                                    <p id="currentDate" class="text-xs text-gray-500"></p>
+                                                    <p id="currentDate" class="text-xs text-gray-500"><?php echo date('F d, Y', strtotime($today)); ?></p>
                                                 </div>
-                                                <div id="attendanceLabel" class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                                                    Today's Present
+                                                <div id="attendanceLabel" class="<?php echo $statusBg; ?> <?php echo $textColor; ?> px-3 py-1 rounded-full text-sm font-medium">
+                                                    <?php echo $statusLabel; ?>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="flex space-x-3 justify-end">
-                                            <button onclick="markAttendance('present')" class="py-2 px-4 bg-green-500 text-white rounded-xl text-sm font-medium shadow-lg transform transition-all duration-200 hover:shadow-green-200 hover:-translate-y-1 active:translate-y-0 active:shadow-inner border border-green-600">
+                                        
+                                        <div class="flex space-x-3 justify-end mb-4">
+                                            <?php if ($status != 'present'): ?>
+                                            <button onclick="updateAttendance('present', <?php echo $selectedChildId; ?>)" class="py-2 px-4 bg-green-500 text-white rounded-xl text-sm font-medium shadow-lg transform transition-all duration-200 hover:shadow-green-200 hover:-translate-y-1 active:translate-y-0 active:shadow-inner border border-green-600">
                                                 Present
                                             </button>
-                                            <button onclick="markAttendance('absent')" class="py-2 px-4 bg-red-500 text-white rounded-xl text-sm font-medium shadow-lg transform transition-all duration-200 hover:shadow-red-200 hover:-translate-y-1 active:translate-y-0 active:shadow-inner border border-red-600">
+                                            <?php endif; ?>
+                                            <?php if ($status != 'absent'): ?>
+                                            <button onclick="updateAttendance('absent', <?php echo $selectedChildId; ?>)" class="py-2 px-4 bg-red-500 text-white rounded-xl text-sm font-medium shadow-lg transform transition-all duration-200 hover:shadow-red-200 hover:-translate-y-1 active:translate-y-0 active:shadow-inner border border-red-600">
                                                 Absent
                                             </button>
+                                            <?php endif; ?>
                                         </div>
-                                    </div>
-                                    
-                                    <script>
-                                        // Display current date
-                                        function formatDate(date) {
-                                            const options = { year: 'numeric', month: 'long', day: 'numeric' };
-                                            return date.toLocaleDateString('en-US', options);
-                                        }
                                         
-                                        document.getElementById('currentDate').textContent = formatDate(new Date());
-                                        
-                                        function markAttendance(status) {
-                                            const statusDiv = document.getElementById('attendanceStatus');
-                                            const label = document.getElementById('attendanceLabel');
+                                        <?php if ($status != 'absent'): ?>
+                                        <!-- Evening Route Div - Only show if not absent -->
+                                        <div id="eveningRouteDiv">
+                                            <div id="eveningRouteStatus" class="bg-blue-50 rounded-xl p-4 mb-4">
+                                                <div class="flex justify-between items-center">
+                                                    <div>
+                                                        <h4 class="text-sm font-medium text-gray-800">Evening Return</h4>
+                                                        <p class="text-xs text-gray-500">Update if child is not returning by bus</p>
+                                                    </div>
+                                                    <?php
+                                                    $notReturning = (!empty($attendanceData['notes']) && strpos($attendanceData['notes'], 'Not returning') !== false);
+                                                    $eveningStatusBg = $notReturning ? 'bg-orange-100' : 'bg-blue-100';
+                                                    $eveningTextColor = $notReturning ? 'text-orange-800' : 'text-blue-800';
+                                                    $eveningLabel = $notReturning ? 'Not Returning' : 'Returning by Bus';
+                                                    ?>
+                                                    <div id="eveningRouteLabel" class="<?php echo $eveningStatusBg; ?> <?php echo $eveningTextColor; ?> px-3 py-1 rounded-full text-sm font-medium">
+                                                        <?php echo $eveningLabel; ?>
+                                                    </div>
+                                                </div>
+                                            </div>
                                             
-                                            if (status === 'present') {
-                                                statusDiv.className = 'bg-green-50 rounded-xl p-4 mb-4';
-                                                label.className = 'bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium';
-                                                label.textContent = 'Today\'s Present';
+                                            <div class="flex space-x-3 justify-end">
+                                                <button onclick="updateEveningRoute(<?php echo $selectedChildId; ?>, <?php echo $notReturning ? 'false' : 'true'; ?>)" class="py-2 px-4 bg-blue-500 text-white rounded-xl text-sm font-medium shadow-lg transform transition-all duration-200 hover:shadow-orange-200 hover:-translate-y-1 active:translate-y-0 active:shadow-inner border border-orange-600">
+                                                    <?php echo $notReturning ? 'Mark as Returning' : 'Not Returning Today'; ?>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <?php endif; ?>
+                                    </div>
+
+                                    <script>
+                                    // Function to update attendance status
+                                    function updateAttendance(status, childId) {
+                                        // Create AJAX request
+                                        fetch('update_attendance.php', {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/x-www-form-urlencoded',
+                                            },
+                                            body: 'child_id=' + childId + '&status=' + status
+                                        })
+                                        .then(response => response.json())
+                                        .then(data => {
+                                            if (data.success) {
+                                                // Update UI based on status
+                                                const statusDiv = document.getElementById('attendanceStatus');
+                                                const label = document.getElementById('attendanceLabel');
+                                                const eveningRouteDiv = document.getElementById('eveningRouteDiv');
+                                                
+                                                if (status === 'present') {
+                                                    // Update to present
+                                                    statusDiv.className = 'bg-green-50 rounded-xl p-4 mb-4';
+                                                    label.className = 'bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium';
+                                                    label.textContent = 'Today\'s Present';
+                                                    
+                                                    // Show evening route div if it was hidden
+                                                    if (eveningRouteDiv) {
+                                                        eveningRouteDiv.style.display = 'block';
+                                                    } else {
+                                                        // Reload the page to regenerate the evening route div
+                                                        location.reload();
+                                                    }
+                                                    
+                                                    // Hide present button, show absent button
+                                                    updateAttendanceButtons('present');
+                                                    
+                                                } else if (status === 'absent') {
+                                                    // Update to absent
+                                                    statusDiv.className = 'bg-red-50 rounded-xl p-4 mb-4';
+                                                    label.className = 'bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium';
+                                                    label.textContent = 'Today\'s Absent';
+                                                    
+                                                    // Hide evening route div
+                                                    if (eveningRouteDiv) {
+                                                        eveningRouteDiv.style.display = 'none';
+                                                    }
+                                                    
+                                                    // Hide absent button, show present button
+                                                    updateAttendanceButtons('absent');
+                                                }
                                             } else {
-                                                statusDiv.className = 'bg-red-50 rounded-xl p-4 mb-4';
-                                                label.className = 'bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium';
-                                                label.textContent = 'Today\'s Absent';
+                                                alert('Failed to update attendance: ' + data.message);
+                                            }
+                                        })
+                                        .catch(error => {
+                                            console.error('Error:', error);
+                                            alert('An error occurred while updating attendance. Please try again.');
+                                        });
+                                    }
+
+                                    // Function to update attendance buttons based on current status
+                                    function updateAttendanceButtons(currentStatus) {
+                                        const buttonsDiv = document.querySelector('.flex.space-x-3.justify-end.mb-4');
+                                        if (buttonsDiv) {
+                                            if (currentStatus === 'present') {
+                                                buttonsDiv.innerHTML = `
+                                                    <button onclick="updateAttendance('absent', <?php echo $selectedChildId; ?>)" class="py-2 px-4 bg-red-500 text-white rounded-xl text-sm font-medium shadow-lg transform transition-all duration-200 hover:shadow-red-200 hover:-translate-y-1 active:translate-y-0 active:shadow-inner border border-red-600">
+                                                        Absent
+                                                    </button>
+                                                `;
+                                            } else if (currentStatus === 'absent') {
+                                                buttonsDiv.innerHTML = `
+                                                    <button onclick="updateAttendance('present', <?php echo $selectedChildId; ?>)" class="py-2 px-4 bg-green-500 text-white rounded-xl text-sm font-medium shadow-lg transform transition-all duration-200 hover:shadow-green-200 hover:-translate-y-1 active:translate-y-0 active:shadow-inner border border-green-600">
+                                                        Present
+                                                    </button>
+                                                `;
                                             }
                                         }
+                                    }
+
+                                    // Function to update evening route status
+                                    function updateEveningRoute(childId, setNotReturning) {
+                                        // Create AJAX request
+                                        fetch('update_evening_route.php', {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/x-www-form-urlencoded',
+                                            },
+                                            body: 'child_id=' + childId + '&not_returning=' + (setNotReturning ? '1' : '0')
+                                        })
+                                        .then(response => response.json())
+                                        .then(data => {
+                                            if (data.success) {
+                                                // Update UI based on status
+                                                const statusDiv = document.getElementById('eveningRouteStatus');
+                                                const label = document.getElementById('eveningRouteLabel');
+                                                const button = statusDiv.nextElementSibling.querySelector('button');
+                                                
+                                                if (setNotReturning) {
+                                                    label.className = 'bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium';
+                                                    label.textContent = 'Not Returning';
+                                                    button.textContent = 'Mark as Returning';
+                                                } else {
+                                                    label.className = 'bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium';
+                                                    label.textContent = 'Returning by Bus';
+                                                    button.textContent = 'Not Returning Today';
+                                                }
+                                            } else {
+                                                alert('Failed to update evening route status: ' + data.message);
+                                            }
+                                        })
+                                        .catch(error => {
+                                            console.error('Error:', error);
+                                            alert('An error occurred while updating evening route status. Please try again.');
+                                        });
+                                    }
                                     </script>
                                 </div>
                             </div>
@@ -1522,7 +1788,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                 }
 
                 // Close connection
-                $conn->close();
+                // $conn->close();
                 ?>
 
                 <!-- Payment Section with PHP integration -->
@@ -1588,7 +1854,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                     </div>
                                     
                                     <!-- Payment Progress (UPDATED) -->
-                                    <div class="mt-8">
+                                    <!-- <div class="mt-8">
                                         <div class="flex justify-between items-center mb-2">
                                             <h4 class="text-sm font-medium text-gray-700">Payment Progress <?php echo $current_year; ?></h4>
                                             <span class="text-sm text-gray-500" id="payment-progress"><?php echo $progress_text; ?></span>
@@ -1600,7 +1866,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                             <span id="start-date"><?php echo $start_month_name . ' ' . $current_year; ?></span>
                                             <span id="end-date"><?php echo $end_month_name . ' ' . $current_year; ?></span>
                                         </div>
-                                    </div>
+                                    </div> -->
                                 </div>
                                 
                                 <!-- Payment Methods (UPDATED) -->
@@ -1745,131 +2011,352 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
 
 
 
-                <!-- Children Details Section -->
+
+
                 <section id="children-section" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-72 md:mr-8 mx-4 md:mx-0">
-                    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
-                        <div class="flex items-center space-x-3">
-                            <div class="h-10 w-1 bg-orange-500 rounded-full"></div>
-                            <h2 class="text-3xl font-bold heading-brown">Children Details</h2>
-                        </div>
-                        <div class="mt-4 md:mt-0">
-                            <button class="btn-primary text-sm px-4 py-2 rounded-lg">Save Changes</button>
-                        </div>
-                    </div>
+                    <?php
+                    // Ensure session is started and parent is logged in
+                    // session_start();
+                    // if (!isset($_SESSION['parent_id'])) {
+                    //     header('Location: login.php');
+                    //     exit;
+                    // }
 
-                    <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden mb-6">
-                        <div class="p-4 border-b border-gray-100 flex justify-between items-center">
-                            <h3 class="text-lg font-semibold heading-brown">Your Children</h3>
-                            <button class="text-orange-500 text-sm flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    // require_once 'config/database.php';
+
+                    // Get parent ID from session
+                    $parent_id = $_SESSION['parent_id'];
+
+                    // Fetch child information for the logged-in parent
+                    $sql = "SELECT c.*, s.name as school_name, b.bus_number 
+                            FROM child c
+                            LEFT JOIN school s ON c.school_id = s.school_id
+                            LEFT JOIN bus b ON c.bus_id = b.bus_id
+                            WHERE c.parent_id = ?";
+
+                    $stmt = $conn->prepare($sql);
+                    $stmt->bind_param("i", $parent_id);
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+
+                    // Check if query was successful
+                    if (!$result) {
+                        die("Query failed: " . $conn->error);
+                    }
+                    ?>
+
+                    <div class="container mx-auto">
+                        <div class="flex flex-col md:flex-row justify-between items-center mb-8">
+                            <h2 class="text-2xl font-bold text-gray-800">My Children</h2>
+                            <a href="add_child.php" 
+                                class="mt-4 md:mt-0 px-4 py-2 bg-yellow-500 text-white rounded-lg 
+                                         hover:bg-yellow-600 transform hover:-translate-y-0.5 hover:shadow-lg 
+                                         active:translate-y-0 active:shadow-md
+                                         transition-all duration-200 ease-in-out
+                                         cursor-pointer inline-flex items-center"
+                                onclick="window.location.href='add_child.php'">
+                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                      <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                                 </svg>
+                                 Add Child
+                            </a>
+                        </div>
+
+                        <?php if ($result->num_rows > 0): ?>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <?php while ($child = $result->fetch_assoc()): ?>
+                                    <div class="bg-white rounded-xl shadow-md overflow-hidden transform transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
+                                        <div class="p-6">
+                                            <div class="flex flex-col items-center mb-6">
+                                                <?php if (!empty($child['photo_url'])): ?>
+                                                    <img src="<?php echo htmlspecialchars($child['photo_url']); ?>" alt="Child Photo" class="w-24 h-24 rounded-full object-cover border-4 border-blue-100">
+                                                <?php else: ?>
+                                                    <img src="assets\img\student1.jpg" alt="Default Child Photo" class="w-24 h-24 rounded-full object-cover border-4 border-blue-100">
+                                                <?php endif; ?>
+                                                
+                                                <h4 class="text-xl font-semibold text-gray-800 mt-4">
+                                                    <?php echo htmlspecialchars($child['first_name'] . ' ' . $child['last_name']); ?>
+                                                </h4>
+                                            </div>
+                                            
+                                            <div class="space-y-2 text-gray-700">
+                                                <div class="flex">
+                                                    <span class="font-medium w-1/3">Grade:</span> 
+                                                    <span class="text-gray-600"><?php echo htmlspecialchars($child['grade'] ?? 'N/A'); ?></span>
+                                                </div>
+                                                
+                                                <div class="flex">
+                                                    <span class="font-medium w-1/3">School:</span> 
+                                                    <span class="text-gray-600"><?php echo htmlspecialchars($child['school_name'] ?? 'N/A'); ?></span>
+                                                </div>
+                                                
+                                                <div class="flex">
+                                                    <span class="font-medium w-1/3">Bus:</span> 
+                                                    <span class="text-gray-600"><?php echo htmlspecialchars($child['bus_number'] ?? 'N/A'); ?></span>
+                                                </div>
+                                                
+                                                <?php if (!empty($child['emergency_contact'])): ?>
+                                                    <div class="flex">
+                                                        <span class="font-medium w-1/3">Tel: </span> 
+                                                        <span class="text-gray-600"> <?php echo htmlspecialchars($child['emergency_contact']); ?></span>
+                                                    </div>
+                                                <?php endif; ?>
+                                                
+                                                <?php if (!empty($child['medical_notes'])): ?>
+                                                    <div class="flex flex-col">
+                                                        <span class="font-medium">Medical Notes:</span> 
+                                                        <span class="text-gray-600 mt-1"><?php echo htmlspecialchars($child['medical_notes']); ?></span>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="px-6 py-4 bg-gray-50">
+                                            <div class="flex justify-between">
+                                                <button onclick="openEditModal(<?php echo $child['child_id']; ?>)" class="px-4 py-2 text-sm bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors duration-300 flex items-center">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                    </svg>
+                                                    Edit
+                                                </button>
+                                                <button onclick="openDeleteModal(<?php echo $child['child_id']; ?>)" class="px-4 py-2 text-sm bg-white text-red-600 border border-red-600 rounded-lg hover:bg-red-50 transition-colors duration-300 flex items-center">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    </svg>
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Tailwind Edit Modal for each child -->
+                                    <div id="editModal<?php echo $child['child_id']; ?>" class="fixed inset-0 z-50 hidden overflow-y-auto">
+                                        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                                            <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                                                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+                                            </div>
+                                            
+                                            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                                            
+                                            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full md:max-w-xl">
+                                                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                                    <div class="flex justify-between items-center pb-3 border-b mb-4">
+                                                        <h3 class="text-lg leading-6 font-medium text-gray-900">Edit Child Information</h3>
+                                                        <button onclick="closeEditModal(<?php echo $child['child_id']; ?>)" class="text-gray-400 hover:text-gray-500">
+                                                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                    
+                                                    <form action="process_edit_child.php" method="post" enctype="multipart/form-data">
+                                                        <input type="hidden" name="child_id" value="<?php echo $child['child_id']; ?>">
+                                                        
+                                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                                            <div>
+                                                                <label for="firstName<?php echo $child['child_id']; ?>" class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                                                                <input type="text" id="firstName<?php echo $child['child_id']; ?>" name="first_name" value="<?php echo htmlspecialchars($child['first_name']); ?>" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                                            </div>
+                                                            <div>
+                                                                <label for="lastName<?php echo $child['child_id']; ?>" class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                                                                <input type="text" id="lastName<?php echo $child['child_id']; ?>" name="last_name" value="<?php echo htmlspecialchars($child['last_name']); ?>" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                                            <div>
+                                                                <label for="grade<?php echo $child['child_id']; ?>" class="block text-sm font-medium text-gray-700 mb-1">Grade</label>
+                                                                <input type="text" id="grade<?php echo $child['child_id']; ?>" name="grade" value="<?php echo htmlspecialchars($child['grade'] ?? ''); ?>" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                                            </div>
+                                                            <div>
+                                                                <label for="school<?php echo $child['child_id']; ?>" class="block text-sm font-medium text-gray-700 mb-1">School</label>
+                                                                <select id="school<?php echo $child['child_id']; ?>" name="school_id" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                                                    <option value="">Select School</option>
+                                                                    <?php
+                                                                    // Reset the result pointer for schools query
+                                                                    $stmt = $conn->prepare("SELECT school_id, name FROM school");
+                                                                    $stmt->execute();
+                                                                    $schools = $stmt->get_result();
+                                                                    
+                                                                    while ($school = $schools->fetch_assoc()) {
+                                                                        $selected = ($school['school_id'] == $child['school_id']) ? 'selected' : '';
+                                                                        echo "<option value='" . $school['school_id'] . "' $selected>" . htmlspecialchars($school['name']) . "</option>";
+                                                                    }
+                                                                    ?>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                                            <div>
+                                                                <label for="bus<?php echo $child['child_id']; ?>" class="block text-sm font-medium text-gray-700 mb-1">Bus</label>
+                                                                <select id="bus<?php echo $child['child_id']; ?>" name="bus_id" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                                                    <option value="">Select Bus</option>
+                                                                    <?php
+                                                                    // Reset the result pointer for bus query
+                                                                    $stmt = $conn->prepare("SELECT bus_id, bus_number FROM bus WHERE is_active = 1");
+                                                                    $stmt->execute();
+                                                                    $buses = $stmt->get_result();
+                                                                    
+                                                                    while ($bus = $buses->fetch_assoc()) {
+                                                                        $selected = ($bus['bus_id'] == $child['bus_id']) ? 'selected' : '';
+                                                                        echo "<option value='" . $bus['bus_id'] . "' $selected>" . htmlspecialchars($bus['bus_number']) . "</option>";
+                                                                    }
+                                                                    ?>
+                                                                </select>
+                                                            </div>
+                                                            <div>
+                                                                <label for="emergencyContact<?php echo $child['child_id']; ?>" class="block text-sm font-medium text-gray-700 mb-1">Emergency Contact</label>
+                                                                <input type="text" id="emergencyContact<?php echo $child['child_id']; ?>" name="emergency_contact" value="<?php echo htmlspecialchars($child['emergency_contact'] ?? ''); ?>" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="mb-4">
+                                                            <label for="pickupLocation<?php echo $child['child_id']; ?>" class="block text-sm font-medium text-gray-700 mb-1">Pickup Location</label>
+                                                            <input type="text" id="pickupLocation<?php echo $child['child_id']; ?>" name="pickup_location" value="<?php echo htmlspecialchars($child['pickup_location'] ?? ''); ?>" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                                            <p class="mt-1 text-sm text-gray-500">You can select the location on map in the next step</p>
+                                                        </div>
+                                                        
+                                                        <div class="mb-4">
+                                                            <label for="medicalNotes<?php echo $child['child_id']; ?>" class="block text-sm font-medium text-gray-700 mb-1">Medical Notes</label>
+                                                            <textarea id="medicalNotes<?php echo $child['child_id']; ?>" name="medical_notes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"><?php echo htmlspecialchars($child['medical_notes'] ?? ''); ?></textarea>
+                                                        </div>
+                                                        
+                                                        <div class="mb-4">
+                                                            <label for="photo<?php echo $child['child_id']; ?>" class="block text-sm font-medium text-gray-700 mb-1">Photo</label>
+                                                            <input type="file" id="photo<?php echo $child['child_id']; ?>" name="photo" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                                            <?php if (!empty($child['photo_url'])): ?>
+                                                                <div class="mt-2 flex items-start space-x-3">
+                                                                    <div>
+                                                                        <p class="text-sm text-gray-500">Current photo:</p>
+                                                                        <img src="<?php echo htmlspecialchars($child['photo_url']); ?>" alt="Current Photo" class="mt-1 h-20 w-20 object-cover rounded">
+                                                                    </div>
+                                                                    <div class="flex items-center">
+                                                                        <input type="checkbox" id="removePhoto<?php echo $child['child_id']; ?>" name="remove_photo" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                                                        <label for="removePhoto<?php echo $child['child_id']; ?>" class="ml-2 block text-sm text-gray-700">
+                                                                            Remove current photo
+                                                                        </label>
+                                                                    </div>
+                                                                </div>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                        
+                                                        <div class="mt-6 flex justify-end space-x-3">
+                                                            <button type="button" onclick="closeEditModal(<?php echo $child['child_id']; ?>)" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                                                                Cancel
+                                                            </button>
+                                                            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                                                Save Changes
+                                                            </button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Tailwind Delete Modal for each child -->
+                                    <div id="deleteModal<?php echo $child['child_id']; ?>" class="fixed inset-0 z-50 hidden overflow-y-auto">
+                                        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                                            <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                                                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+                                            </div>
+                                            
+                                            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                                            
+                                            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                                                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                                    <div class="sm:flex sm:items-start">
+                                                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                                                            <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                                            </svg>
+                                                        </div>
+                                                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                                            <h3 class="text-lg leading-6 font-medium text-gray-900">Confirm Deletion</h3>
+                                                            <div class="mt-2">
+                                                                <p class="text-sm text-gray-500">
+                                                                    Are you sure you want to delete <strong><?php echo htmlspecialchars($child['first_name'] . ' ' . $child['last_name']); ?></strong>?
+                                                                </p>
+                                                                <p class="text-sm text-red-600 mt-2">This action cannot be undone.</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                                    <form action="process_delete_child.php" method="post">
+                                                        <input type="hidden" name="child_id" value="<?php echo $child['child_id']; ?>">
+                                                        <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+                                                            Delete
+                                                        </button>
+                                                    </form>
+                                                    <button type="button" onclick="closeDeleteModal(<?php echo $child['child_id']; ?>)" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                                                        Cancel
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endwhile; ?>
+                            </div>
+                        <?php else: ?>
+                            <div class="flex flex-col items-center justify-center bg-gray-50 rounded-xl p-12 text-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                                 </svg>
-                                Add Child
-                            </button>
-                        </div>
-                        
-                        <!-- Child Card -->
-                        <div class="p-6 border-b border-gray-100">
-                            <div class="flex flex-col md:flex-row">
-                                <div class="w-24 h-24 rounded-full overflow-hidden mb-4 md:mb-0 mx-auto md:mx-0">
-                                    <img src="/api/placeholder/100/100" alt="Alex Johnson" class="w-full h-full object-cover" />
-                                </div>
-                                <div class="md:ml-6 flex-1">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Child's Name</label>
-                                            <input type="text" value="Alex Johnson" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Grade</label>
-                                            <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                                <option>Grade 3</option>
-                                                <option>Grade 4</option>
-                                                <option>Grade 5</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">School</label>
-                                            <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                                <option>Westfield High School</option>
-                                                <option>Eastside Elementary</option>
-                                                <option>Central Middle School</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Bus Route</label>
-                                            <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                                <option>Route #42</option>
-                                                <option>Route #36</option>
-                                                <option>Route #51</option>
-                                            </select>
-                                        </div>
-                                        <div class="md:col-span-2">
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Special Notes (allergies, medical conditions)</label>
-                                            <textarea class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition" rows="2"></textarea>
-                                        </div>
-                                    </div>
-                                </div>
+                                <h4 class="text-xl font-semibold text-gray-800 mb-2">No children added yet</h4>
+                                <p class="text-gray-500">Click the "Add Child" button to register your child for school bus service</p>
                             </div>
-                            <div class="flex justify-end mt-4 space-x-3">
-                                <button class="text-red-500 text-sm px-4 py-2 border border-red-200 rounded-lg hover:bg-red-50">Remove Child</button>
-                                <button class="text-orange-500 text-sm px-4 py-2 border border-orange-200 rounded-lg hover:bg-orange-50">Update Details</button>
-                            </div>
-                        </div>
-                        
-                        <!-- Add another child example -->
-                        <div class="p-6">
-                            <div class="flex flex-col md:flex-row">
-                                <div class="w-24 h-24 rounded-full overflow-hidden mb-4 md:mb-0 mx-auto md:mx-0">
-                                    <img src="/api/placeholder/100/100" alt="Emily Johnson" class="w-full h-full object-cover" />
-                                </div>
-                                <div class="md:ml-6 flex-1">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Child's Name</label>
-                                            <input type="text" value="Emily Johnson" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Grade</label>
-                                            <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                                <option>Grade 1</option>
-                                                <option>Grade 2</option>
-                                                <option>Grade 3</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">School</label>
-                                            <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                                <option>Eastside Elementary</option>
-                                                <option>Westfield High School</option>
-                                                <option>Central Middle School</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Bus Route</label>
-                                            <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                                <option>Route #36</option>
-                                                <option>Route #42</option>
-                                                <option>Route #51</option>
-                                            </select>
-                                        </div>
-                                        <div class="md:col-span-2">
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Special Notes (allergies, medical conditions)</label>
-                                            <textarea class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition" rows="2">Mild peanut allergy</textarea>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex justify-end mt-4 space-x-3">
-                                <button class="text-red-500 text-sm px-4 py-2 border border-red-200 rounded-lg hover:bg-red-50">Remove Child</button>
-                                <button class="text-orange-500 text-sm px-4 py-2 border border-orange-200 rounded-lg hover:bg-orange-50">Update Details</button>
-                            </div>
-                        </div>
+                        <?php endif; ?>
                     </div>
+
+                    <!-- JavaScript for handling modals -->
+                    <script>
+                        // Functions to handle the edit modal
+                        function openEditModal(childId) {
+                            document.getElementById('editModal' + childId).classList.remove('hidden');
+                            document.body.style.overflow = 'hidden'; // Prevent scrolling behind modal
+                        }
+                        
+                        function closeEditModal(childId) {
+                            document.getElementById('editModal' + childId).classList.add('hidden');
+                            document.body.style.overflow = 'auto'; // Re-enable scrolling
+                        }
+                        
+                        // Functions to handle the delete modal
+                        function openDeleteModal(childId) {
+                            document.getElementById('deleteModal' + childId).classList.remove('hidden');
+                            document.body.style.overflow = 'hidden'; // Prevent scrolling behind modal
+                        }
+                        
+                        function closeDeleteModal(childId) {
+                            document.getElementById('deleteModal' + childId).classList.add('hidden');
+                            document.body.style.overflow = 'auto'; // Re-enable scrolling
+                        }
+                        
+                        // Close modals when clicking outside of them
+                        window.addEventListener('click', function(event) {
+                            document.querySelectorAll('[id^="editModal"], [id^="deleteModal"]').forEach(function(modal) {
+                                if (event.target === modal) {
+                                    modal.classList.add('hidden');
+                                    document.body.style.overflow = 'auto';
+                                }
+                            });
+                        });
+                        
+                        // Close modals with Escape key
+                        document.addEventListener('keydown', function(event) {
+                            if (event.key === 'Escape') {
+                                document.querySelectorAll('[id^="editModal"], [id^="deleteModal"]').forEach(function(modal) {
+                                    if (!modal.classList.contains('hidden')) {
+                                        modal.classList.add('hidden');
+                                        document.body.style.overflow = 'auto';
+                                    }
+                                });
+                            }
+                        });
+                    </script>
                 </section>
-
-
-
 
 
 

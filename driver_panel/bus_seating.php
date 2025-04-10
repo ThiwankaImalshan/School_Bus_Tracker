@@ -71,17 +71,17 @@ if (isset($driver['bus_id'])) {
     $stmt->execute([$today, $today, $driver['bus_id']]);
     $bus_seats = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Update attendance summary query
+    // Update attendance summary query to handle both morning and evening routes
     $stmt = $pdo->prepare("SELECT 
-                          COUNT(CASE WHEN a.status IN ('present', 'picked', 'drop') THEN 1 END) as present_count,
-                          COUNT(CASE WHEN a.status = 'absent' THEN 1 END) as absent_count,
-                          COUNT(cr.reservation_id) as total_assigned
-                          FROM child_reservation cr
-                          LEFT JOIN bus_seat bs ON cr.seat_id = bs.seat_id
-                          LEFT JOIN attendance a ON (cr.child_id = a.child_id AND bs.seat_id = a.bus_seat_id)
-                              AND a.attendance_date = ?
-                          WHERE bs.bus_id = ? AND cr.reservation_date = ? AND cr.is_active = 1");
-    $stmt->execute([$today, $driver['bus_id'], $today]);
+        SUM(CASE WHEN a.status = 'picked' AND ? = 'morning' THEN 1 
+                 WHEN a.status = 'drop' AND ? = 'evening' THEN 1 
+                 ELSE 0 END) as count_status,
+        SUM(CASE WHEN a.status = 'absent' THEN 1 ELSE 0 END) as absent_count,
+        SUM(CASE WHEN a.status IN ('pending', 'picked', 'drop') THEN 1 ELSE 0 END) as total_assigned
+        FROM bus_seat bs
+        LEFT JOIN attendance a ON bs.seat_id = a.bus_seat_id AND a.attendance_date = ?
+        WHERE bs.bus_id = ?");
+    $stmt->execute([$current_route, $current_route, $today, $driver['bus_id']]);
     $attendance_summary = $stmt->fetch(PDO::FETCH_ASSOC);
 }
 ?>
@@ -339,8 +339,12 @@ if (isset($driver['bus_id'])) {
                             </svg>
                         </div>
                         <div class="ml-4">
-                            <h3 class="text-gray-500 text-sm">Present</h3>
-                            <p id="present-count" class="text-2xl font-bold text-gray-800"><?php echo intval($attendance_summary['present_count'] ?? 0); ?></p>
+                            <h3 class="text-gray-500 text-sm">
+                                <?php echo $current_route === 'morning' ? 'Picked Up' : 'Dropped Off'; ?>
+                            </h3>
+                            <p id="present-count" class="text-2xl font-bold text-gray-800">
+                                <?php echo intval($attendance_summary['count_status'] ?? 0); ?>
+                            </p>
                         </div>
                     </div>
                 </div>
