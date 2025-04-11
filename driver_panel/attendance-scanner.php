@@ -77,6 +77,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Student QR Scanner</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <link rel="icon" type="image/png" href="../img/favicon/favicon-96x96.png" sizes="96x96" />
+    <link rel="shortcut icon" href="../img/favicon/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="../img/favicon/favicon.svg" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.4/html5-qrcode.min.js"></script>
     <style>
         body {

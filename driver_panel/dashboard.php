@@ -27,9 +27,12 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Parent Portal - Dashboard</title>
+    <title>Driver Portal - Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <link rel="icon" type="image/png" href="../img/favicon/favicon-96x96.png" sizes="96x96" />
+    <link rel="shortcut icon" href="../img/favicon/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="../img/favicon/favicon.svg" />
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -186,7 +189,7 @@ try {
                     </svg>
                     Home
                 </button>
-                <button onclick="showSection('tracker')" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
+                <button onclick="window.location.href='bus_location_tracker.php'" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v4m0 0l-2-2m2 2l2-2m-2 10v4m0 0l2-2m-2 2l-2-2M4 12h4m0 0l-2-2m2 2l-2 2m10 0h4m0 0l-2-2m2 2l-2 2" />
                     </svg>
@@ -224,7 +227,7 @@ try {
                 </svg>
                 <span>Home</span>
             </button>
-            <button onclick="showSection('tracker')" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
+            <button onclick="window.location.href='bus_location_tracker.php'" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v4m0 0l-2-2m2 2l2-2m-2 10v4m0 0l2-2m-2 2l-2-2M4 12h4m0 0l-2-2m2 2l-2 2m10 0h4m0 0l-2-2m2 2l-2 2" />
                 </svg>
@@ -268,7 +271,7 @@ try {
                             <span id="profile-name" class="hidden md:inline-block mr-3 font-medium text-grey order-first"><?php echo htmlspecialchars($driver['full_name']); ?></span>
                             <div class="relative">
                                 <button onclick="toggleLogoutPopup()" id="profile-btn" class="bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 order-last">
-                                    <img class="h-8 w-8 rounded-full object-cover border-2 border-orange-200" src="https://randomuser.me/api/portraits/women/44.jpg" alt="Profile">
+                                    <img class="h-8 w-8 rounded-full object-cover border-2 border-orange-200" src="../img/profile-icon.jpg" alt="Profile">
                                 </button>
                                 <div id="logout-popup" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5">
                                     <a href="logout.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
@@ -386,7 +389,7 @@ try {
                         <div>
                             <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden mb-6">
                                 <div class="p-6 border-b border-gray-100">
-                                    <h3 class="text-lg font-semibold heading-brown">Bus Students</h3>
+                                    <h3 class="text-lg font-semibold heading-brown">Bus Details</h3>
                                 </div>
                                 <div class="p-6">
                                     <!-- Bus Details -->
@@ -404,10 +407,25 @@ try {
                                         <div class="flex items-center justify-between">
                                             <div>
                                                 <h4 class="text-lg font-medium text-gray-800">Total Students</h4>
-                                                <p class="text-gray-600">Morning Route</p>
                                             </div>
                                             <div class="bg-blue-500 text-white text-2xl font-bold h-16 w-16 rounded-full flex items-center justify-center">
-                                                42
+                                                <?php
+                                                    // Get bus_id for the current driver
+                                                    $stmt = $conn->prepare("SELECT bus_id FROM driver WHERE driver_id = ?");
+                                                    $stmt->bind_param("i", $driver_id);
+                                                    $stmt->execute();
+                                                    $result = $stmt->get_result();
+                                                    $bus_data = $result->fetch_assoc();
+                                                    $bus_id = $bus_data['bus_id'];
+
+                                                    // Count students from bus_seat table where is_reserved = 1
+                                                    $stmt = $conn->prepare("SELECT COUNT(*) as student_count FROM bus_seat WHERE bus_id = ? AND is_reserved = 1");
+                                                    $stmt->bind_param("i", $bus_id);
+                                                    $stmt->execute();
+                                                    $result = $stmt->get_result();
+                                                    $count_data = $result->fetch_assoc();
+                                                    echo htmlspecialchars($count_data['student_count']);
+                                                ?>
                                             </div>
                                         </div>
                                     </div>
@@ -415,28 +433,59 @@ try {
                                     <!-- Bus Details -->
                                     <div class="space-y-4">
                                         <div class="flex">
-                                            <span class="w-32 text-sm font-medium text-gray-500">Route:</span>
-                                            <span class="flex-1 text-sm text-gray-800">North District - Route C</span>
+                                            <span class="w-32 text-sm font-medium text-gray-500">Phone:</span>
+                                            <span class="flex-1 text-sm text-gray-800">
+                                                <?php
+                                                $stmt = $conn->prepare("SELECT phone FROM driver WHERE driver_id = ?");
+                                                $stmt->bind_param("i", $driver_id);
+                                                $stmt->execute();
+                                                $result = $stmt->get_result();
+                                                $phone = $result->fetch_assoc()['phone'];
+                                                echo htmlspecialchars($phone);
+                                                ?>
+                                            </span>
                                         </div>
                                         
                                         <div class="flex">
                                             <span class="w-32 text-sm font-medium text-gray-500">Capacity:</span>
-                                            <span class="flex-1 text-sm text-gray-800">55 Students</span>
+                                            <span class="flex-1 text-sm text-gray-800">
+                                                <?php
+                                                $stmt = $conn->prepare("SELECT b.capacity FROM bus b JOIN driver d ON d.bus_id = b.bus_id WHERE d.driver_id = ?");
+                                                $stmt->bind_param("i", $driver_id);
+                                                $stmt->execute();
+                                                $result = $stmt->get_result();
+                                                $capacity = $result->fetch_assoc()['capacity'];
+                                                echo htmlspecialchars($capacity . " Students");
+                                                ?>
+                                            </span>
                                         </div>
                                         
                                         <div class="flex">
-                                            <span class="w-32 text-sm font-medium text-gray-500">First Pick-up:</span>
-                                            <span class="flex-1 text-sm text-gray-800">7:00 AM</span>
+                                            <span class="w-32 text-sm font-medium text-gray-500">Starting From:</span>
+                                            <span class="flex-1 text-sm text-gray-800">
+                                                <?php
+                                                $stmt = $conn->prepare("SELECT b.starting_location FROM bus b JOIN driver d ON d.bus_id = b.bus_id WHERE d.driver_id = ?");
+                                                $stmt->bind_param("i", $driver_id);
+                                                $stmt->execute();
+                                                $result = $stmt->get_result();
+                                                $location = $result->fetch_assoc()['starting_location'];
+                                                echo htmlspecialchars($location);
+                                                ?>
+                                            </span>
                                         </div>
                                         
                                         <div class="flex">
-                                            <span class="w-32 text-sm font-medium text-gray-500">Last Drop-off:</span>
-                                            <span class="flex-1 text-sm text-gray-800">4:15 PM</span>
-                                        </div>
-                                        
-                                        <div class="flex">
-                                            <span class="w-32 text-sm font-medium text-gray-500">Contact:</span>
-                                            <span class="flex-1 text-sm text-gray-800">(555) 987-6543</span>
+                                            <span class="w-32 text-sm font-medium text-gray-500">Areas Covered:</span>
+                                            <span class="flex-1 text-sm text-gray-800">
+                                                <?php
+                                                $stmt = $conn->prepare("SELECT b.covering_cities FROM bus b JOIN driver d ON d.bus_id = b.bus_id WHERE d.driver_id = ?");
+                                                $stmt->bind_param("i", $driver_id);
+                                                $stmt->execute();
+                                                $result = $stmt->get_result();
+                                                $cities = $result->fetch_assoc()['covering_cities'];
+                                                echo htmlspecialchars($cities);
+                                                ?>
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -532,10 +581,10 @@ try {
                                                     <h5 class="text-md font-medium text-gray-800"><?php echo htmlspecialchars($school['name']); ?></h5>
                                                 </div>
                                                 <div class="pl-12 space-y-1">
-                                                    <div class="flex">
+                                                    <!-- <div class="flex">
                                                         <span class="w-24 text-xs font-medium text-gray-500">Students:</span>
-                                                        <!-- <span class="flex-1 text-xs text-gray-800"><?php echo $school['student_count']; ?></span> -->
-                                                    </div>
+                                                        <span class="flex-1 text-xs text-gray-800"><?php echo $school['student_count']; ?></span>
+                                                    </div> -->
                                                     <div class="flex">
                                                         <span class="w-24 text-xs font-medium text-gray-500">Arrival:</span>
                                                         <span class="flex-1 text-xs text-gray-800"><?php echo date('h:i A', strtotime($school['arrival_time'])); ?></span>

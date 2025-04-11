@@ -145,6 +145,9 @@ unset($stop);
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <link rel="icon" type="image/png" href="../img/favicon/favicon-96x96.png" sizes="96x96" />
+    <link rel="shortcut icon" href="../img/favicon/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="../img/favicon/favicon.svg" />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
     <style>
@@ -228,7 +231,7 @@ unset($stop);
     <nav class="bg-white/90 backdrop-blur-sm text-gray-800 shadow-lg">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-4">
-                <h1 class="text-xl font-bold text-yellow-900">School Bus Tracker</h1>
+                <h1 class="text-xl font-bold text-yellow-900">Safe To School</h1>
             </div>
             <div class="flex items-center space-x-6">
                 <span class="text-yellow-900 font-medium"><?php echo htmlspecialchars($driver['full_name'] ?? 'Driver'); ?></span>

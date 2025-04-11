@@ -66,6 +66,9 @@ try {
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/png" href="../img/favicon/favicon-96x96.png" sizes="96x96" />
+    <link rel="shortcut icon" href="../img/favicon/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="../img/favicon/favicon.svg" />
     
     <!-- Add Leaflet.js for maps -->
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>

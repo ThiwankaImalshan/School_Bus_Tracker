@@ -115,6 +115,16 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
     <title>Parent Portal - Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <link rel="icon" type="image/png" href="../img/favicon/favicon-96x96.png" sizes="96x96" />
+    <link rel="shortcut icon" href="../img/favicon/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="../img/favicon/favicon.svg" />
+    <!-- Add these lines before your existing head content -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -320,6 +330,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
             }
         }
     </style>
+    
 </head>
 <body class="bg-gradient-to-b from-orange-50 to-orange-100 min-h-screen">
     <div class="fixed -z-10 top-0 left-0 w-full h-full opacity-50">
@@ -456,7 +467,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                     onclick="openLogoutModal()" 
                                     class="bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 order-last">
                                 <img class="h-8 w-8 rounded-full object-cover border-2 border-orange-200" 
-                                     src="https://randomuser.me/api/portraits/women/44.jpg" 
+                                     src="../img/profile-icon.jpg" 
                                      alt="Profile">
                             </button>
                         </div>
@@ -722,13 +733,13 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                         $bgColor = 'bg-yellow-50';
                                         $textColor = 'text-yellow-800';
                                         $statusBg = 'bg-yellow-100';
-                                        $statusLabel = "Today's Pending";
+                                        $statusLabel = "Pending Pickup";
                                         
                                         if ($status == 'present') {
                                             $bgColor = 'bg-green-50';
                                             $textColor = 'text-green-800';
                                             $statusBg = 'bg-green-100';
-                                            $statusLabel = "Today's Present";
+                                            $statusLabel = "Pickuped";
                                         } else if ($status == 'absent') {
                                             $bgColor = 'bg-red-50';
                                             $textColor = 'text-red-800';
@@ -750,7 +761,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                         </div>
                                         
                                         <div class="flex space-x-3 justify-end mb-4">
-                                            <?php if ($status != 'present'): ?>
+                                            <?php if ($status != 'present' && $status != 'absent'): ?>
                                             <button onclick="updateAttendance('present', <?php echo $selectedChildId; ?>)" class="py-2 px-4 bg-green-500 text-white rounded-xl text-sm font-medium shadow-lg transform transition-all duration-200 hover:shadow-green-200 hover:-translate-y-1 active:translate-y-0 active:shadow-inner border border-green-600">
                                                 Present
                                             </button>
@@ -827,6 +838,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                                     
                                                     // Hide present button, show absent button
                                                     updateAttendanceButtons('present');
+                                                    location.reload();
                                                     
                                                 } else if (status === 'absent') {
                                                     // Update to absent
@@ -857,17 +869,35 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                         const buttonsDiv = document.querySelector('.flex.space-x-3.justify-end.mb-4');
                                         if (buttonsDiv) {
                                             if (currentStatus === 'present') {
-                                                buttonsDiv.innerHTML = `
-                                                    <button onclick="updateAttendance('absent', <?php echo $selectedChildId; ?>)" class="py-2 px-4 bg-red-500 text-white rounded-xl text-sm font-medium shadow-lg transform transition-all duration-200 hover:shadow-red-200 hover:-translate-y-1 active:translate-y-0 active:shadow-inner border border-red-600">
-                                                        Absent
-                                                    </button>
-                                                `;
+                                                // Remove all buttons when status is present
+                                                buttonsDiv.innerHTML = '';
                                             } else if (currentStatus === 'absent') {
+                                                // Start with 20 seconds
+                                                let timeLeft = 20;
+                                                
+                                                // Initial button render
                                                 buttonsDiv.innerHTML = `
                                                     <button onclick="updateAttendance('present', <?php echo $selectedChildId; ?>)" class="py-2 px-4 bg-green-500 text-white rounded-xl text-sm font-medium shadow-lg transform transition-all duration-200 hover:shadow-green-200 hover:-translate-y-1 active:translate-y-0 active:shadow-inner border border-green-600">
-                                                        Present
+                                                        Undo (${timeLeft}s)
                                                     </button>
                                                 `;
+                                                
+                                                // Update timer every second
+                                                const timer = setInterval(() => {
+                                                    timeLeft--;
+                                                    if (timeLeft > 0) {
+                                                        // Update button text with remaining time
+                                                        buttonsDiv.innerHTML = `
+                                                            <button onclick="updateAttendance('present', <?php echo $selectedChildId; ?>)" class="py-2 px-4 bg-green-500 text-white rounded-xl text-sm font-medium shadow-lg transform transition-all duration-200 hover:shadow-green-200 hover:-translate-y-1 active:translate-y-0 active:shadow-inner border border-green-600">
+                                                                Undo (${timeLeft}s)
+                                                            </button>
+                                                        `;
+                                                    } else {
+                                                        // Clear interval and remove button when time runs out
+                                                        clearInterval(timer);
+                                                        buttonsDiv.innerHTML = '';
+                                                    }
+                                                }, 1000); // Update every second
                                             }
                                         }
                                     }
@@ -1048,248 +1078,6 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
 
 
 
-                <!-- Tracker Section -->
-                <section id="tracker-section" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-72 md:mr-8 mx-4 md:mx-0">
-
-                    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
-                        <div class="flex items-center space-x-3">
-                            <div class="h-10 w-1 bg-orange-500 rounded-full"></div>
-                            <h2 class="text-3xl font-bold heading-brown">Bus Tracker</h2>
-                        </div>
-                        <div class="flex items-center mt-4 md:mt-0">
-                            <div class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium flex items-center">
-                                <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                                Live Tracking
-                            </div>
-                            <span class="ml-2 text-sm text-gray-500">Last updated: Just now</span>
-                        </div>
-                    </div>
-
-                    <!-- Main Content Area -->
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <!-- Map Section (2/3 width on large screens) -->
-                        <div class="lg:col-span-2">
-                            <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden h-full">
-                                <div class="p-4 border-b border-gray-100 flex justify-between items-center">
-                                    <h3 class="text-lg font-semibold heading-brown">Live Location</h3>
-                                    <button class="btn-primary text-sm px-4 py-2 rounded-lg">Refresh</button>
-                                </div>
-                                <div class="relative" style="height: 400px;">
-                                    <!-- Map Container -->
-                                    <div class="absolute inset-0 bg-gray-200">
-                                        <!-- Placeholder for map - in production, you'd use a real map service -->
-                                        <img src="/api/placeholder/800/400" alt="Map" class="w-full h-full object-cover" />
-                                        
-                                        <!-- Driver Card (positioned on the map) -->
-                                        <div class="absolute top-4 right-4 bg-white rounded-xl shadow-lg p-3 w-64 flex items-center">
-                                            <div class="w-12 h-12 rounded-full overflow-hidden mr-3 flex-shrink-0 border-2 border-orange-300">
-                                                <img src="/api/placeholder/100/100" alt="Driver" class="w-full h-full object-cover" />
-                                            </div>
-                                            <div class="flex-1">
-                                                <h4 class="font-medium text-gray-800">Mr. Robert Davis</h4>
-                                                <div class="flex items-center mt-1">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-orange-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                    </svg>
-                                                    <span class="text-sm text-gray-600">Bus #42</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Bus Icon (positioned on the map) -->
-                                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                                            <div class="bg-orange-500 text-white rounded-full h-10 w-10 flex items-center justify-center shadow-lg">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h8m-8 5h8m-4 5v-3m-4 3v-3" />
-                                                    <path d="M4 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V5z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
-                                                </svg>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="p-4 bg-gray-50 border-t border-gray-100">
-                                    <div class="flex flex-wrap gap-4">
-                                        <div class="bg-white rounded-lg p-3 shadow-sm flex-1 min-w-max">
-                                            <div class="text-xs text-gray-500">Current Speed</div>
-                                            <div class="text-lg font-medium">25 mph</div>
-                                        </div>
-                                        <div class="bg-white rounded-lg p-3 shadow-sm flex-1 min-w-max">
-                                            <div class="text-xs text-gray-500">ETA to Next Stop</div>
-                                            <div class="text-lg font-medium">7 min</div>
-                                        </div>
-                                        <div class="bg-white rounded-lg p-3 shadow-sm flex-1 min-w-max">
-                                            <div class="text-xs text-gray-500">Distance to Home</div>
-                                            <div class="text-lg font-medium">2.3 miles</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Details Section (1/3 width on large screens) -->
-                        <div class="lg:col-span-1">
-                            <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden h-full">
-                                <div class="p-4 border-b border-gray-100">
-                                    <h3 class="text-lg font-semibold heading-brown">Route Details</h3>
-                                </div>
-                                
-                                <!-- Student Pickup & Drop-off Box -->
-                                <div class="p-4 border-b border-gray-100 bg-orange-50">
-                                    <div class="flex items-start">
-                                        <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                            </svg>
-                                        </div>
-                                        <div class="ml-3 flex-1">
-                                            <h4 class="font-medium text-gray-800">Alex Johnson</h4>
-                                            <div class="grid grid-cols-2 gap-4 mt-2">
-                                                <div>
-                                                    <div class="text-xs text-gray-500">Pick-up</div>
-                                                    <div class="text-sm font-medium">7:15 AM</div>
-                                                </div>
-                                                <div>
-                                                    <div class="text-xs text-gray-500">Drop-off</div>
-                                                    <div class="text-sm font-medium">3:45 PM</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Route Timeline -->
-                                <div class="p-4 overflow-y-auto" style="max-height: 350px;">
-                                    <h4 class="text-sm font-medium text-gray-700 mb-4">Route Timeline</h4>
-                                    
-                                    <div class="relative">
-                                        <!-- Timeline Line -->
-                                        <div class="absolute top-0 bottom-0 left-4 w-0.5 bg-gray-200"></div>
-                                        
-                                        <!-- Timeline Stops -->
-                                        <div class="space-y-6">
-                                            <!-- Stop 1 -->
-                                            <div class="relative flex items-start">
-                                                <div class="absolute left-4 w-3 h-3 bg-green-500 rounded-full transform -translate-x-1.5 mt-1.5"></div>
-                                                <div class="ml-8">
-                                                    <div class="flex justify-between items-start">
-                                                        <div>
-                                                            <h5 class="text-sm font-medium text-gray-800">School Departure</h5>
-                                                            <p class="text-xs text-gray-500">Westfield High School</p>
-                                                        </div>
-                                                        <span class="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">Completed</span>
-                                                    </div>
-                                                    <p class="text-xs text-gray-600 mt-1">3:15 PM</p>
-                                                </div>
-                                            </div>
-                                            
-                                            <!-- Stop 2 -->
-                                            <div class="relative flex items-start">
-                                                <div class="absolute left-4 w-3 h-3 bg-green-500 rounded-full transform -translate-x-1.5 mt-1.5"></div>
-                                                <div class="ml-8">
-                                                    <div class="flex justify-between items-start">
-                                                        <div>
-                                                            <h5 class="text-sm font-medium text-gray-800">Maple Avenue</h5>
-                                                            <p class="text-xs text-gray-500">1st Stop</p>
-                                                        </div>
-                                                        <span class="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">Completed</span>
-                                                    </div>
-                                                    <p class="text-xs text-gray-600 mt-1">3:25 PM</p>
-                                                </div>
-                                            </div>
-                                            
-                                            <!-- Stop 3 -->
-                                            <div class="relative flex items-start">
-                                                <div class="absolute left-4 w-4 h-4 bg-orange-500 border-2 border-white rounded-full transform -translate-x-2 mt-1 shadow-md"></div>
-                                                <div class="ml-8">
-                                                    <div class="flex justify-between items-start">
-                                                        <div>
-                                                            <h5 class="text-sm font-medium text-gray-800">Oak Street</h5>
-                                                            <p class="text-xs text-gray-500">2nd Stop - Current Location</p>
-                                                        </div>
-                                                        <span class="text-xs bg-orange-100 text-orange-800 px-2 py-0.5 rounded">In Progress</span>
-                                                    </div>
-                                                    <p class="text-xs text-gray-600 mt-1">3:32 PM</p>
-                                                </div>
-                                            </div>
-                                            
-                                            <!-- Stop 4 (Alex's Stop) -->
-                                            <div class="relative flex items-start">
-                                                <div class="absolute left-4 w-3 h-3 bg-gray-300 rounded-full transform -translate-x-1.5 mt-1.5"></div>
-                                                <div class="ml-8">
-                                                    <div class="flex justify-between items-start">
-                                                        <div>
-                                                            <h5 class="text-sm font-medium text-gray-800">Education Lane</h5>
-                                                            <p class="text-xs text-gray-500">3rd Stop - Alex's Stop</p>
-                                                        </div>
-                                                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Your Stop</span>
-                                                    </div>
-                                                    <p class="text-xs text-gray-600 mt-1">3:45 PM (ETA)</p>
-                                                </div>
-                                            </div>
-                                            
-                                            <!-- Stop 5 -->
-                                            <div class="relative flex items-start">
-                                                <div class="absolute left-4 w-3 h-3 bg-gray-300 rounded-full transform -translate-x-1.5 mt-1.5"></div>
-                                                <div class="ml-8">
-                                                    <div class="flex justify-between items-start">
-                                                        <div>
-                                                            <h5 class="text-sm font-medium text-gray-800">Pine Road</h5>
-                                                            <p class="text-xs text-gray-500">4th Stop</p>
-                                                        </div>
-                                                        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">Upcoming</span>
-                                                    </div>
-                                                    <p class="text-xs text-gray-600 mt-1">3:55 PM (ETA)</p>
-                                                </div>
-                                            </div>
-                                            
-                                            <!-- Stop 6 -->
-                                            <div class="relative flex items-start">
-                                                <div class="absolute left-4 w-3 h-3 bg-gray-300 rounded-full transform -translate-x-1.5 mt-1.5"></div>
-                                                <div class="ml-8">
-                                                    <div class="flex justify-between items-start">
-                                                        <div>
-                                                            <h5 class="text-sm font-medium text-gray-800">Cedar Avenue</h5>
-                                                            <p class="text-xs text-gray-500">Final Stop</p>
-                                                        </div>
-                                                        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">Upcoming</span>
-                                                    </div>
-                                                    <p class="text-xs text-gray-600 mt-1">4:05 PM (ETA)</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Contact Driver Button -->
-                                <div class="p-4 border-t border-gray-100">
-                                    <button class="w-full btn-gradient py-3 rounded-xl flex items-center justify-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                        </svg>
-                                        Contact Driver
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Mobile & Tablet Push Notifications Section -->
-                    <div class="mt-6 bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden md:flex md:items-center p-4">
-                        <div class="flex-1">
-                            <h3 class="text-lg font-semibold heading-brown">Receive Bus Notifications</h3>
-                            <p class="text-sm text-gray-600 mt-1">Get notifications when the bus is approaching your stop</p>
-                        </div>
-                        <div class="mt-4 md:mt-0">
-                            <div class="flex items-center">
-                                <span class="text-sm text-gray-600 mr-3">Enable notifications</span>
-                                <label class="relative inline-block w-12 h-6">
-                                    <input type="checkbox" class="opacity-0 w-0 h-0">
-                                    <span class="absolute cursor-pointer inset-0 bg-gray-300 rounded-full transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:left-1 before:bottom-1 before:bg-white before:rounded-full before:transition-all before:duration-300 checked:bg-orange-500 checked:before:translate-x-6"></span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </section>
 
 
 
@@ -1301,324 +1089,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                <!-- Previous Routings Section -->
-                <section id="history-section" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-72 md:mr-8 mx-4 md:mx-0">
-                    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
-                        <div class="flex items-center space-x-3">
-                            <!-- <div class="h-10 w-1 bg-blue-500 rounded-full"></div> -->
-                            <h2 class="text-3xl font-bold heading-brown">Previous Routings</h2>
-                        </div>
-                        <div class="flex items-center mt-4 md:mt-0">
-                            <div class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium flex items-center">
-                                <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                                Historical Data
-                            </div>
-                            <button class="ml-3 text-sm text-gray-500 flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
-                                </svg>
-                                Filter
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Main Content Area -->
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <!-- Previous Routes List (2/3 width on large screens) -->
-                        <div class="lg:col-span-2">
-                            <div class="bg-white rounded-2xl shadow-enhanced border border-blue-100 overflow-hidden h-full">
-                                <div class="p-4 border-b border-gray-100 flex justify-between items-center">
-                                    <h3 class="text-lg font-semibold heading-brown">Past 7 Days</h3>
-                                    <div class="flex space-x-2">
-                                        <button class="text-sm px-3 py-1 rounded-lg bg-gray-100 text-gray-700">Week</button>
-                                        <button class="text-sm px-3 py-1 rounded-lg bg-gray-50 text-gray-500">Month</button>
-                                    </div>
-                                </div>
-                                <div class="overflow-y-auto" style="max-height: 400px;">
-                                    <table class="min-w-full divide-y divide-gray-200">
-                                        <thead class="bg-gray-50">
-                                            <tr>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Driver</th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Arrival</th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="bg-white divide-y divide-gray-200">
-                                            <!-- Day 1 -->
-                                            <tr>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <div class="text-sm font-medium text-gray-900">Mar 12, 2025</div>
-                                                    <div class="text-xs text-gray-500">Wednesday</div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <div class="flex items-center">
-                                                        <div class="flex-shrink-0 h-8 w-8 rounded-full overflow-hidden border border-gray-200">
-                                                            <img src="/api/placeholder/100/100" alt="Driver" class="h-full w-full" />
-                                                        </div>
-                                                        <div class="ml-3">
-                                                            <div class="text-sm font-medium text-gray-900">Robert Davis</div>
-                                                            <div class="text-xs text-gray-500">Bus #42</div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <div class="text-sm text-gray-900">3:43 PM</div>
-                                                    <div class="text-xs text-gray-500">2 min early</div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                                        On Time
-                                                    </span>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    <button class="text-blue-600 hover:text-blue-800">View Route</button>
-                                                </td>
-                                            </tr>
-                                            <!-- Day 2 -->
-                                            <tr>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <div class="text-sm font-medium text-gray-900">Mar 11, 2025</div>
-                                                    <div class="text-xs text-gray-500">Tuesday</div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <div class="flex items-center">
-                                                        <div class="flex-shrink-0 h-8 w-8 rounded-full overflow-hidden border border-gray-200">
-                                                            <img src="/api/placeholder/100/100" alt="Driver" class="h-full w-full" />
-                                                        </div>
-                                                        <div class="ml-3">
-                                                            <div class="text-sm font-medium text-gray-900">Robert Davis</div>
-                                                            <div class="text-xs text-gray-500">Bus #42</div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <div class="text-sm text-gray-900">3:48 PM</div>
-                                                    <div class="text-xs text-gray-500">3 min late</div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                                        Slight Delay
-                                                    </span>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    <button class="text-blue-600 hover:text-blue-800">View Route</button>
-                                                </td>
-                                            </tr>
-                                            <!-- Day 3 -->
-                                            <tr>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <div class="text-sm font-medium text-gray-900">Mar 10, 2025</div>
-                                                    <div class="text-xs text-gray-500">Monday</div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <div class="flex items-center">
-                                                        <div class="flex-shrink-0 h-8 w-8 rounded-full overflow-hidden border border-gray-200">
-                                                            <img src="/api/placeholder/100/100" alt="Driver" class="h-full w-full" />
-                                                        </div>
-                                                        <div class="ml-3">
-                                                            <div class="text-sm font-medium text-gray-900">Sarah Johnson</div>
-                                                            <div class="text-xs text-gray-500">Bus #42</div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <div class="text-sm text-gray-900">3:52 PM</div>
-                                                    <div class="text-xs text-gray-500">7 min late</div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                                        Delayed
-                                                    </span>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    <button class="text-blue-600 hover:text-blue-800">View Route</button>
-                                                </td>
-                                            </tr>
-                                            <!-- Days 4-7 -->
-                                            <tr>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <div class="text-sm font-medium text-gray-900">Mar 7, 2025</div>
-                                                    <div class="text-xs text-gray-500">Friday</div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <div class="flex items-center">
-                                                        <div class="flex-shrink-0 h-8 w-8 rounded-full overflow-hidden border border-gray-200">
-                                                            <img src="/api/placeholder/100/100" alt="Driver" class="h-full w-full" />
-                                                        </div>
-                                                        <div class="ml-3">
-                                                            <div class="text-sm font-medium text-gray-900">Robert Davis</div>
-                                                            <div class="text-xs text-gray-500">Bus #42</div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <div class="text-sm text-gray-900">3:44 PM</div>
-                                                    <div class="text-xs text-gray-500">1 min early</div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                                        On Time
-                                                    </span>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    <button class="text-blue-600 hover:text-blue-800">View Route</button>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Statistics & Analysis (1/3 width on large screens) -->
-                        <div class="lg:col-span-1">
-                            <div class="bg-white rounded-2xl shadow-enhanced border border-blue-100 overflow-hidden h-full">
-                                <div class="p-4 border-b border-gray-100">
-                                    <h3 class="text-lg font-semibold heading-brown">Route Statistics</h3>
-                                </div>
-                                
-                                <!-- Statistics Summary -->
-                                <div class="p-4">
-                                    <div class="grid grid-cols-2 gap-4">
-                                        <div class="bg-gray-50 rounded-lg p-3">
-                                            <div class="text-xs text-gray-500">On-Time Rate</div>
-                                            <div class="text-xl font-medium text-gray-800">85%</div>
-                                            <div class="text-xs text-green-600 flex items-center mt-1">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                                                </svg>
-                                                5% from last week
-                                            </div>
-                                        </div>
-                                        <div class="bg-gray-50 rounded-lg p-3">
-                                            <div class="text-xs text-gray-500">Avg. Arrival Time</div>
-                                            <div class="text-xl font-medium text-gray-800">3:46 PM</div>
-                                            <div class="text-xs text-gray-600 mt-1">1 min late avg.</div>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Route Time Trends Graph -->
-                                    <div class="mt-4 p-3 bg-white border border-gray-100 rounded-lg">
-                                        <h4 class="text-sm font-medium text-gray-700 mb-2">7-Day Arrival Trend</h4>
-                                        <div class="h-40 w-full bg-gray-50 rounded">
-                                            <!-- Placeholder for graph - would be a real chart in production -->
-                                            <img src="/api/placeholder/300/160" alt="Arrival trend graph" class="w-full h-full object-cover" />
-                                        </div>
-                                    </div>
-                                    
-                                <!-- Performance Summary -->
-                                    <div class="mt-4">
-                                        <h4 class="text-sm font-medium text-gray-700 mb-2">Performance Summary</h4>
-                                        <div class="space-y-3">
-                                            <div class="flex items-center justify-between">
-                                                <span class="text-xs text-gray-600">On Time (±2 min)</span>
-                                                <span class="text-xs font-medium">4 days</span>
-                                                <div class="w-32 bg-gray-200 rounded-full h-2">
-                                                    <div class="bg-green-500 h-2 rounded-full" style="width: 57%"></div>
-                                                </div>
-                                            </div>
-                                            <div class="flex items-center justify-between">
-                                                <span class="text-xs text-gray-600">Slight Delay (3-5 min)</span>
-                                                <span class="text-xs font-medium">2 days</span>
-                                                <div class="w-32 bg-gray-200 rounded-full h-2">
-                                                    <div class="bg-yellow-500 h-2 rounded-full" style="width: 29%"></div>
-                                                </div>
-                                            </div>
-                                            <div class="flex items-center justify-between">
-                                                <span class="text-xs text-gray-600">Delayed (>5 min)</span>
-                                                <span class="text-xs font-medium">1 day</span>
-                                                <div class="w-32 bg-gray-200 rounded-full h-2">
-                                                    <div class="bg-red-500 h-2 rounded-full" style="width: 14%"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Driver Performance -->
-                                        <div class="mt-4 p-3 bg-blue-50 rounded-lg">
-                                            <div class="flex items-center">
-                                                <div class="w-10 h-10 rounded-full overflow-hidden mr-3 flex-shrink-0 border-2 border-blue-300">
-                                                    <img src="/api/placeholder/100/100" alt="Driver" class="w-full h-full object-cover" />
-                                                </div>
-                                                <div>
-                                                    <h5 class="text-sm font-medium text-gray-800">Robert Davis</h5>
-                                                    <div class="flex items-center mt-1">
-                                                        <div class="flex items-center text-yellow-500">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
-                                                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                                                            </svg>
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
-                                                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                                                            </svg>
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
-                                                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                                                            </svg>
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
-                                                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                                                            </svg>
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="gray" viewBox="0 0 24 24">
-                                                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                                                            </svg>
-                                                            <span class="text-xs text-gray-600 ml-1">4.0/5.0</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Weather Impact Analysis -->
-                                    <div class="mt-4 p-4 border-t border-gray-100">
-                                        <h4 class="text-sm font-medium text-gray-700 mb-2">Weather Impact</h4>
-                                        <div class="flex items-center justify-between mb-2">
-                                            <div class="flex items-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
-                                                </svg>
-                                                <span class="text-xs text-gray-700">Rain on March 10</span>
-                                            </div>
-                                            <span class="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">+7 min delay</span>
-                                        </div>
-                                        <p class="text-xs text-gray-500">Weather conditions contributed to the delay on Monday due to reduced visibility and traffic congestion.</p>
-                                    </div>
-
-                                    <!-- Download Report Button -->
-                                    <div class="p-4 border-t border-gray-100">
-                                        <button class="w-full bg-blue-500 text-white py-2 rounded-lg flex items-center justify-center hover:bg-blue-600 transition duration-200">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                            </svg>
-                                            Download Weekly Report
-                                        </button>
-                                    </div>
-                                </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-
-
+                
 
 
 
@@ -1694,7 +1165,8 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                 // Calculate academic year (assuming September to June)
                 $academic_year_start = $current_date->format('n') >= 9 ? $current_year : $current_year - 1;
                 $academic_year_end = $academic_year_start + 1;
-                $academic_year = $academic_year_start . "-" . $academic_year_end;
+                // $academic_year = $academic_year_start . "-" . $academic_year_end;
+                $academic_year = $academic_year_end;
 
                 // Get joined date
                 $joined_date = new DateTime($child_info['joined_date']);
@@ -1824,7 +1296,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                         <div class="flex items-center">
                                             <div class="w-16 h-16 <?php echo $current_month_paid ? 'bg-green-100' : 'bg-red-100'; ?> rounded-full flex items-center justify-center">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 <?php echo $current_month_paid ? 'text-green-600' : 'text-red-600'; ?>" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                                                 </svg>
                                             </div>
                                             <div class="ml-4">
@@ -2007,6 +1479,58 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                 
 
 
@@ -2065,67 +1589,75 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                         <?php if ($result->num_rows > 0): ?>
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 <?php while ($child = $result->fetch_assoc()): ?>
-                                    <div class="bg-white rounded-xl shadow-md overflow-hidden transform transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
-                                        <div class="p-6">
-                                            <div class="flex flex-col items-center mb-6">
+                                    <div class="bg-white rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl border border-gray-100">
+                                        <div class="p-4">
+                                            <div class="flex items-center space-x-4">
                                                 <?php if (!empty($child['photo_url'])): ?>
-                                                    <img src="<?php echo htmlspecialchars($child['photo_url']); ?>" alt="Child Photo" class="w-24 h-24 rounded-full object-cover border-4 border-blue-100">
+                                                    <img src="<?php echo htmlspecialchars($child['photo_url']); ?>" alt="Child Photo" class="w-16 h-16 rounded-full object-cover ring-2 ring-yellow-500 ring-offset-2">
                                                 <?php else: ?>
-                                                    <img src="assets\img\student1.jpg" alt="Default Child Photo" class="w-24 h-24 rounded-full object-cover border-4 border-blue-100">
+                                                    <img src="assets\img\student1.jpg" alt="Default Child Photo" class="w-16 h-16 rounded-full object-cover ring-2 ring-yellow-500 ring-offset-2">
                                                 <?php endif; ?>
                                                 
-                                                <h4 class="text-xl font-semibold text-gray-800 mt-4">
-                                                    <?php echo htmlspecialchars($child['first_name'] . ' ' . $child['last_name']); ?>
-                                                </h4>
+                                                <div>
+                                                    <h4 class="text-lg font-semibold text-gray-800 leading-tight">
+                                                        <?php echo htmlspecialchars($child['first_name'] . ' ' . $child['last_name']); ?>
+                                                    </h4>
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 mt-1">
+                                                        Grade <?php echo htmlspecialchars($child['grade'] ?? 'N/A'); ?>
+                                                    </span>
+                                                </div>
                                             </div>
                                             
-                                            <div class="space-y-2 text-gray-700">
-                                                <div class="flex">
-                                                    <span class="font-medium w-1/3">Grade:</span> 
-                                                    <span class="text-gray-600"><?php echo htmlspecialchars($child['grade'] ?? 'N/A'); ?></span>
+                                            <div class="mt-4 flex flex-col space-y-2 text-sm"> <!-- Changed to flex-col and space-y-2 -->
+                                                <div class="flex items-center space-x-2">
+                                                    <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                                    </svg>
+                                                    <span class="text-gray-600 truncate"><?php echo htmlspecialchars($child['school_name'] ?? 'N/A'); ?></span>
                                                 </div>
                                                 
-                                                <div class="flex">
-                                                    <span class="font-medium w-1/3">School:</span> 
-                                                    <span class="text-gray-600"><?php echo htmlspecialchars($child['school_name'] ?? 'N/A'); ?></span>
-                                                </div>
-                                                
-                                                <div class="flex">
-                                                    <span class="font-medium w-1/3">Bus:</span> 
-                                                    <span class="text-gray-600"><?php echo htmlspecialchars($child['bus_number'] ?? 'N/A'); ?></span>
+                                                <div class="flex items-center space-x-2">
+                                                    <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v6a2 2 0 002 2h2" />
+                                                    </svg>
+                                                    <span class="text-gray-600">Bus <?php echo htmlspecialchars($child['bus_number'] ?? 'N/A'); ?></span>
                                                 </div>
                                                 
                                                 <?php if (!empty($child['emergency_contact'])): ?>
-                                                    <div class="flex">
-                                                        <span class="font-medium w-1/3">Tel: </span> 
-                                                        <span class="text-gray-600"> <?php echo htmlspecialchars($child['emergency_contact']); ?></span>
+                                                    <div class="flex items-center space-x-2">
+                                                        <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                                        </svg>
+                                                        <span class="text-gray-600"><?php echo htmlspecialchars($child['emergency_contact']); ?></span>
                                                     </div>
                                                 <?php endif; ?>
                                                 
                                                 <?php if (!empty($child['medical_notes'])): ?>
-                                                    <div class="flex flex-col">
-                                                        <span class="font-medium">Medical Notes:</span> 
-                                                        <span class="text-gray-600 mt-1"><?php echo htmlspecialchars($child['medical_notes']); ?></span>
+                                                    <div class="flex items-center space-x-2">
+                                                        <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m-6-8h6M5 5h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z" />
+                                                        </svg>
+                                                        <span class="text-gray-600 truncate"><?php echo htmlspecialchars($child['medical_notes']); ?></span>
                                                     </div>
                                                 <?php endif; ?>
                                             </div>
                                         </div>
                                         
-                                        <div class="px-6 py-4 bg-gray-50">
-                                            <div class="flex justify-between">
-                                                <button onclick="openEditModal(<?php echo $child['child_id']; ?>)" class="px-4 py-2 text-sm bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors duration-300 flex items-center">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                    </svg>
-                                                    Edit
-                                                </button>
-                                                <button onclick="openDeleteModal(<?php echo $child['child_id']; ?>)" class="px-4 py-2 text-sm bg-white text-red-600 border border-red-600 rounded-lg hover:bg-red-50 transition-colors duration-300 flex items-center">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                    </svg>
-                                                    Delete
-                                                </button>
-                                            </div>
+                                        <div class="px-4 py-3 bg-gray-50 border-t border-gray-100 flex justify-end space-x-2">
+                                            <button onclick="openEditModal(<?php echo $child['child_id']; ?>)" 
+                                                    class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors duration-200">
+                                                <svg class="w-3.5 h-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                </svg>
+                                                Edit
+                                            </button>
+                                            <button onclick="openDeleteModal(<?php echo $child['child_id']; ?>)" 
+                                                    class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 rounded-md hover:bg-red-100 transition-colors duration-200">
+                                                <svg class="w-3.5 h-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                                Delete
+                                            </button>
                                         </div>
                                     </div>
 
@@ -2213,8 +1745,263 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                                         
                                                         <div class="mb-4">
                                                             <label for="pickupLocation<?php echo $child['child_id']; ?>" class="block text-sm font-medium text-gray-700 mb-1">Pickup Location</label>
-                                                            <input type="text" id="pickupLocation<?php echo $child['child_id']; ?>" name="pickup_location" value="<?php echo htmlspecialchars($child['pickup_location'] ?? ''); ?>" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                                                            <p class="mt-1 text-sm text-gray-500">You can select the location on map in the next step</p>
+                                                            <div class="relative">
+                                                                <input type="text" 
+                                                                    id="pickupLocation<?php echo $child['child_id']; ?>" 
+                                                                    name="pickup_location" 
+                                                                    value="<?php echo htmlspecialchars($child['pickup_location'] ?? ''); ?>" 
+                                                                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                                                <button type="button" 
+                                                                        onclick="getCurrentLocation(<?php echo $child['child_id']; ?>)"
+                                                                        class="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 pb-4 text-gray-500 hover:text-blue-500 flex items-center">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                                        <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                                                                    </svg>
+                                                                </button>
+                                                            </div>
+
+                                                            <!-- Input fields for coordinates -->
+                                                            <div class="grid grid-cols-2 gap-4 mb-2">
+                                                                <div>
+                                                                    <!-- <label class="block text-sm font-medium text-gray-700 mb-1">Latitude</label> -->
+                                                                    <input type="hidden" id="latitude<?php echo $child['child_id']; ?>" name="latitude" 
+                                                                        value="<?php echo htmlspecialchars($child['latitude'] ?? ''); ?>"
+                                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                                                </div>
+                                                                <div>
+                                                                    <!-- <label class="block text-sm font-medium text-gray-700 mb-1">Longitude</label> -->
+                                                                    <input type="hidden" id="longitude<?php echo $child['child_id']; ?>" name="longitude" 
+                                                                        value="<?php echo htmlspecialchars($child['longitude'] ?? ''); ?>"
+                                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Loading indicator -->
+                                                            <div id="mapLoading<?php echo $child['child_id']; ?>" class="w-full h-64 flex items-center justify-center bg-gray-100 rounded-lg">
+                                                                <div class="text-center">
+                                                                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
+                                                                    <p class="text-sm text-gray-600">Loading map...</p>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Map container -->
+                                                            <div id="map<?php echo $child['child_id']; ?>" class="mt-2 h-64 w-full rounded-lg border border-gray-300 hidden"></div>
+                                                            <p class="mt-1 text-sm text-gray-500">Click on the map to select pickup location or use current location button</p>
+
+                                                            <script>
+                                                            document.addEventListener('DOMContentLoaded', function() {
+                                                                const childId = <?php echo $child['child_id']; ?>;
+                                                                const mapId = 'map' + childId;
+                                                                const loadingId = 'mapLoading' + childId;
+                                                                let marker;
+                                                                let map;
+                                                                let mapInitialized = false;
+
+                                                                // Pre-load map tiles
+                                                                const preloadTiles = () => {
+                                                                    const link = document.createElement('link');
+                                                                    link.rel = 'preload';
+                                                                    link.href = 'https://tile.openstreetmap.org/13/4093/2723.png';
+                                                                    link.as = 'image';
+                                                                    document.head.appendChild(link);
+                                                                };
+                                                                preloadTiles();
+
+                                                                // Initialize map with optimized loading
+                                                                function initMap() {
+                                                                    if (mapInitialized) return;
+                                                                    
+                                                                    // Create map with better performance options
+                                                                    map = L.map(mapId, {
+                                                                        zoomControl: true,
+                                                                        attributionControl: false,
+                                                                        fadeAnimation: false,
+                                                                        zoomAnimation: true,
+                                                                        markerZoomAnimation: true,
+                                                                        preferCanvas: true
+                                                                    });
+
+                                                                    // Add custom loading control
+                                                                    const loadingControl = L.control({position: 'bottomleft'});
+                                                                    loadingControl.onAdd = function() {
+                                                                        const div = L.DomUtil.create('div', 'map-loading-control');
+                                                                        div.innerHTML = '<div class="text-xs bg-white px-2 py-1 rounded shadow">Loading tiles...</div>';
+                                                                        div.style.display = 'none';
+                                                                        return div;
+                                                                    };
+                                                                    const loadingIndicator = loadingControl.addTo(map);
+
+                                                                    // Add OpenStreetMap tiles with better performance
+                                                                    const tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                                                        maxZoom: 19,
+                                                                        attribution: '© OpenStreetMap',
+                                                                        tileSize: 256,
+                                                                        updateWhenIdle: true,
+                                                                        updateWhenZooming: false,
+                                                                        keepBuffer: 2
+                                                                    });
+
+                                                                    // Track loading events
+                                                                    let tilesLoading = 0;
+                                                                    tiles.on('loading', () => {
+                                                                        tilesLoading++;
+                                                                        loadingIndicator.getContainer().style.display = 'block';
+                                                                    });
+
+                                                                    tiles.on('load', () => {
+                                                                        tilesLoading--;
+                                                                        if (tilesLoading <= 0) {
+                                                                            loadingIndicator.getContainer().style.display = 'none';
+                                                                            document.getElementById(loadingId).classList.add('hidden');
+                                                                            document.getElementById(mapId).classList.remove('hidden');
+                                                                        }
+                                                                    });
+
+                                                                    tiles.addTo(map);
+
+                                                                    // Set initial view based on saved coordinates or default
+                                                                    const savedLat = document.getElementById('latitude' + childId).value;
+                                                                    const savedLng = document.getElementById('longitude' + childId).value;
+                                                                    
+                                                                    if (savedLat && savedLng) {
+                                                                        map.setView([savedLat, savedLng], 15);
+                                                                        marker = L.marker([savedLat, savedLng], {draggable: true}).addTo(map);
+                                                                        setupMarkerEvents(marker);
+                                                                        
+                                                                        // Update pickup location text with coordinates
+                                                                        document.getElementById('pickupLocation' + childId).value = `${savedLat},${savedLng}`;
+                                                                    } else {
+                                                                        // Default to Sri Lanka center
+                                                                        map.setView([7.8731, 80.7718], 8);
+                                                                    }
+
+                                                                    // Handle map clicks
+                                                                    map.on('click', function(e) {
+                                                                        handleLocationSelect(e.latlng.lat, e.latlng.lng);
+                                                                    });
+
+                                                                    // Add attribution control in a less obtrusive position
+                                                                    L.control.attribution({
+                                                                        position: 'bottomright',
+                                                                        prefix: false
+                                                                    }).addAttribution('© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>').addTo(map);
+
+                                                                    mapInitialized = true;
+                                                                    
+                                                                    // Force a map resize after revealing to fix rendering issues
+                                                                    setTimeout(() => {
+                                                                        map.invalidateSize();
+                                                                    }, 100);
+                                                                }
+
+                                                                // Lazy load the map when element comes into view
+                                                                const observer = new IntersectionObserver((entries) => {
+                                                                    entries.forEach(entry => {
+                                                                        if (entry.isIntersecting) {
+                                                                            initMap();
+                                                                            observer.disconnect();
+                                                                        }
+                                                                    });
+                                                                }, {threshold: 0.1});
+                                                                
+                                                                observer.observe(document.getElementById(loadingId));
+
+                                                                // Function to handle location selection
+                                                                function handleLocationSelect(lat, lng) {
+                                                                    if (marker) {
+                                                                        map.removeLayer(marker);
+                                                                    }
+
+                                                                    marker = L.marker([lat, lng], {draggable: true}).addTo(map);
+                                                                    setupMarkerEvents(marker);
+                                                                    updateCoordinates(lat, lng);
+
+                                                                    // Update pickup location with raw coordinates immediately
+                                                                    document.getElementById('pickupLocation' + childId).value = `${lat.toFixed(6)},${lng.toFixed(6)}`;
+
+                                                                    // Attempt reverse geocoding in background
+                                                                    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`)
+                                                                        .then(response => response.json())
+                                                                        .then(data => {
+                                                                            if (data.display_name) {
+                                                                                const pickupField = document.getElementById('pickupLocation' + childId);
+                                                                                // Add the place name but keep coordinates in parentheses
+                                                                                pickupField.value = `${data.display_name} (${lat.toFixed(6)},${lng.toFixed(6)})`;
+                                                                            }
+                                                                        })
+                                                                        .catch(error => console.error('Error:', error));
+                                                                }
+
+                                                                // Setup marker drag events
+                                                                function setupMarkerEvents(marker) {
+                                                                    marker.on('dragend', function(event) {
+                                                                        const position = marker.getLatLng();
+                                                                        updateCoordinates(position.lat, position.lng);
+                                                                        
+                                                                        // Update display immediately with coordinates
+                                                                        document.getElementById('pickupLocation' + childId).value = 
+                                                                            `${position.lat.toFixed(6)},${position.lng.toFixed(6)}`;
+                                                                    });
+                                                                }
+
+                                                                // Update coordinate inputs
+                                                                function updateCoordinates(lat, lng) {
+                                                                    document.getElementById('latitude' + childId).value = lat.toFixed(6);
+                                                                    document.getElementById('longitude' + childId).value = lng.toFixed(6);
+                                                                }
+
+                                                                // Make getCurrentLocation function available globally
+                                                                window.getCurrentLocation = function(childId) {
+                                                                    // Initialize map if not already done
+                                                                    if (!mapInitialized) initMap();
+                                                                    
+                                                                    const locButton = document.querySelector(`button[onclick="getCurrentLocation(${childId})"]`);
+                                                                    if (locButton) {
+                                                                        // Show loading state on button
+                                                                        const originalContent = locButton.innerHTML;
+                                                                        locButton.innerHTML = '<div class="animate-spin h-5 w-5 border-2 border-blue-500 border-t-transparent rounded-full"></div>';
+                                                                        locButton.disabled = true;
+                                                                    }
+
+                                                                    if ("geolocation" in navigator) {
+                                                                        navigator.geolocation.getCurrentPosition(function(position) {
+                                                                            const lat = position.coords.latitude;
+                                                                            const lng = position.coords.longitude;
+                                                                            
+                                                                            // Center and zoom the map
+                                                                            map.setView([lat, lng], 15);
+                                                                            handleLocationSelect(lat, lng);
+                                                                            
+                                                                            // Restore button state
+                                                                            if (locButton) {
+                                                                                locButton.innerHTML = originalContent;
+                                                                                locButton.disabled = false;
+                                                                            }
+                                                                        }, function(error) {
+                                                                            alert("Error getting location: " + error.message);
+                                                                            
+                                                                            // Restore button state
+                                                                            if (locButton) {
+                                                                                locButton.innerHTML = originalContent;
+                                                                                locButton.disabled = false;
+                                                                            }
+                                                                        }, {
+                                                                            enableHighAccuracy: true,
+                                                                            timeout: 10000,
+                                                                            maximumAge: 0
+                                                                        });
+                                                                    } else {
+                                                                        alert("Geolocation is not supported by your browser");
+                                                                        
+                                                                        // Restore button state
+                                                                        if (locButton) {
+                                                                            locButton.innerHTML = originalContent;
+                                                                            locButton.disabled = false;
+                                                                        }
+                                                                    }
+                                                                };
+                                                            });
+                                                            </script>
                                                         </div>
                                                         
                                                         <div class="mb-4">
@@ -2224,17 +2011,37 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                                         
                                                         <div class="mb-4">
                                                             <label for="photo<?php echo $child['child_id']; ?>" class="block text-sm font-medium text-gray-700 mb-1">Photo</label>
-                                                            <input type="file" id="photo<?php echo $child['child_id']; ?>" name="photo" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                                            <div class="flex items-center justify-center w-full">
+                                                                <label for="photo<?php echo $child['child_id']; ?>" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-all duration-300">
+                                                                    <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                                                        <svg class="w-8 h-8 mb-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                                                        </svg>
+                                                                        <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+                                                                        <p class="text-xs text-gray-500">PNG, JPG or JPEG (MAX. 800x400px)</p>
+                                                                    </div>
+                                                                    <input type="file" id="photo<?php echo $child['child_id']; ?>" name="photo" class="hidden" accept="image/*" />
+                                                                </label>
+                                                            </div>
+                                                            
                                                             <?php if (!empty($child['photo_url'])): ?>
-                                                                <div class="mt-2 flex items-start space-x-3">
-                                                                    <div>
-                                                                        <p class="text-sm text-gray-500">Current photo:</p>
-                                                                        <img src="<?php echo htmlspecialchars($child['photo_url']); ?>" alt="Current Photo" class="mt-1 h-20 w-20 object-cover rounded">
+                                                                <div class="mt-4 flex items-start space-x-3">
+                                                                    <div class="relative group">
+                                                                        <p class="text-sm text-gray-500 mb-2">Current photo:</p>
+                                                                        <div class="relative rounded-lg overflow-hidden shadow-md group-hover:shadow-lg transition-all duration-300">
+                                                                            <img src="<?php echo htmlspecialchars($child['photo_url']); ?>" alt="Current Photo" class="h-20 w-20 object-cover">
+                                                                            <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                                                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                                                </svg>
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                     <div class="flex items-center">
-                                                                        <input type="checkbox" id="removePhoto<?php echo $child['child_id']; ?>" name="remove_photo" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                                                                        <label for="removePhoto<?php echo $child['child_id']; ?>" class="ml-2 block text-sm text-gray-700">
-                                                                            Remove current photo
+                                                                        <label class="inline-flex items-center space-x-2 cursor-pointer">
+                                                                            <input type="checkbox" id="removePhoto<?php echo $child['child_id']; ?>" name="remove_photo" class="form-checkbox h-4 w-4 text-orange-500 rounded border-gray-300 focus:ring-orange-500 transition duration-150">
+                                                                            <span class="text-sm text-gray-700 hover:text-orange-500 transition-colors duration-200">Remove current photo</span>
                                                                         </label>
                                                                     </div>
                                                                 </div>
@@ -2357,6 +2164,35 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                         });
                     </script>
                 </section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2539,6 +2375,28 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+
                 <!-- Account Settings Section -->
                 <section id="settings-section" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-72 md:mr-8 mx-4 md:mx-0">
                     <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
@@ -2551,7 +2409,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                     <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden mb-6">
                         <div class="p-6">
                             <div class="flex justify-between items-center mb-6">
-                                <h3 class="text-lg font-semibold heading-brown">Personal Information</h3>
+                                <h3 class="text-lg font-semibold heading-brown">Parent Information</h3>
                                 <!-- <button onclick="openUpdateModal()" class="btn-primary text-sm px-4 py-2 rounded-lg flex items-center">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
