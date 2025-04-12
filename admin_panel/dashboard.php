@@ -36,6 +36,9 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
     <title>Admin Portal - Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <link rel="icon" type="image/png" href="../img/favicon/favicon-96x96.png" sizes="96x96" />
+    <link rel="shortcut icon" href="../img/favicon/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="../img/favicon/favicon.svg" />
     <!-- Font Awesome 5 (CDN) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
@@ -195,7 +198,15 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
                     <i class="fas fa-home h-5 w-5 mr-3"></i>
                     Home
                 </button>
-                <button onclick="showSection('tracker')" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
+                <a href="management" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
+                    <i class="fas fa-tasks h-5 w-5 mr-3"></i> 
+                    Management
+                </a>
+                <a href="payment_monitor.php" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
+                    <i class="fas fa-dollar-sign h-5 w-5 mr-3"></i>
+                    Payments
+                </a>
+                <!-- <button onclick="showSection('tracker')" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
                     <i class="fas fa-chart-bar h-5 w-5 mr-3"></i>
                     Bus
                 </button>
@@ -206,7 +217,11 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
                 <button onclick="showSection('payments')" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
                     <i class="fas fa-wallet h-5 w-5 mr-3"></i>
                     Parent
-                </button>
+                </button> -->
+                <a href="newsletter_sender.php" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
+                    <i class="fas fa-envelope h-5 w-5 mr-3"></i>
+                    Newsletter
+                </a>
                 <button onclick="showSection('settings')" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
                     <i class="fas fa-cog h-5 w-5 mr-3"></i>
                     Settings
@@ -222,7 +237,15 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
                 <i class="fas fa-home h-6 w-6"></i>
                 <span>Home</span>
             </button>
-            <button onclick="showSection('tracker')" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
+            <a href="management" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
+                <i class="fas fa-tasks h-6 w-6"></i>
+                <span>Management</span>
+            </a>
+            <a href="payment_monitor.php" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
+                <i class="fas fa-dollar-sign h-6 w-6"></i>
+                <span>Payments</span>
+            </a>
+            <!-- <button onclick="showSection('tracker')" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
                 <i class="fas fa-bus h-6 w-6"></i>
                 <span>Bus</span>
             </button>
@@ -233,7 +256,11 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
             <button onclick="showSection('payments')" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
                 <i class="fas fa-user-friends h-6 w-6"></i>
                 <span>Parent</span>
-            </button>
+            </button> -->
+            <a href="newsletter_sender.php" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
+                <i class="fas fa-envelope h-6 w-6"></i>
+                <span>Newsletter</span>
+            </a>
             <button onclick="showSection('settings')" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
                 <i class="fas fa-cog h-6 w-6"></i>
                 <span>Settings</span>
@@ -255,11 +282,43 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
                     <div class="flex items-center">
                         <div class="flex-shrink-0 relative flex items-center">
                             <span id="profile-name" class="hidden md:inline-block mr-3 font-medium text-grey order-first"><?php echo htmlspecialchars($admin_name); ?></span>
-                            <button id="profile-menu-button" class="bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 order-last">
-                                <img class="h-8 w-8 rounded-full object-cover border-2 border-orange-200" src="https://randomuser.me/api/portraits/women/44.jpg" alt="Profile">
-                            </button>
+                            <div class="relative">
+                                <button id="profile-menu-button" class="bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 order-last">
+                                    <img class="h-8 w-8 rounded-full object-cover border-2 border-orange-200" src="../img/profile-icon.jpg" alt="Profile">
+                                </button>
+                                <div id="profile-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-50">
+                                    <a href="logout.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50">
+                                        <div class="flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                            </svg>
+                                            Logout
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
+
+                    <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const profileButton = document.getElementById('profile-menu-button');
+                        const dropdown = document.getElementById('profile-dropdown');
+
+                        // Toggle dropdown when clicking the profile button
+                        profileButton.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            dropdown.classList.toggle('hidden');
+                        });
+
+                        // Close dropdown when clicking outside
+                        document.addEventListener('click', function(e) {
+                            if (!profileButton.contains(e.target) && !dropdown.contains(e.target)) {
+                                dropdown.classList.add('hidden');
+                            }
+                        });
+                    });
+                    </script>
                 </div>
             </div>
         </header>
@@ -353,65 +412,59 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
 
                     <!-- Bus Information and Schools Section -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <!-- All Drivers (Left Side) -->
-                        <div>
-                            <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden mb-6">
-                                <div class="p-6 border-b border-gray-100">
-                                    <h3 class="text-lg font-semibold heading-brown">All Drivers</h3>
-                                </div>
-                                <div class="p-6">
-                                    <div class="space-y-6">
-                                        <!-- Driver 1 -->
-                                        <div class="border border-gray-100 rounded-xl p-4">
-                                            <div class="flex items-start space-x-4">
-                                                <img src="/api/placeholder/100/100" alt="Robert Davis" class="w-16 h-16 rounded-full object-cover border-2 border-orange-200"/>
-                                                <div class="flex-1">
-                                                    <h4 class="text-md font-medium text-gray-800">Robert Davis</h4>
-                                                    <p class="text-gray-500 text-sm">Bus #42</p>
-                                                    <div class="mt-2 text-xs text-gray-600">
-                                                        <p>Servicing: Westfield High, Springfield Middle, Oakridge Elementary</p>
-                                                        <p>Route: North District - Route C</p>
-                                                        <p>Contact: (555) 987-6543</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Driver 2 -->
-                                        <div class="border border-gray-100 rounded-xl p-4">
-                                            <div class="flex items-start space-x-4">
-                                                <img src="/api/placeholder/100/100" alt="Sarah Johnson" class="w-16 h-16 rounded-full object-cover border-2 border-orange-200"/>
-                                                <div class="flex-1">
-                                                    <h4 class="text-md font-medium text-gray-800">Sarah Johnson</h4>
-                                                    <p class="text-gray-500 text-sm">Bus #38</p>
-                                                    <div class="mt-2 text-xs text-gray-600">
-                                                        <p>Servicing: Westfield High, Lakeview Middle School</p>
-                                                        <p>Route: East District - Route A</p>
-                                                        <p>Contact: (555) 123-4567</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Driver 3 -->
-                                        <div class="border border-gray-100 rounded-xl p-4">
-                                            <div class="flex items-start space-x-4">
-                                                <img src="/api/placeholder/100/100" alt="Michael Chen" class="w-16 h-16 rounded-full object-cover border-2 border-orange-200"/>
-                                                <div class="flex-1">
-                                                    <h4 class="text-md font-medium text-gray-800">Michael Chen</h4>
-                                                    <p class="text-gray-500 text-sm">Bus #29</p>
-                                                    <div class="mt-2 text-xs text-gray-600">
-                                                        <p>Servicing: Pinecrest High, Meadows Elementary</p>
-                                                        <p>Route: South District - Route D</p>
-                                                        <p>Contact: (555) 876-5432</p>
-                                                    </div>
+                    
+                    <?php
+                   
+                    // SQL query to join driver and bus tables, limiting to 5 results
+                    $sql = "SELECT d.driver_id, d.full_name, d.license_number, d.joined_date, d.phone, 
+                                b.bus_number
+                            FROM driver d
+                            LEFT JOIN bus b ON d.bus_id = b.bus_id
+                            ORDER BY d.driver_id
+                            LIMIT 5";  // Added LIMIT 5 to show only up to 5 drivers
+
+                    $result = $conn->query($sql);
+                    ?>
+
+                    <!-- All Drivers (Left Side) -->
+                    <div>
+                        <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden mb-6">
+                            <div class="p-6 border-b border-gray-100">
+                                <h3 class="text-lg font-semibold heading-brown">Drivers</h3>
+                            </div>
+                            <div class="p-6">
+                                <div class="space-y-6">
+                                    <?php
+                                    if ($result->num_rows > 0) {
+                                        // Output data of each row
+                                        while($row = $result->fetch_assoc()) {
+                                    ?>
+                                    <!-- Driver Card -->
+                                    <div class="border border-gray-100 rounded-xl p-4">
+                                        <div class="flex items-start space-x-4">
+                                            <img src="../img/busdriver1.jpg" alt="<?php echo htmlspecialchars($row["full_name"]); ?>" class="w-16 h-16 rounded-full object-cover border-2 border-orange-200"/>
+                                            <div class="flex-1">
+                                                <h4 class="text-md font-medium text-gray-800"><?php echo htmlspecialchars($row["full_name"]); ?></h4>
+                                                <p class="text-gray-500 text-sm">Bus <?php echo htmlspecialchars($row["bus_number"] ?? 'Not Assigned'); ?></p>
+                                                <div class="mt-2 text-xs text-gray-600">
+                                                    <p>License Number: <?php echo htmlspecialchars($row["license_number"]); ?></p>
+                                                    <p>Joined Date: <?php echo htmlspecialchars($row["joined_date"]); ?></p>
+                                                    <p>Contact: <?php echo htmlspecialchars($row["phone"]); ?></p>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
+                                    <?php
+                                        }
+                                    } else {
+                                        echo "<p class='text-center py-4'>No drivers found</p>";
+                                    }
+                                    // $conn->close();
+                                    ?>
                                 </div>
                             </div>
                         </div>
+                    </div>
                         
                         <!-- Parents Logged In (Right Side) -->
                         <div>
@@ -567,617 +620,6 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
 
                 
 
-                <?php
-// Database connection
-$host = 'localhost';
-$dbname = 'school_bus_management';
-$username = 'root';
-$password = '';
-
-try {
-    // Create PDO connection
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-    // Fetch buses with associated schools
-    $stmt = $pdo->prepare("
-        SELECT 
-            b.bus_id, 
-            b.bus_number, 
-            b.license_plate, 
-            b.capacity, 
-            b.is_active, 
-            b.starting_location,
-            GROUP_CONCAT(DISTINCT s.name SEPARATOR ', ') AS schools
-        FROM 
-            bus b
-        LEFT JOIN 
-            bus_school bs ON b.bus_id = bs.bus_id
-        LEFT JOIN 
-            school s ON bs.school_id = s.school_id
-        GROUP BY 
-            b.bus_id
-    ");
-    $stmt->execute();
-    $buses = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch(PDOException $e) {
-    $buses = [];
-    echo "<div class='bg-red-100 p-4 text-red-800'>Error: " . htmlspecialchars($e->getMessage()) . "</div>";
-}
-?>
-
-<section id="tracker-section" class="dashboard-section mt-8">
-    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
-        <div class="flex items-center space-x-3">
-            <div class="h-10 w-1 bg-orange-500 rounded-full"></div>
-            <h2 class="text-3xl font-bold heading-brown">Bus Management</h2>
-        </div>
-        <div class="flex">
-            <a href="add_bus.php" class="bg-yellow-500 hover:bg-yellow-600 transition duration-300 ease-in-out transform hover:-translate-y-1 text-white px-4 py-2 rounded-lg flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                Add New Bus
-            </a>
-        </div>
-    </div>
-
-
-      <!-- Add Bus Modal -->
-      <div id="addBusModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4">
-            <div class="p-6 border-b border-gray-200 flex justify-between items-center">
-                <h2 class="text-2xl font-bold text-orange-800">Add New Bus</h2>
-                <button onclick="closeModal('addBusModal')" class="text-gray-500 hover:text-gray-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-            
-            <form id="addBusForm" class="p-6 space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="busNumber" class="block text-sm font-medium text-gray-700 mb-2">Bus Number *</label>
-                        <input type="text" id="busNumber" name="bus_number" required 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
-                    </div>
-                    
-                    <div>
-                        <label for="licensePlate" class="block text-sm font-medium text-gray-700 mb-2">License Plate *</label>
-                        <input type="text" id="licensePlate" name="license_plate" required 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="startingLocation" class="block text-sm font-medium text-gray-700 mb-2">Starting Location</label>
-                        <input type="text" id="startingLocation" name="starting_location" 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
-                    </div>
-                    
-                    <div>
-                        <label for="city" class="block text-sm font-medium text-gray-700 mb-2">City</label>
-                        <input type="text" id="city" name="city" 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
-                    </div>
-                </div>
-
-                <div>
-                    <label for="coveringCities" class="block text-sm font-medium text-gray-700 mb-2">Covering Cities</label>
-                    <textarea id="coveringCities" name="covering_cities" rows="3"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"></textarea>
-                </div>
-
-                <div>
-                    <label for="coveringRegions" class="block text-sm font-medium text-gray-700 mb-2">Covering Regions</label>
-                    <textarea id="coveringRegions" name="covering_regions" rows="3"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"></textarea>
-                </div>
-
-                <div>
-                    <label for="schools" class="block text-sm font-medium text-gray-700 mb-2">Covering Schools</label>
-                    <select multiple id="schools" name="schools[]" 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
-                        <!-- School options will be dynamically populated -->
-                    </select>
-                </div>
-
-                <div>
-                    <label for="capacity" class="block text-sm font-medium text-gray-700 mb-2">Bus Capacity *</label>
-                    <input type="number" id="capacity" name="capacity" required min="0"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
-                </div>
-
-                <div class="flex justify-end space-x-4">
-                    <button type="button" onclick="closeModal('addBusModal')" 
-                        class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">
-                        Cancel
-                    </button>
-                    <button type="submit" 
-                        class="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition">
-                        Add Bus
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        // Function to open modal
-        function openModal(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                modal.classList.remove('hidden');
-                fetchSchools(); // Fetch schools when modal opens
-            }
-        }
-
-        // Function to close modal
-        function closeModal(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                modal.classList.add('hidden');
-            }
-        }
-
-        // Fetch schools dynamically
-        function fetchSchools() {
-            const schoolSelect = document.getElementById('schools');
-            
-            // Fetch schools from the database
-            fetch('fetch_schools.php')
-                .then(response => response.json())
-                .then(schools => {
-                    // Clear existing options
-                    schoolSelect.innerHTML = '';
-                    
-                    // Populate schools
-                    schools.forEach(school => {
-                        const option = document.createElement('option');
-                        option.value = school.school_id;
-                        option.textContent = `${school.name} (${school.location})`;
-                        schoolSelect.appendChild(option);
-                    });
-                })
-                .catch(error => {
-                    console.error('Error fetching schools:', error);
-                    schoolSelect.innerHTML = '<option>Error loading schools</option>';
-                });
-        }
-
-       
-    </script>
-
-    <!-- Filter and Search -->
-    <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 p-6 mb-8">
-        <div class="flex flex-col md:flex-row md:items-center gap-4">
-            <div class="flex-1">
-                <label for="search-bus" class="block text-sm font-medium text-gray-700 mb-1">Search Buses</label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </div>
-                    <input type="text" id="search-bus" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500" placeholder="Search by bus number, license plate...">
-                </div>
-            </div>
-            <!-- <div class="w-full md:w-48">
-                <label for="filter-status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <select id="filter-status" class="block w-full border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500 py-2">
-                    <option value="">All Statuses</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                </select>
-            </div> -->
-        </div>
-    </div>
-
-    <!-- Bus List -->
-    <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden">
-        <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-            <h3 class="text-lg font-semibold heading-brown">All Buses</h3>
-            <div class="text-sm text-gray-500">Total: <?php echo count($buses); ?> buses</div>
-        </div>
-        
-        <!-- Desktop and Tablet View -->
-        <div class="hidden md:block overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bus Info</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Capacity</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Covering Schools</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    <?php foreach ($buses as $bus): ?>
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="ml-4">
-                                    <div class="text-sm font-medium text-gray-900"><?php echo htmlspecialchars($bus['bus_number']); ?></div>
-                                    <div class="text-sm text-gray-500">License: <?php echo htmlspecialchars($bus['license_plate']); ?></div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900"><?php echo htmlspecialchars($bus['capacity']); ?> seats</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-500"><?php echo htmlspecialchars($bus['starting_location'] ?? 'N/A'); ?></div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="text-sm text-gray-500 max-w-xs truncate">
-                                <?php echo htmlspecialchars($bus['schools'] ?? 'No schools assigned'); ?>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                <?php echo $bus['is_active'] ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'; ?>">
-                                <?php echo $bus['is_active'] ? 'Active' : 'Inactive'; ?>
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div class="flex justify-end space-x-2">
-                                <button onclick="viewBusDetails(<?php echo $bus['bus_id']; ?>)" class="text-blue-600 hover:text-blue-900">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                    </svg>
-                                </button>
-                                <button onclick="editBus(<?php echo $bus['bus_id']; ?>)" class="text-indigo-600 hover:text-indigo-900">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
-                                </button>
-                                <button onclick="deleteBus(<?php echo $bus['bus_id']; ?>)" class="text-red-600 hover:text-red-900">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Mobile View -->
-        <div class="md:hidden">
-            <?php foreach ($buses as $bus): ?>
-            <div class="p-4 border-b border-gray-200">
-                <div class="flex justify-between items-start mb-3">
-                    <div>
-                        <h4 class="text-lg font-medium text-gray-900"><?php echo htmlspecialchars($bus['bus_number']); ?></h4>
-                        <p class="text-sm text-gray-500">License: <?php echo htmlspecialchars($bus['license_plate']); ?></p>
-                    </div>
-                    <span class="px-2 py-1 text-xs font-semibold rounded-full 
-                        <?php echo $bus['is_active'] ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'; ?>">
-                        <?php echo $bus['is_active'] ? 'Active' : 'Inactive'; ?>
-                    </span>
-                </div>
-                
-                <div class="space-y-2 mb-3">
-                    <div class="flex justify-between">
-                        <span class="text-sm font-medium text-gray-500">Capacity:</span>
-                        <span class="text-sm text-gray-900"><?php echo htmlspecialchars($bus['capacity']); ?> seats</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-sm font-medium text-gray-500">Location:</span>
-                        <span class="text-sm text-gray-900"><?php echo htmlspecialchars($bus['starting_location'] ?? 'N/A'); ?></span>
-                    </div>
-                    <div>
-                        <span class="text-sm font-medium text-gray-500">Schools:</span>
-                        <p class="text-sm text-gray-900 mt-1"><?php echo htmlspecialchars($bus['schools'] ?? 'No schools assigned'); ?></p>
-                    </div>
-                </div>
-                
-                <div class="flex justify-end space-x-4 mt-4">
-                    <button onclick="viewBusDetails(<?php echo $bus['bus_id']; ?>)" class="text-blue-600">
-                        <span class="text-sm">View</span>
-                    </button>
-                    <button onclick="editBus(<?php echo $bus['bus_id']; ?>)" class="text-indigo-600">
-                        <span class="text-sm">Edit</span>
-                    </button>
-                    <button onclick="deleteBus(<?php echo $bus['bus_id']; ?>)" class="text-red-600">
-                        <span class="text-sm">Delete</span>
-                    </button>
-                </div>
-            </div>
-            <?php endforeach; ?>
-        </div>
-    </div>
-</section>
-
-<script>
-    // Search functionality
-    document.getElementById('search-bus').addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase();
-        const rows = document.querySelectorAll('tbody tr');
-        
-        rows.forEach(row => {
-            const busNumber = row.querySelector('div.text-sm.font-medium').textContent.toLowerCase();
-            const licensePlate = row.querySelector('div.text-sm.text-gray-500').textContent.toLowerCase();
-            
-            if (busNumber.includes(searchTerm) || licensePlate.includes(searchTerm)) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
-    });
-
-    // Status filter functionality
-    document.getElementById('filter-status').addEventListener('change', function() {
-        const statusFilter = this.value;
-        const rows = document.querySelectorAll('tbody tr');
-        
-        rows.forEach(row => {
-            const statusSpan = row.querySelector('span');
-            const status = statusSpan.textContent.toLowerCase();
-            
-            if (statusFilter === '' || status === statusFilter) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
-    });
-
-    // Placeholder functions for bus actions
-    function viewBusDetails(busId) {
-        alert('View details for Bus ID: ' + busId);
-        // Implement view details modal/page
-    }
-
-    function editBus(busId) {
-        alert('Edit Bus ID: ' + busId);
-        // Implement edit bus modal/page
-    }
-
-    function deleteBus(busId) {
-        if (confirm('Are you sure you want to delete this bus?')) {
-            // Implement bus deletion logic
-            fetch('delete_bus.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ bus_id: busId })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Remove the row from the table
-                    const row = document.querySelector(`tr:has(button[onclick="deleteBus(${busId})"])`);
-                    if (row) row.remove();
-                    alert('Bus deleted successfully');
-                } else {
-                    alert('Failed to delete bus: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while deleting the bus');
-            });
-        }
-    }
-</script>
-
-
-
-
-                <!-- Driver Management Section -->
-                <section id="history-section" class="dashboard-section mt-8">
-                    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
-                        <div class="flex items-center space-x-3">
-                            <div class="h-10 w-1 bg-orange-500 rounded-full"></div>
-                            <h2 class="text-3xl font-bold heading-brown">Driver Management</h2>
-                        </div>
-                        <div class="flex">
-                            <!-- Existing Add New Driver button -->
-                            <button class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                </svg>
-                                Add New Driver
-                            </button>
-                            <!-- New View Route History button -->
-                            <!-- <button class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg flex items-center ml-4">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                </svg>
-                                View Route History
-                            </button> -->
-                        </div>
-                    </div>
-
-                    <!-- Search and Filter -->
-                    <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 p-6 mb-8">
-                        <div class="flex flex-col md:flex-row gap-4">
-                            <div class="flex-1">
-                                <label for="search-driver" class="block text-sm font-medium text-gray-700 mb-1">Search Drivers</label>
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                        </svg>
-                                    </div>
-                                    <input type="text" id="search-driver" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500" placeholder="Search by name, email, or bus number...">
-                                </div>
-                            </div>
-                            <div class="w-full md:w-48">
-                                <label for="filter-experience" class="block text-sm font-medium text-gray-700 mb-1">Experience</label>
-                                <select id="filter-experience" class="block w-full border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500 py-2">
-                                    <option value="">All Experience</option>
-                                    <option value="0-2">0-2 years</option>
-                                    <option value="3-5">3-5 years</option>
-                                    <option value="5+">5+ years</option>
-                                </select>
-                            </div>
-                            <div class="w-full md:w-48">
-                                <label for="sort-by" class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
-                                <select id="sort-by" class="block w-full border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500 py-2">
-                                    <option value="name">Name</option>
-                                    <option value="age">Age</option>
-                                    <option value="bus">Bus Number</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Driver Cards -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Driver Card 1 -->
-                        <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden">
-                            <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-                                <h3 class="font-semibold heading-brown">Driver Profile</h3>
-                                <div class="flex space-x-2">
-                                    <button class="text-indigo-600 hover:text-indigo-900">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
-                                    </button>
-                                    <button class="text-red-600 hover:text-red-900">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="p-6">
-                                <div class="flex flex-col sm:flex-row gap-6">
-                                    <!-- Profile Picture Column -->
-                                    <div class="flex flex-col items-center">
-                                        <div class="w-32 h-32 rounded-full overflow-hidden mb-3">
-                                            <img src="/api/placeholder/200/200" alt="Robert Davis" class="w-full h-full object-cover" />
-                                        </div>
-                                        <div class="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium">
-                                            Bus #42
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Details Column -->
-                                    <div class="flex-1 space-y-4">
-                                        <div>
-                                            <h4 class="text-xl font-medium text-gray-800">Robert Davis</h4>
-                                            <p class="text-gray-500 text-sm">Joined: January 2020</p>
-                                        </div>
-                                        
-                                        <div class="space-y-2">
-                                            <div class="flex">
-                                                <span class="w-20 text-sm font-medium text-gray-500">Age:</span>
-                                                <span class="flex-1 text-sm text-gray-800">45 years</span>
-                                            </div>
-                                            
-                                            <div class="flex">
-                                                <span class="w-20 text-sm font-medium text-gray-500">Email:</span>
-                                                <span class="flex-1 text-sm text-gray-800">robert.davis@example.com</span>
-                                            </div>
-                                            
-                                            <div class="flex">
-                                                <span class="w-20 text-sm font-medium text-gray-500">Phone:</span>
-                                                <span class="flex-1 text-sm text-gray-800">(555) 987-6543</span>
-                                            </div>
-                                            
-                                            <div class="flex">
-                                                <span class="w-20 text-sm font-medium text-gray-500">License:</span>
-                                                <span class="flex-1 text-sm text-gray-800">CDL Class B - Expires 06/2026</span>
-                                            </div>
-                                            
-                                            <div class="flex">
-                                                <span class="w-20 text-sm font-medium text-gray-500">Experience:</span>
-                                                <span class="flex-1 text-sm text-gray-800">12 years</span>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="pt-4">
-                                            <a href="#" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View Full Profile</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Driver Card 2 -->
-                        <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden">
-                            <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-                                <h3 class="font-semibold heading-brown">Driver Profile</h3>
-                                <div class="flex space-x-2">
-                                    <button class="text-indigo-600 hover:text-indigo-900">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
-                                    </button>
-                                    <button class="text-red-600 hover:text-red-900">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="p-6">
-                                <div class="flex flex-col sm:flex-row gap-6">
-                                    <!-- Profile Picture Column -->
-                                    <div class="flex flex-col items-center">
-                                        <div class="w-32 h-32 rounded-full overflow-hidden mb-3">
-                                            <img src="/api/placeholder/200/200" alt="Sarah Johnson" class="w-full h-full object-cover" />
-                                        </div>
-                                        <div class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
-                                            Bus #38
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Details Column -->
-                                    <div class="flex-1 space-y-4">
-                                        <div>
-                                            <h4 class="text-xl font-medium text-gray-800">Sarah Johnson</h4>
-                                            <p class="text-gray-500 text-sm">Joined: March 2021</p>
-                                        </div>
-                                        
-                                        <div class="space-y-2">
-                                            <div class="flex">
-                                                <span class="w-20 text-sm font-medium text-gray-500">Age:</span>
-                                                <span class="flex-1 text-sm text-gray-800">38 years</span>
-                                            </div>
-                                            
-                                            <div class="flex">
-                                                <span class="w-20 text-sm font-medium text-gray-500">Email:</span>
-                                                <span class="flex-1 text-sm text-gray-800">sarah.johnson@example.com</span>
-                                            </div>
-                                            
-                                            <div class="flex">
-                                                <span class="w-20 text-sm font-medium text-gray-500">Phone:</span>
-                                                <span class="flex-1 text-sm text-gray-800">(555) 123-4567</span>
-                                            </div>
-                                            
-                                            <div class="flex">
-                                                <span class="w-20 text-sm font-medium text-gray-500">License:</span>
-                                                <span class="flex-1 text-sm text-gray-800">CDL Class B - Expires 09/2027</span>
-                                            </div>
-                                            
-                                            <div class="flex">
-                                                <span class="w-20 text-sm font-medium text-gray-500">Experience:</span>
-                                                <span class="flex-1 text-sm text-gray-800">7 years</span>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="pt-4">
-                                            <a href="#" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View Full Profile</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
 
 
 
@@ -1185,324 +627,7 @@ try {
 
 
 
-                <!-- Parent Management Section -->
-            <section id="payments-section" class="dashboard-section mt-8">
-                <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
-                    <div class="flex items-center space-x-3">
-                        <!-- <div class="h-10 w-1 bg-blue-500 rounded-full"></div> -->
-                        <h2 class="text-3xl font-bold heading-brown">Parent Management</h2>
-                    </div>
-                    <button class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                        Add New Parent
-                    </button>
-                </div>
 
-                <!-- Search and Filter -->
-                <div class="bg-white rounded-2xl shadow-enhanced border border-blue-100 p-6 mb-8">
-                    <div class="flex flex-col md:flex-row gap-4">
-                        <div class="flex-1">
-                            <label for="search-parent" class="block text-sm font-medium text-gray-700 mb-1">Search Parents</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                </div>
-                                <input type="text" id="search-parent" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Search by name, email, or child's name...">
-                            </div>
-                        </div>
-                        <div class="w-full md:w-48">
-                            <label for="filter-school" class="block text-sm font-medium text-gray-700 mb-1">School</label>
-                            <select id="filter-school" class="block w-full border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 py-2">
-                                <option value="">All Schools</option>
-                                <option value="elementary">Elementary</option>
-                                <option value="middle">Middle School</option>
-                                <option value="high">High School</option>
-                            </select>
-                        </div>
-                        <div class="w-full md:w-48">
-                            <label for="sort-by" class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
-                            <select id="sort-by" class="block w-full border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 py-2">
-                                <option value="name">Name</option>
-                                <option value="children">Number of Children</option>
-                                <option value="bus">Bus Number</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Parent Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Parent Card 1 -->
-                    <div class="bg-white rounded-2xl shadow-enhanced border border-blue-100 overflow-hidden">
-                        <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-                            <h3 class="font-semibold heading-brown">Parent Profile</h3>
-                            <div class="flex space-x-2">
-                                <button class="text-indigo-600 hover:text-indigo-900">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
-                                </button>
-                                <button class="text-red-600 hover:text-red-900">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="p-6">
-                            <div class="flex flex-col sm:flex-row gap-6">
-                                <!-- Profile Picture Column -->
-                                <div class="flex flex-col items-center">
-                                    <div class="w-32 h-32 rounded-full overflow-hidden mb-3">
-                                        <img src="/api/placeholder/200/200" alt="Jennifer Thompson" class="w-full h-full object-cover" />
-                                    </div>
-                                    <div class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                                        2 Children
-                                    </div>
-                                </div>
-                                
-                                <!-- Details Column -->
-                                <div class="flex-1 space-y-4">
-                                    <div>
-                                        <h4 class="text-xl font-medium text-gray-800">Jennifer Thompson</h4>
-                                        <p class="text-gray-500 text-sm">Registered: August 2023</p>
-                                    </div>
-                                    
-                                    <div class="space-y-2">
-                                        <div class="flex">
-                                            <span class="w-20 text-sm font-medium text-gray-500">Address:</span>
-                                            <span class="flex-1 text-sm text-gray-800">1234 Maple Avenue, Springfield, IL 62704</span>
-                                        </div>
-                                        
-                                        <div class="flex">
-                                            <span class="w-20 text-sm font-medium text-gray-500">Email:</span>
-                                            <span class="flex-1 text-sm text-gray-800">jennifer.thompson@example.com</span>
-                                        </div>
-                                        
-                                        <div class="flex">
-                                            <span class="w-20 text-sm font-medium text-gray-500">Phone:</span>
-                                            <span class="flex-1 text-sm text-gray-800">(555) 234-5678</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Children Information -->
-                                    <div class="pt-4 border-t border-gray-100">
-                                        <h5 class="font-medium text-gray-800 mb-3">Children</h5>
-                                        <div class="space-y-4">
-                                            <!-- Child 1 -->
-                                            <div class="bg-gray-50 p-3 rounded-lg">
-                                                <div class="flex items-center justify-between">
-                                                    <h6 class="font-medium">Emma Thompson</h6>
-                                                    <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs">Bus #38</span>
-                                                </div>
-                                                <div class="mt-2 grid grid-cols-2 gap-2">
-                                                    <div>
-                                                        <span class="text-xs font-medium text-gray-500">Age:</span>
-                                                        <span class="text-xs ml-1">9 years</span>
-                                                    </div>
-                                                    <div>
-                                                        <span class="text-xs font-medium text-gray-500">Grade:</span>
-                                                        <span class="text-xs ml-1">4th</span>
-                                                    </div>
-                                                    <div>
-                                                        <span class="text-xs font-medium text-gray-500">School:</span>
-                                                        <span class="text-xs ml-1">Lincoln Elementary</span>
-                                                    </div>
-                                                    <div>
-                                                        <span class="text-xs font-medium text-gray-500">ID:</span>
-                                                        <span class="text-xs ml-1">#ST54321</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            <!-- Child 2 -->
-                                            <div class="bg-gray-50 p-3 rounded-lg">
-                                                <div class="flex items-center justify-between">
-                                                    <h6 class="font-medium">Noah Thompson</h6>
-                                                    <span class="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs">Bus #42</span>
-                                                </div>
-                                                <div class="mt-2 grid grid-cols-2 gap-2">
-                                                    <div>
-                                                        <span class="text-xs font-medium text-gray-500">Age:</span>
-                                                        <span class="text-xs ml-1">12 years</span>
-                                                    </div>
-                                                    <div>
-                                                        <span class="text-xs font-medium text-gray-500">Grade:</span>
-                                                        <span class="text-xs ml-1">7th</span>
-                                                    </div>
-                                                    <div>
-                                                        <span class="text-xs font-medium text-gray-500">School:</span>
-                                                        <span class="text-xs ml-1">Washington Middle School</span>
-                                                    </div>
-                                                    <div>
-                                                        <span class="text-xs font-medium text-gray-500">ID:</span>
-                                                        <span class="text-xs ml-1">#ST54322</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="pt-4">
-                                        <a href="#" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View Full Profile</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Parent Card 2 -->
-                    <div class="bg-white rounded-2xl shadow-enhanced border border-blue-100 overflow-hidden">
-                        <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-                            <h3 class="font-semibold heading-brown">Parent Profile</h3>
-                            <div class="flex space-x-2">
-                                <button class="text-indigo-600 hover:text-indigo-900">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
-                                </button>
-                                <button class="text-red-600 hover:text-red-900">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="p-6">
-                            <div class="flex flex-col sm:flex-row gap-6">
-                                <!-- Profile Picture Column -->
-                                <div class="flex flex-col items-center">
-                                    <div class="w-32 h-32 rounded-full overflow-hidden mb-3">
-                                        <img src="/api/placeholder/200/200" alt="Michael Rodriguez" class="w-full h-full object-cover" />
-                                    </div>
-                                    <div class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                                        3 Children
-                                    </div>
-                                </div>
-                                
-                                <!-- Details Column -->
-                                <div class="flex-1 space-y-4">
-                                    <div>
-                                        <h4 class="text-xl font-medium text-gray-800">Michael Rodriguez</h4>
-                                        <p class="text-gray-500 text-sm">Registered: October 2022</p>
-                                    </div>
-                                    
-                                    <div class="space-y-2">
-                                        <div class="flex">
-                                            <span class="w-20 text-sm font-medium text-gray-500">Address:</span>
-                                            <span class="flex-1 text-sm text-gray-800">789 Oak Street, Springfield, IL 62701</span>
-                                        </div>
-                                        
-                                        <div class="flex">
-                                            <span class="w-20 text-sm font-medium text-gray-500">Email:</span>
-                                            <span class="flex-1 text-sm text-gray-800">michael.rodriguez@example.com</span>
-                                        </div>
-                                        
-                                        <div class="flex">
-                                            <span class="w-20 text-sm font-medium text-gray-500">Phone:</span>
-                                            <span class="flex-1 text-sm text-gray-800">(555) 876-5432</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Children Information -->
-                                    <div class="pt-4 border-t border-gray-100">
-                                        <h5 class="font-medium text-gray-800 mb-3">Children</h5>
-                                        <div class="space-y-4">
-                                            <!-- Child 1 -->
-                                            <div class="bg-gray-50 p-3 rounded-lg">
-                                                <div class="flex items-center justify-between">
-                                                    <h6 class="font-medium">Sophia Rodriguez</h6>
-                                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Bus #45</span>
-                                                </div>
-                                                <div class="mt-2 grid grid-cols-2 gap-2">
-                                                    <div>
-                                                        <span class="text-xs font-medium text-gray-500">Age:</span>
-                                                        <span class="text-xs ml-1">6 years</span>
-                                                    </div>
-                                                    <div>
-                                                        <span class="text-xs font-medium text-gray-500">Grade:</span>
-                                                        <span class="text-xs ml-1">1st</span>
-                                                    </div>
-                                                    <div>
-                                                        <span class="text-xs font-medium text-gray-500">School:</span>
-                                                        <span class="text-xs ml-1">Jefferson Elementary</span>
-                                                    </div>
-                                                    <div>
-                                                        <span class="text-xs font-medium text-gray-500">ID:</span>
-                                                        <span class="text-xs ml-1">#ST67890</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            <!-- Child 2 -->
-                                            <div class="bg-gray-50 p-3 rounded-lg">
-                                                <div class="flex items-center justify-between">
-                                                    <h6 class="font-medium">Lucas Rodriguez</h6>
-                                                    <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">Bus #33</span>
-                                                </div>
-                                                <div class="mt-2 grid grid-cols-2 gap-2">
-                                                    <div>
-                                                        <span class="text-xs font-medium text-gray-500">Age:</span>
-                                                        <span class="text-xs ml-1">10 years</span>
-                                                    </div>
-                                                    <div>
-                                                        <span class="text-xs font-medium text-gray-500">Grade:</span>
-                                                        <span class="text-xs ml-1">5th</span>
-                                                    </div>
-                                                    <div>
-                                                        <span class="text-xs font-medium text-gray-500">School:</span>
-                                                        <span class="text-xs ml-1">Lincoln Elementary</span>
-                                                    </div>
-                                                    <div>
-                                                        <span class="text-xs font-medium text-gray-500">ID:</span>
-                                                        <span class="text-xs ml-1">#ST67891</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            <!-- Child 3 -->
-                                            <div class="bg-gray-50 p-3 rounded-lg">
-                                                <div class="flex items-center justify-between">
-                                                    <h6 class="font-medium">Isabella Rodriguez</h6>
-                                                    <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs">Bus #38</span>
-                                                </div>
-                                                <div class="mt-2 grid grid-cols-2 gap-2">
-                                                    <div>
-                                                        <span class="text-xs font-medium text-gray-500">Age:</span>
-                                                        <span class="text-xs ml-1">14 years</span>
-                                                    </div>
-                                                    <div>
-                                                        <span class="text-xs font-medium text-gray-500">Grade:</span>
-                                                        <span class="text-xs ml-1">9th</span>
-                                                    </div>
-                                                    <div>
-                                                        <span class="text-xs font-medium text-gray-500">School:</span>
-                                                        <span class="text-xs ml-1">Roosevelt High School</span>
-                                                    </div>
-                                                    <div>
-                                                        <span class="text-xs font-medium text-gray-500">ID:</span>
-                                                        <span class="text-xs ml-1">#ST67892</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="pt-4">
-                                        <a href="#" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View Full Profile</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    </div>
-                    </div>
-                    </section>
-                        
 
 
 
@@ -1514,13 +639,18 @@ try {
                 <?php
                 // Fetch current admin details
                 $current_admin_id = $_SESSION['admin_id'];
-                $stmt = $pdo->prepare("SELECT * FROM admin WHERE admin_id = ?");
-                $stmt->execute([$current_admin_id]);
-                $current_admin = $stmt->fetch(PDO::FETCH_ASSOC);
+                $stmt = $conn->prepare("SELECT * FROM admin WHERE admin_id = ?");
+                $stmt->bind_param("i", $current_admin_id);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $current_admin = $result->fetch_assoc();
 
                 // Fetch all admins
-                $admins_query = $pdo->query("SELECT * FROM admin");
-                $admins = $admins_query->fetchAll(PDO::FETCH_ASSOC);
+                $admins_query = $conn->query("SELECT * FROM admin");
+                $admins = [];
+                while($row = $admins_query->fetch_assoc()) {
+                    $admins[] = $row;
+                }
                 ?>
 
                     <div class="container mx-auto px-4 py-8">
