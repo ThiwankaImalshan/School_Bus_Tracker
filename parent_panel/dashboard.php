@@ -57,12 +57,6 @@ $notifStmt = $pdo->prepare("SELECT notification_id, title, message, sent_at, not
 $notifStmt->execute([$_SESSION['parent_id']]);
 $notifications = $notifStmt->fetchAll(PDO::FETCH_ASSOC);
 
-
-
-
-
-
-
 // Get children for this parent
 $parentId = $_SESSION['parent_id'];
 $sql = "SELECT * FROM child WHERE parent_id = ?";
@@ -329,6 +323,57 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                 transform: translateY(0);
             }
         }
+
+        /* Pickup button styles */
+        .pickup-btn {
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pickup-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .pickup-btn:active {
+            transform: translateY(0);
+        }
+
+        .pickup-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 120%;
+            height: 120%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 50%);
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.3s ease-out;
+        }
+
+        .pickup-btn:hover::after {
+            transform: translate(-50%, -50%) scale(2);
+        }
+
+        /* Add this to your existing styles */
+        .leaflet-container {
+            z-index: 1 !important;
+        }
+
+        #locationModal {
+            z-index: 9999 !important;
+        }
+
+        .modal-backdrop {
+            z-index: 9998 !important;
+        }
+
+        /* Ensure other map controls stay above the map but below modal */
+        .leaflet-control-container {
+            z-index: 2 !important;
+        }
     </style>
     
 </head>
@@ -386,9 +431,15 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                     </svg>
                     Children
                 </button>
+                <button onclick="showSection('pickup')" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    Pickup
+                </button>
                 <button onclick="showSection('settings')" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c-.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                     Settings
@@ -433,7 +484,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
             </button>
             <button onclick="showSection('settings')" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c-.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
                 <span>Settings</span>
@@ -2000,6 +2051,32 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                                                         }
                                                                     }
                                                                 };
+
+                                                                // Add this to the existing JavaScript section where map handling is done
+
+                                                                function setModalLocation(lat, lng) {
+                                                                    if (modalMarker) {
+                                                                        modalMap.removeLayer(modalMarker);
+                                                                    }
+                                                                    modalMarker = L.marker([lat, lng], {draggable: true}).addTo(modalMap);
+                                                                    modalMap.setView([lat, lng], 15);
+                                                                    
+                                                                    // Update hidden fields with combined coordinates
+                                                                    document.getElementById('latitude').value = lat;
+                                                                    document.getElementById('longitude').value = lng;
+
+                                                                    modalMarker.on('dragend', function(event) {
+                                                                        const position = event.target.getLatLng();
+                                                                        document.getElementById('latitude').value = position.lat;
+                                                                        document.getElementById('longitude').value = position.lng;
+                                                                    });
+                                                                }
+
+                                                                // Update the function to display coordinates from the combined format
+                                                                function displayLocation(locationString) {
+                                                                    const [lat, lng] = locationString.split(',');
+                                                                    return [parseFloat(lat), parseFloat(lng)];
+                                                                }
                                                             });
                                                             </script>
                                                         </div>
@@ -2207,149 +2284,299 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
 
 
 
-                <!-- Pickup Locations Section -->
-                <section id="pickup-section" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-72 md:mr-8 mx-4 md:mx-0">
-                    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
-                        <div class="flex items-center space-x-3">
-                            <div class="h-10 w-1 bg-orange-500 rounded-full"></div>
-                            <h2 class="text-3xl font-bold heading-brown">Pickup Locations</h2>
-                        </div>
-                        <div class="mt-4 md:mt-0">
-                            <button class="btn-primary text-sm px-4 py-2 rounded-lg">Save Changes</button>
-                        </div>
-                    </div>
 
-                    <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden mb-6">
-                        <div class="p-4 border-b border-gray-100 flex justify-between items-center">
-                            <h3 class="text-lg font-semibold heading-brown">Manage Pickup Locations</h3>
-                            <button class="text-orange-500 text-sm flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                </svg>
-                                Add Location
-                            </button>
+
+                <!-- Pickup Locations Section -->
+<section id="pickup-section" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-72 md:mr-8 mx-4 md:mx-0">
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
+        <div class="flex items-center space-x-3">
+            <div class="h-10 w-1 bg-orange-500 rounded-full"></div>
+            <h2 class="text-3xl font-bold heading-brown">Pickup Locations</h2>
+        </div>
+        <button onclick="openAddLocationModal()" 
+                class="pickup-btn btn-gradient px-4 py-2 rounded-lg text-white flex items-center hover:bg-orange-600">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Add New Location
+        </button>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden mb-6">
+        <div class="p-4 border-b border-gray-100">
+            <h3 class="text-lg font-semibold heading-brown">Manage Pickup Locations</h3>
+        </div>
+        
+        <div id="locations-container" class="divide-y divide-gray-100">
+            <?php
+            // Update the query to use the single location column
+            $stmt = $pdo->prepare("
+                SELECT pl.*, CASE WHEN c.pickup_location = pl.location THEN 1 ELSE 0 END as is_current_default 
+                FROM pickup_locations pl 
+                LEFT JOIN child c ON c.child_id = pl.child_id 
+                WHERE pl.child_id = ?
+                ORDER BY pl.is_default DESC, pl.created_at DESC
+            ");
+            $stmt->execute([$selectedChildId]);
+            $locations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($locations as $location):
+                // Split the location string into latitude and longitude
+                list($latitude, $longitude) = explode(',', $location['location']);
+            ?>
+            <div class="p-6 location-item" data-location-id="<?php echo $location['location_id']; ?>">
+                <div class="flex items-start justify-between">
+                    <div class="flex items-start space-x-4">
+                        <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-orange-500" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                            </svg>
                         </div>
-                        
-                        <!-- Primary Location -->
-                        <div class="p-6 border-b border-gray-100">
-                            <div class="flex items-start mb-4">
-                                <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                                    </svg>
-                                </div>
-                                <div class="ml-3 flex-1">
-                                    <div class="flex justify-between">
-                                        <h4 class="font-medium text-gray-800">Home (Primary)</h4>
-                                        <span class="text-xs bg-orange-100 text-orange-800 px-2 py-0.5 rounded">Default</span>
-                                    </div>
-                                    
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                                            <input type="text" value="123 Education Lane" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
-                                            <input type="text" value="Springfield" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">State</label>
-                                            <input type="text" value="IL" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
-                                            <input type="text" value="62704" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex justify-end mt-2 space-x-3">
-                                <button class="text-orange-500 text-sm px-4 py-2 border border-orange-200 rounded-lg hover:bg-orange-50">Update Location</button>
-                            </div>
-                        </div>
-                        
-                        <!-- Alternative Location -->
-                        <div class="p-6 border-b border-gray-100">
-                            <div class="flex items-start mb-4">
-                                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                    </svg>
-                                </div>
-                                <div class="ml-3 flex-1">
-                                    <div class="flex justify-between">
-                                        <h4 class="font-medium text-gray-800">Grandparents' House</h4>
-                                        <button class="text-xs text-blue-600 hover:text-blue-800">Make Default</button>
-                                    </div>
-                                    
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                                            <input type="text" value="456 Maple Avenue" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
-                                            <input type="text" value="Springfield" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">State</label>
-                                            <input type="text" value="IL" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
-                                            <input type="text" value="62704" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex justify-end mt-2 space-x-3">
-                                <button class="text-red-500 text-sm px-4 py-2 border border-red-200 rounded-lg hover:bg-red-50">Remove</button>
-                                <button class="text-orange-500 text-sm px-4 py-2 border border-orange-200 rounded-lg hover:bg-orange-50">Update Location</button>
-                            </div>
-                        </div>
-                        
-                        <!-- After School Activities Location -->
-                        <div class="p-6">
-                            <div class="flex items-start mb-4">
-                                <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                    </svg>
-                                </div>
-                                <div class="ml-3 flex-1">
-                                    <div class="flex justify-between">
-                                        <h4 class="font-medium text-gray-800">After School Program</h4>
-                                        <button class="text-xs text-blue-600 hover:text-blue-800">Make Default</button>
-                                    </div>
-                                    
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                                            <input type="text" value="789 Community Center Road" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
-                                            <input type="text" value="Springfield" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">State</label>
-                                            <input type="text" value="IL" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
-                                            <input type="text" value="62704" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex justify-end mt-2 space-x-3">
-                                <button class="text-red-500 text-sm px-4 py-2 border border-red-200 rounded-lg hover:bg-red-50">Remove</button>
-                                <button class="text-orange-500 text-sm px-4 py-2 border border-orange-200 rounded-lg hover:bg-orange-50">Update Location</button>
-                            </div>
+                        <div>
+                            <h4 class="font-medium text-gray-800"><?php echo htmlspecialchars($location['name']); ?></h4>
+                            <p class="text-sm text-gray-500 mt-1">
+                                <?php echo $location['location']; ?>
+                            </p>
                         </div>
                     </div>
-                </section>
+                    <div class="flex items-center space-x-3">
+                        <?php if (!$location['is_current_default']): ?>
+                            <button onclick="setDefaultLocation(<?php echo $location['location_id']; ?>, <?php echo $selectedChildId; ?>)" 
+                                    class="pickup-btn text-blue-600 hover:text-blue-800 text-sm px-3 py-1 rounded-md hover:bg-blue-50 transition-all duration-200 active:bg-blue-100">
+                                Make Default
+                            </button>
+                        <?php else: ?>
+                            <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Default</span>
+                        <?php endif; ?>
+                        <button onclick="editLocation(<?php echo $location['location_id']; ?>)" 
+                                class="pickup-btn text-orange-500 hover:text-orange-700 text-sm px-3 py-1 rounded-md hover:bg-orange-50 transition-all duration-200 active:bg-orange-100">
+                            Edit
+                        </button>
+                        <button onclick="deleteLocation(<?php echo $location['location_id']; ?>)"
+                                class="pickup-btn text-red-500 hover:text-red-700 text-sm px-3 py-1 rounded-md hover:bg-red-50 transition-all duration-200 active:bg-red-100">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="mt-4 h-48 rounded-lg overflow-hidden relative">
+                    <div id="map-<?php echo $location['location_id']; ?>" class="w-full h-full leaflet-map"></div>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+
+    <!-- Add/Edit Location Modal -->
+    <div id="locationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white max-w-xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-gray-900" id="modalTitle">Add New Location</h3>
+                <button onclick="closeLocationModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <form id="locationForm" class="space-y-4">
+                <input type="hidden" id="location_id" name="location_id">
+                <input type="hidden" id="child_id" name="child_id" value="<?php echo $selectedChildId; ?>">
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Location Name</label>
+                    <input type="text" id="location_name" name="name" required
+                           class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Select Location</label>
+                    <div id="modal-map" class="w-full h-64 rounded-lg mb-2"></div>
+                    <input type="hidden" id="latitude" name="latitude" required>
+                    <input type="hidden" id="longitude" name="longitude" required>
+                </div>
+
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" onclick="closeLocationModal()" 
+                            class="pickup-btn px-4 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-md transition-all duration-200">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="pickup-btn px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-all duration-200">
+                        Save Location
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<script>
+// Initialize maps for each location
+document.querySelectorAll('[id^="map-"]').forEach(mapElement => {
+    const locationId = mapElement.id.split('-')[1];
+    const location = <?php echo json_encode($locations); ?>.find(l => l.location_id == locationId);
+    
+    if (location) {
+        // Split location string into coordinates
+        const [lat, lng] = location.location.split(',');
+        const map = L.map(mapElement.id).setView([parseFloat(lat), parseFloat(lng)], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        L.marker([parseFloat(lat), parseFloat(lng)]).addTo(map);
+    }
+});
+
+// Location Modal Map
+let modalMap = null;
+let modalMarker = null;
+
+function initModalMap(lat = 7.8731, lng = 80.7718) {
+    if (!modalMap) {
+        modalMap = L.map('modal-map').setView([lat, lng], 8);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(modalMap);
+
+        modalMap.on('click', function(e) {
+            setModalLocation(e.latlng.lat, e.latlng.lng);
+        });
+    }
+
+    setModalLocation(lat, lng);
+    setTimeout(() => modalMap.invalidateSize(), 100);
+}
+
+function setModalLocation(lat, lng) {
+    if (modalMarker) {
+        modalMap.removeLayer(modalMarker);
+    }
+    modalMarker = L.marker([lat, lng], {draggable: true}).addTo(modalMap);
+    modalMap.setView([lat, lng], 15);
+    
+    document.getElementById('latitude').value = lat;
+    document.getElementById('longitude').value = lng;
+
+    modalMarker.on('dragend', function(event) {
+        const position = event.target.getLatLng();
+        document.getElementById('latitude').value = position.lat;
+        document.getElementById('longitude').value = position.lng;
+    });
+}
+
+// CRUD Operations
+async function setDefaultLocation(locationId, childId) {
+    try {
+        const response = await fetch('update_default_location.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ location_id: locationId, child_id: childId })
+        });
+        
+        if (response.ok) {
+            location.reload();
+        } else {
+            throw new Error('Failed to update default location');
+        }
+    } catch (error) {
+        alert('Error updating default location: ' + error.message);
+    }
+}
+
+function openAddLocationModal() {
+    document.getElementById('modalTitle').textContent = 'Add New Location';
+    document.getElementById('locationForm').reset();
+    document.getElementById('location_id').value = '';
+    document.getElementById('locationModal').classList.remove('hidden');
+    initModalMap();
+}
+
+function closeLocationModal() {
+    document.getElementById('locationModal').classList.add('hidden');
+}
+
+async function editLocation(locationId) {
+    try {
+        const response = await fetch(`get_location.php?id=${locationId}`);
+        const location = await response.json();
+        
+        document.getElementById('modalTitle').textContent = 'Edit Location';
+        document.getElementById('location_id').value = location.location_id;
+        document.getElementById('location_name').value = location.name;
+        document.getElementById('locationModal').classList.remove('hidden');
+        
+        initModalMap(parseFloat(location.latitude), parseFloat(location.longitude));
+    } catch (error) {
+        alert('Error loading location details: ' + error.message);
+    }
+}
+
+async function deleteLocation(locationId) {
+    if (confirm('Are you sure you want to delete this location?')) {
+        try {
+            const response = await fetch('delete_location.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ location_id: locationId })
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to delete location');
+            }
+            
+            const result = await response.json();
+            if (result.success) {
+                window.location.reload();
+            } else {
+                throw new Error(result.message || 'Failed to delete location');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error deleting location: ' + error.message);
+        }
+    }
+}
+
+// Form submission
+document.getElementById('locationForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    try {
+        // Create form data
+        const formData = new FormData();
+        formData.append('name', document.getElementById('location_name').value);
+        formData.append('latitude', document.getElementById('latitude').value);
+        formData.append('longitude', document.getElementById('longitude').value);
+        formData.append('child_id', document.getElementById('child_id').value);
+        
+        if (document.getElementById('location_id').value) {
+            formData.append('location_id', document.getElementById('location_id').value);
+        }
+
+        const response = await fetch('save_location.php', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            closeLocationModal();
+            location.reload();
+        } else {
+            throw new Error(data.message || 'Failed to save location');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error saving location: ' + error.message);
+    }
+});
+</script>
 
 
 

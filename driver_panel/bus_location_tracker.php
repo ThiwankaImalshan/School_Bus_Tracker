@@ -39,7 +39,7 @@ $current_minute = (int)date('i', $current_time);
 $time_in_minutes = ($current_hour * 60) + $current_minute;
 
 $morning_start = (5 * 60); // 5:00 AM
-$morning_end = (10 * 60); // 9:00 AM
+$morning_end = (9 * 60); // 9:00 AM
 $evening_start = (12 * 60); // 12:00 PM
 $evening_end = (17 * 60); // 5:00 PM
 
