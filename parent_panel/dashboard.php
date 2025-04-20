@@ -433,7 +433,8 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                 </button>
                 <button onclick="showSection('pickup')" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                     Pickup
                 </button>
@@ -481,6 +482,13 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
                 <span>Children</span>
+            </button>
+            <button onclick="showSection('pickup')" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span>Pickup</span>
             </button>
             <button onclick="showSection('settings')" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -568,7 +576,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
 
 
                 <!-- Home Section -->
-                <section id="home-section" class="dashboard-section">
+                <section id="home-section" class="dashboard-section pb-20 md:pb-0">
                     <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
                         <div class="flex items-center space-x-3">
                             <div class="h-10 w-1 bg-orange-500 rounded-full"></div>
@@ -1315,7 +1323,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                 ?>
 
                 <!-- Payment Section with PHP integration -->
-                <section id="payments-section" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-72 md:mr-8 mx-4 md:mx-0">
+                <section id="payments-section" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-72 md:mr-8 mx-4 md:mx-0 pb-20 md:pb-0">
                     <!-- Header with Child Info -->
                     <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
                         <div class="flex items-center space-x-3">
@@ -2288,17 +2296,17 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
 
                 <!-- Pickup Locations Section -->
 <section id="pickup-section" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-72 md:mr-8 mx-4 md:mx-0">
-    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
+    <div class="flex flex-col space-y-4 md:space-y-0 md:flex-row md:items-center justify-between mb-8">
         <div class="flex items-center space-x-3">
-            <div class="h-10 w-1 bg-orange-500 rounded-full"></div>
-            <h2 class="text-3xl font-bold heading-brown">Pickup Locations</h2>
+            <div class="h-8 md:h-10 w-1 bg-orange-500 rounded-full"></div>
+            <h2 class="text-2xl md:text-3xl font-bold heading-brown">Pickup Locations</h2>
         </div>
         <button onclick="openAddLocationModal()" 
-                class="pickup-btn btn-gradient px-4 py-2 rounded-lg text-white flex items-center hover:bg-orange-600">
+                class="pickup-btn btn-gradient w-full md:w-auto px-4 py-2 rounded-lg text-white flex items-center justify-center hover:bg-orange-600 transition-all duration-200">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
-            Add New Location
+            <span class="text-sm md:text-base">Add New Location</span>
         </button>
     </div>
 
@@ -2324,42 +2332,49 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                 // Split the location string into latitude and longitude
                 list($latitude, $longitude) = explode(',', $location['location']);
             ?>
-            <div class="p-6 location-item" data-location-id="<?php echo $location['location_id']; ?>">
-                <div class="flex items-start justify-between">
+            <div class="p-4 md:p-6 location-item" data-location-id="<?php echo $location['location_id']; ?>">
+                <!-- Main Content Container -->
+                <div class="flex flex-col md:flex-row md:items-start md:justify-between space-y-4 md:space-y-0">
+                    <!-- Location Info Section -->
                     <div class="flex items-start space-x-4">
-                        <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
+                        <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-orange-500" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
                             </svg>
                         </div>
-                        <div>
-                            <h4 class="font-medium text-gray-800"><?php echo htmlspecialchars($location['name']); ?></h4>
-                            <p class="text-sm text-gray-500 mt-1">
+                        <div class="flex-1">
+                            <h4 class="font-medium text-gray-800 text-sm md:text-base"><?php echo htmlspecialchars($location['name']); ?></h4>
+                            <p class="text-xs md:text-sm text-gray-500 mt-1 break-words">
                                 <?php echo $location['location']; ?>
                             </p>
                         </div>
                     </div>
-                    <div class="flex items-center space-x-3">
+
+                    <!-- Action Buttons Container -->
+                    <div class="flex flex-wrap items-center gap-2 md:space-x-3 mt-2 md:mt-0">
                         <?php if (!$location['is_current_default']): ?>
                             <button onclick="setDefaultLocation(<?php echo $location['location_id']; ?>, <?php echo $selectedChildId; ?>)" 
-                                    class="pickup-btn text-blue-600 hover:text-blue-800 text-sm px-3 py-1 rounded-md hover:bg-blue-50 transition-all duration-200 active:bg-blue-100">
+                                    class="pickup-btn text-blue-600 hover:text-blue-800 text-xs md:text-sm px-2 md:px-3 py-1 rounded-md hover:bg-blue-50 transition-all duration-200 active:bg-blue-100 flex-grow md:flex-grow-0">
                                 Make Default
                             </button>
                         <?php else: ?>
-                            <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Default</span>
+                            <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full inline-block">Default</span>
                         <?php endif; ?>
+                        
                         <button onclick="editLocation(<?php echo $location['location_id']; ?>)" 
-                                class="pickup-btn text-orange-500 hover:text-orange-700 text-sm px-3 py-1 rounded-md hover:bg-orange-50 transition-all duration-200 active:bg-orange-100">
+                                class="pickup-btn text-orange-500 hover:text-orange-700 text-xs md:text-sm px-2 md:px-3 py-1 rounded-md hover:bg-orange-50 transition-all duration-200 active:bg-orange-100 flex-grow md:flex-grow-0">
                             Edit
                         </button>
+                        
                         <button onclick="deleteLocation(<?php echo $location['location_id']; ?>)"
-                                class="pickup-btn text-red-500 hover:text-red-700 text-sm px-3 py-1 rounded-md hover:bg-red-50 transition-all duration-200 active:bg-red-100">
+                                class="pickup-btn text-red-500 hover:text-red-700 text-xs md:text-sm px-2 md:px-3 py-1 rounded-md hover:bg-red-50 transition-all duration-200 active:bg-red-100 flex-grow md:flex-grow-0">
                             Delete
                         </button>
                     </div>
                 </div>
                 
-                <div class="mt-4 h-48 rounded-lg overflow-hidden relative">
+                <!-- Map Container -->
+                <div class="mt-4 h-48 md:h-64 rounded-lg overflow-hidden relative">
                     <div id="map-<?php echo $location['location_id']; ?>" class="w-full h-full leaflet-map"></div>
                 </div>
             </div>

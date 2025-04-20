@@ -51,20 +51,20 @@ try {
 }
 
 // Format the month_covered to ensure it's a valid date
-// If it's in format "January 2024", convert to "2024-01-01"
+// If it's in format "January 2024", convert to "2024-MM-01"
 if (preg_match('/^([a-zA-Z]+)\s+(\d{4})$/', $month_covered, $matches)) {
     $month = date_parse($matches[1]);
-    $year = $matches[2];
+    $year = date('Y'); // Get current year
     $month_covered = sprintf("%04d-%02d-01", $year, $month['month']);
 } else {
     // Try to parse the date as is
     $date = date_parse($month_covered);
     if ($date['error_count'] > 0) {
-        // If parsing fails, use current month
+        // If parsing fails, use current month and year
         $month_covered = date('Y-m-01');
     } else {
-        // Format the date to YYYY-MM-01
-        $month_covered = sprintf("%04d-%02d-01", $date['year'], $date['month']);
+        // Format the date with current year
+        $month_covered = sprintf("%04d-%02d-01", date('Y'), $date['month']);
     }
 }
 
@@ -109,4 +109,4 @@ try {
     header('Content-Type: application/json');
     echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
 }
-?> 
+?>

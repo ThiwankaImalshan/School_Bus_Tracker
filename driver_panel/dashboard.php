@@ -304,7 +304,7 @@ try {
             <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
                 <!-- Home Section -->
-                <section id="home-section" class="dashboard-section">
+                <section id="home-section" class="dashboard-section pb-20 md:pb-0">
                     <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
                         <div class="flex items-center space-x-3">
                             <div class="h-10 w-1 bg-orange-500 rounded-full"></div>

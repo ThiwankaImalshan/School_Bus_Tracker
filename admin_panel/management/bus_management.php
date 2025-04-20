@@ -112,9 +112,12 @@ try {
         <h2 class="text-2xl font-bold text-gray-800">
             <i class="fas fa-bus mr-2 text-yellow-600"></i>Bus Management
         </h2>
-        <button id="addBusBtn" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg transition duration-300">
+        <!-- <button id="addBusBtn" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg transition duration-300">
             <i class="fas fa-plus mr-2"></i>Add New Bus
-        </button>
+        </button> -->
+        <a href="../add_bus.php" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg transition duration-300">
+            <i class="fas fa-plus mr-2"></i>Add New Bus
+        </a>
     </div>
 
     <?php if (!empty($success_message)): ?>
@@ -154,12 +157,12 @@ try {
                            class="w-full rounded-lg border-gray-300 border p-3 focus:border-yellow-500 focus:ring focus:ring-yellow-200">
                 </div>
                 
-                <div>
+                <!-- <div>
                     <label for="capacity" class="block text-gray-700 mb-2">Capacity</label>
                     <input type="number" id="capacity" name="capacity" required min="1" max="100"
                            value="<?php echo $edit_bus ? htmlspecialchars($edit_bus['capacity']) : '40'; ?>"
                            class="w-full rounded-lg border-gray-300 border p-3 focus:border-yellow-500 focus:ring focus:ring-yellow-200">
-                </div>
+                </div> -->
                 
                 <div>
                     <label for="starting_location" class="block text-gray-700 mb-2">Starting Location</label>

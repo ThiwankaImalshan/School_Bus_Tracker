@@ -121,9 +121,9 @@ try {
     $parents = [];
 }
 
-// Fetch all schools for dropdown
+// Fetch all schools for dropdown with no duplicates
 try {
-    $stmt = $pdo->prepare("SELECT school_id, name FROM school ORDER BY name");
+    $stmt = $pdo->prepare("SELECT DISTINCT school_id, name FROM school GROUP BY school_id ORDER BY name");
     $stmt->execute();
     $schools = $stmt->fetchAll();
 } catch (PDOException $e) {
@@ -141,6 +141,19 @@ try {
     $buses = [];
 }
 ?>
+
+<head>
+    <!-- Add these lines in the head section -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        #map {
+            height: 400px;
+            width: 100%;
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
 
 <div class="mb-6">
     <div class="flex justify-between items-center mb-6">
@@ -215,12 +228,20 @@ try {
                     <select id="school_id" name="school_id"
                             class="w-full rounded-lg border-gray-300 border p-3 focus:border-yellow-500 focus:ring focus:ring-yellow-200">
                         <option value="">-- Select School --</option>
-                        <?php foreach ($schools as $school): ?>
+                        <?php 
+                        $displayed_schools = array();
+                        foreach ($schools as $school):
+                            if (!in_array($school['name'], $displayed_schools)):
+                                $displayed_schools[] = $school['name'];
+                        ?>
                         <option value="<?php echo $school['school_id']; ?>" 
                                 <?php echo ($edit_child && $edit_child['school_id'] == $school['school_id']) ? 'selected' : ''; ?>>
                             <?php echo htmlspecialchars($school['name']); ?>
                         </option>
-                        <?php endforeach; ?>
+                        <?php 
+                            endif;
+                        endforeach; 
+                        ?>
                     </select>
                 </div>
                 
@@ -247,8 +268,11 @@ try {
                 
                 <div class="md:col-span-2">
                     <label for="pickup_location" class="block text-gray-700 mb-2">Pickup Location</label>
-                    <textarea id="pickup_location" name="pickup_location" rows="2"
-                              class="w-full rounded-lg border-gray-300 border p-3 focus:border-yellow-500 focus:ring focus:ring-yellow-200"><?php echo $edit_child ? htmlspecialchars($edit_child['pickup_location']) : ''; ?></textarea>
+                    <div id="map" class="mb-3"></div>
+                    <input type="text" id="pickup_location" name="pickup_location" readonly
+                           placeholder="Click on the map to set pickup location"
+                           value="<?php echo $edit_child ? htmlspecialchars($edit_child['pickup_location']) : ''; ?>"
+                           class="w-full rounded-lg border-gray-300 border p-3 focus:border-yellow-500 focus:ring focus:ring-yellow-200">
                 </div>
                 
                 <div class="md:col-span-2">
@@ -349,5 +373,41 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = '?tab=child&delete=' + childId;
         }
     };
+
+    // Initialize the map
+    let map = L.map('map').setView([6.9271, 79.8612], 13); // Default center on Colombo
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    let marker;
+    const pickupLocationInput = document.getElementById('pickup_location');
+
+    // If editing and coordinates exist, show marker
+    if (pickupLocationInput.value) {
+        const coords = pickupLocationInput.value.split(',');
+        if (coords.length === 2) {
+            const lat = parseFloat(coords[0]);
+            const lng = parseFloat(coords[1]);
+            marker = L.marker([lat, lng]).addTo(map);
+            map.setView([lat, lng], 15);
+        }
+    }
+
+    map.on('click', function(e) {
+        const lat = e.latlng.lat;
+        const lng = e.latlng.lng;
+        
+        // Update or create marker
+        if (marker) {
+            marker.setLatLng(e.latlng);
+        } else {
+            marker = L.marker(e.latlng).addTo(map);
+        }
+        
+        // Update input with coordinates
+        pickupLocationInput.value = `${lat},${lng}`;
+    });
 });
-</script> 
+</script>

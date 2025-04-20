@@ -13,9 +13,14 @@ $stats = $pdo->query("
     SELECT 
         COUNT(*) as total_payments,
         SUM(amount) as total_amount,
-        COUNT(DISTINCT child_id) as unique_children,
+        (SELECT COUNT(*) FROM child) as unique_children,
         COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_payments,
-        COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_payments
+        (SELECT COUNT(DISTINCT c.child_id) 
+         FROM child c 
+         LEFT JOIN payment p ON c.child_id = p.child_id 
+            AND MONTH(p.month_covered) = MONTH(NOW())
+         WHERE p.payment_id IS NULL OR p.status != 'completed'
+        ) as pending_payments
     FROM payment
 ")->fetch(PDO::FETCH_ASSOC);
 
@@ -32,6 +37,25 @@ $monthlyData = $pdo->query("
     ORDER BY month DESC
     LIMIT 12
 ")->fetchAll(PDO::FETCH_ASSOC);
+
+// Get payment status for unpaid children
+$paymentQuery = "
+    SELECT 
+        c.child_id,
+        c.first_name,
+        c.last_name,
+        c.joined_date,
+        DATE_FORMAT(NOW(), '%Y-%m-01') as current_month,
+        COALESCE(p.status, 'unpaid') as payment_status,
+        COALESCE(p.amount, 0) as amount
+    FROM child c
+    LEFT JOIN payment p ON c.child_id = p.child_id 
+        AND MONTH(p.month_covered) = MONTH(NOW())
+    WHERE p.payment_id IS NULL 
+        OR p.status != 'completed'
+    ORDER BY c.first_name";
+
+$paymentStatus = $pdo->query($paymentQuery)->fetchAll(PDO::FETCH_ASSOC);
 
 ?>
 
@@ -176,6 +200,51 @@ $monthlyData = $pdo->query("
                                 </td>
                             </tr>
                         <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Payment Status by Child -->
+        <div class="glass-container p-6 mt-8">
+            <h3 class="text-xl font-semibold mb-4">Unpaid Payments for Current Month</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full table-auto">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Child Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Month</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <!-- <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th> -->
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <?php if (empty($paymentStatus)): ?>
+                            <tr>
+                                <td colspan="4" class="px-6 py-4 text-center text-gray-500">
+                                    All payments are up to date for this month
+                                </td>
+                            </tr>
+                        <?php else: ?>
+                            <?php foreach ($paymentStatus as $status): ?>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <?php echo htmlspecialchars($status['first_name'] . ' ' . $status['last_name']); ?>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <?php echo date('F Y', strtotime($status['current_month'])); ?>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">
+                                            Unpaid
+                                        </span>
+                                    </td>
+                                    <!-- <td class="px-6 py-4 whitespace-nowrap">
+                                        Rs. <?php echo number_format($status['amount'], 2); ?>
+                                    </td> -->
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>

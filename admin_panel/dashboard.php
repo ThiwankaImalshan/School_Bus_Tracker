@@ -8,6 +8,19 @@ require_admin_login();
 // Get admin info from session
 $admin_name = $_SESSION['admin_name'] ?? 'Administrator';
 $admin_role = $_SESSION['admin_role'] ?? 'admin';
+$current_admin_role = $_SESSION['admin_role'] ?? 'admin';
+$allowed_roles = ['admin', 'super_admin'];
+
+// Define role-based menu access
+$menu_permissions = [
+    'payments' => ['admin', 'super_admin'],
+    'newsletter' => ['admin', 'super_admin', 'support_staff']
+];
+
+// Function to check menu item visibility
+function canAccessMenu($menuItem, $userRole, $permissions) {
+    return isset($permissions[$menuItem]) && in_array($userRole, $permissions[$menuItem]);
+}
 ?>
 
 
@@ -202,26 +215,18 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
                     <i class="fas fa-tasks h-5 w-5 mr-3"></i> 
                     Management
                 </a>
+                <?php if (canAccessMenu('payments', $admin_role, $menu_permissions)): ?>
                 <a href="payment_monitor.php" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
                     <i class="fas fa-dollar-sign h-5 w-5 mr-3"></i>
                     Payments
                 </a>
-                <!-- <button onclick="showSection('tracker')" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
-                    <i class="fas fa-chart-bar h-5 w-5 mr-3"></i>
-                    Bus
-                </button>
-                <button onclick="showSection('history')" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
-                    <i class="fas fa-id-card h-5 w-5 mr-3"></i>
-                    Driver
-                </button>
-                <button onclick="showSection('payments')" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
-                    <i class="fas fa-wallet h-5 w-5 mr-3"></i>
-                    Parent
-                </button> -->
+                <?php endif; ?>
+                <?php if (canAccessMenu('newsletter', $admin_role, $menu_permissions)): ?>
                 <a href="newsletter_sender.php" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
                     <i class="fas fa-envelope h-5 w-5 mr-3"></i>
                     Newsletter
                 </a>
+                <?php endif; ?>
                 <button onclick="showSection('settings')" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
                     <i class="fas fa-cog h-5 w-5 mr-3"></i>
                     Settings
@@ -241,26 +246,18 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
                 <i class="fas fa-tasks h-6 w-6"></i>
                 <span>Management</span>
             </a>
+            <?php if (canAccessMenu('payments', $admin_role, $menu_permissions)): ?>
             <a href="payment_monitor.php" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
                 <i class="fas fa-dollar-sign h-6 w-6"></i>
                 <span>Payments</span>
             </a>
-            <!-- <button onclick="showSection('tracker')" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
-                <i class="fas fa-bus h-6 w-6"></i>
-                <span>Bus</span>
-            </button>
-            <button onclick="showSection('history')" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
-                <i class="fas fa-id-card h-6 w-6"></i>
-                <span>Driver</span>
-            </button>
-            <button onclick="showSection('payments')" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
-                <i class="fas fa-user-friends h-6 w-6"></i>
-                <span>Parent</span>
-            </button> -->
+            <?php endif; ?>
+            <?php if (canAccessMenu('newsletter', $admin_role, $menu_permissions)): ?>
             <a href="newsletter_sender.php" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
                 <i class="fas fa-envelope h-6 w-6"></i>
                 <span>Newsletter</span>
             </a>
+            <?php endif; ?>
             <button onclick="showSection('settings')" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
                 <i class="fas fa-cog h-6 w-6"></i>
                 <span>Settings</span>
@@ -328,7 +325,7 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
             <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
                 <!-- Home Section -->
-                <section id="home-section" class="dashboard-section">
+                <section id="home-section" class="dashboard-section pb-20 md:pb-0">
                     <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
                         <div class="flex items-center space-x-3">
                             <div class="h-10 w-1 bg-orange-500 rounded-full"></div>
@@ -553,28 +550,27 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
                                     // Close connection
                                     // $conn->close();
 
-                                    // Calculate active time ago
+                                    // Calculate active time ago with current time
                                     function timeAgo($datetime) {
-                                        $now = new DateTime();
-                                        $past = new DateTime($datetime);
+                                        $now = new DateTime('now', new DateTimeZone('Asia/Colombo')); // Set timezone to Sri Lanka
+                                        $past = new DateTime($datetime, new DateTimeZone('Asia/Colombo'));
                                         $diff = $now->diff($past);
                                         
-                                        if ($diff->y > 0) {
-                                            return $diff->y . ' year' . ($diff->y > 1 ? 's' : '') . ' ago';
-                                        }
-                                        if ($diff->m > 0) {
-                                            return $diff->m . ' month' . ($diff->m > 1 ? 's' : '') . ' ago';
-                                        }
                                         if ($diff->d > 0) {
-                                            return $diff->d . ' day' . ($diff->d > 1 ? 's' : '') . ' ago';
+                                            if ($diff->d == 1) return "Yesterday";
+                                            if ($diff->d <= 7) return $diff->d . " days ago";
+                                            return date('M j', strtotime($datetime));
                                         }
                                         if ($diff->h > 0) {
-                                            return $diff->h . ' hour' . ($diff->h > 1 ? 's' : '') . ' ago';
+                                            return $diff->h . " hour" . ($diff->h > 1 ? 's' : '') . " ago";
                                         }
                                         if ($diff->i > 0) {
-                                            return $diff->i . ' minute' . ($diff->i > 1 ? 's' : '') . ' ago';
+                                            return $diff->i . " minute" . ($diff->i > 1 ? 's' : '') . " ago";
                                         }
-                                        return 'just now';
+                                        if ($diff->s > 30) {
+                                            return $diff->s . " seconds ago";
+                                        }
+                                        return "Just now";
                                     }
 
                                     // Background colors for parent icons
@@ -598,7 +594,12 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
                                                         <h5 class="text-md font-medium text-gray-800"><?php echo htmlspecialchars($parent['name']); ?></h5>
                                                     </div>
                                                     <div class="pl-12 space-y-1">
-                                                        <p class="text-xs text-gray-600">Last active: <?php echo timeAgo($parent['last_login']); ?></p>
+                                                        <p class="text-xs text-gray-600">
+                                                            <span class="w-24 text-xs font-medium text-gray-500">Last login: &nbsp &nbsp &nbsp &nbsp &nbsp </span>
+                                                            <span class="<?php echo (strtotime('now') - strtotime($parent['last_login']) < 300) ? 'text-green-500' : ''; ?>">
+                                                                <?php echo timeAgo($parent['last_login']); ?>
+                                                            </span>
+                                                        </p>
                                                         <div class="flex">
                                                             <span class="w-24 text-xs font-medium text-gray-500">Children:</span>
                                                             <span class="flex-1 text-xs text-gray-800"><?php echo htmlspecialchars(implode(', ', $parent['children'])); ?></span>
@@ -645,11 +646,26 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
                 $result = $stmt->get_result();
                 $current_admin = $result->fetch_assoc();
 
-                // Fetch all admins
-                $admins_query = $conn->query("SELECT * FROM admin");
-                $admins = [];
-                while($row = $admins_query->fetch_assoc()) {
-                    $admins[] = $row;
+                // Get current admin's role from session
+                $current_admin_role = $_SESSION['admin_role'] ?? 'admin';
+
+                // Modify the query based on admin role
+                if ($current_admin_role === 'super_admin') {
+                    $admins_query = $conn->query("SELECT * FROM admin ORDER BY role, full_name");
+                    $admins = [];
+                    while($row = $admins_query->fetch_assoc()) {
+                        $admins[] = $row;
+                    }
+                } else {
+                    // Regular admins can only see other regular admins and themselves
+                    $admins_query = $conn->prepare("SELECT * FROM admin WHERE role != 'super_admin' OR admin_id = ? ORDER BY role, full_name");
+                    $admins_query->bind_param("i", $_SESSION['admin_id']);
+                    $admins_query->execute();
+                    $result = $admins_query->get_result();
+                    $admins = [];
+                    while($row = $result->fetch_assoc()) {
+                        $admins[] = $row;
+                    }
                 }
                 ?>
 
@@ -693,94 +709,138 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
                             </div>
                             </div>
 
-                            <!-- Admin Actions Section -->
-                            <div class="p-6 grid md:grid-cols-2 gap-4">
-                                <!-- Password Change Button -->
-                                <a href="change_password.php" class="block">
-                                    <button class="w-full bg-yellow-500 text-white py-3 rounded-lg hover:bg-yellow-600 transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                        </svg>
-                                        <span>Change Password</span>
-                                    </button>
-                                </a>
+                            <?php if (in_array($current_admin_role, $allowed_roles)): ?>
+                                <!-- Admin Actions Section -->
+                                <div class="p-6 grid md:grid-cols-2 gap-4">
+                                    <!-- Password Change Button -->
+                                    <a href="forgot_password.html" class="block">
+                                        <button class="w-full bg-yellow-500 text-white py-3 rounded-lg hover:bg-yellow-600 transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                            </svg>
+                                            <span>Change Password</span>
+                                        </button>
+                                    </a>
 
-                                <!-- Register New Admin Button -->
-                                <a href="register_admin.php" class="block">
-                                    <button class="w-full bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                                        </svg>
-                                        <span>Register New Admin</span>
-                                    </button>
-                                </a>
-                            </div>
-
-                            <!-- Admins Table -->
-                            <div class="p-6">
-                                <h3 class="text-xl font-semibold mb-4">Administrators</h3>
-                                <div class="overflow-x-auto">
-                                    <table class="w-full bg-white shadow-md rounded-lg overflow-hidden">
-                                        <thead class="bg-gray-100">
-                                            <tr>
-                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="divide-y divide-gray-200">
-                                            <?php foreach ($admins as $admin): ?>
-                                            <tr class="hover:bg-gray-50">
-                                                <td class="px-4 py-3">
-                                                    <div class="flex items-center">
-                                                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center">
-                                                            <span class="text-orange-500 font-medium">
-                                                                <?php echo strtoupper(substr($admin['full_name'], 0, 2)); ?>
-                                                            </span>
-                                                        </div>
-                                                        <div class="ml-4">
-                                                            <div class="text-sm font-medium text-gray-900">
-                                                                <?php echo htmlspecialchars($admin['full_name']); ?>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td class="px-4 py-3 text-sm text-gray-500">
-                                                    <?php echo htmlspecialchars($admin['email']); ?>
-                                                </td>
-                                                <td class="px-4 py-3 text-sm text-gray-500">
-                                                    <?php echo htmlspecialchars($admin['role']); ?>
-                                                </td>
-                                                <td class="px-4 py-3 text-right text-sm font-medium">
-                                                    <?php if ($admin['role'] !== 'super_admin'): ?>
-                                                        <a href="edit_admin.php?id=<?php echo $admin['admin_id']; ?>" 
-                                                        class="text-blue-600 hover:text-blue-900 mr-3">Edit</a>
-                                                        <a href="delete_admin.php?id=<?php echo $admin['admin_id']; ?>" 
-                                                        class="text-red-600 hover:text-red-900 delete-admin">Delete</a>
-                                                    <?php else: ?>
-                                                        <span class="text-gray-400 cursor-not-allowed">Cannot Modify</span>
-                                                    <?php endif; ?>
-                                                </td>
-                                            </tr>
-                                            <?php endforeach; ?>
-                                        </tbody>
-                                    </table>
+                                    <!-- Register New Admin Button -->
+                                    <a href="register_admin.php" class="block">
+                                        <button class="w-full bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                                            </svg>
+                                            <span>Register New Admin</span>
+                                        </button>
+                                    </a>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <script>
-                        document.querySelectorAll('.delete-admin').forEach(button => {
-                            button.addEventListener('click', function(e) {
-                                if (!confirm('Are you sure you want to delete this admin?')) {
-                                    e.preventDefault();
+                                <!-- Admins Table -->
+                                <div class="p-6">
+                                    <h3 class="text-xl font-semibold mb-4">Administrators</h3>
+                                    <div class="overflow-x-auto relative shadow-md sm:rounded-lg">
+                                        <div class="min-w-full inline-block align-middle">
+                                            <div class="overflow-hidden">
+                                                <table class="min-w-full divide-y divide-gray-200">
+                                                    <thead class="bg-gray-100">
+                                                        <tr>
+                                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Name</th>
+                                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Email</th>
+                                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Role</th>
+                                                            <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody class="divide-y divide-gray-200 bg-white">
+                                                        <?php foreach ($admins as $admin): 
+                                                            // Skip displaying super_admin records for regular admins
+                                                            if ($current_admin_role !== 'super_admin' && $admin['role'] === 'super_admin') continue;
+                                                        ?>
+                                                        <tr class="hover:bg-gray-50 transition-colors">
+                                                            <td class="px-4 py-3 whitespace-nowrap">
+                                                                <div class="flex items-center">
+                                                                    <div class="flex-shrink-0 h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                                                        <span class="text-orange-500 font-medium">
+                                                                            <?php echo strtoupper(substr($admin['full_name'], 0, 2)); ?>
+                                                                        </span>
+                                                                    </div>
+                                                                    <div class="ml-4">
+                                                                        <div class="text-sm font-medium text-gray-900">
+                                                                            <?php echo htmlspecialchars($admin['full_name']); ?>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td class="px-4 py-3 text-sm text-gray-500 whitespace-nowrap">
+                                                                <?php echo htmlspecialchars($admin['email']); ?>
+                                                            </td>
+                                                            <td class="px-4 py-3 text-sm text-gray-500 whitespace-nowrap">
+                                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                                                    <?php echo $admin['role'] === 'super_admin' ? 'bg-purple-100 text-purple-800' : 
+                                                                        ($admin['role'] === 'admin' ? 'bg-blue-100 text-blue-800' : 
+                                                                        'bg-green-100 text-green-800'); ?>">
+                                                                    <?php echo htmlspecialchars($admin['role']); ?>
+                                                                </span>
+                                                            </td>
+                                                            <td class="px-4 py-3 text-right text-sm font-medium whitespace-nowrap">
+                                                                <div class="flex justify-end space-x-2">
+                                                                    <?php if (
+                                                                        // Allow editing if:
+                                                                        // 1. Current user is super_admin
+                                                                        // 2. Current user is editing their own profile
+                                                                        // 3. Target user is not a super_admin
+                                                                        $current_admin_role === 'super_admin' || 
+                                                                        ($_SESSION['admin_id'] === $admin['admin_id']) ||
+                                                                        ($admin['role'] !== 'super_admin')
+                                                                    ): ?>
+                                                                        <a href="edit_admin.php?id=<?php echo $admin['admin_id']; ?>" 
+                                                                           class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-md
+                                                                                  hover:bg-blue-200 transition-colors duration-200">
+                                                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                                                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                                            </svg>
+                                                                            <span class="hidden sm:inline">Edit</span>
+                                                                        </a>
+                                                                        <?php if ($current_admin_role === 'super_admin' && $admin['role'] !== 'super_admin'): ?>
+                                                                            <button onclick="confirmDelete(<?php echo $admin['admin_id']; ?>)" 
+                                                                                    class="inline-flex items-center px-3 py-1 bg-red-100 text-red-700 rounded-md
+                                                                                           hover:bg-red-200 transition-colors duration-200">
+                                                                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                                                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                                </svg>
+                                                                                <span class="hidden sm:inline">Delete</span>
+                                                                            </button>
+                                                                        <?php endif; ?>
+                                                                    <?php else: ?>
+                                                                        <span class="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-400 rounded-md cursor-not-allowed">
+                                                                            Cannot Modify
+                                                                        </span>
+                                                                    <?php endif; ?>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                        <?php endforeach; ?>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php else: ?>
+                                <div class="p-6 text-center">
+                                    <p class="text-gray-500">You don't have permission to view administrator management.</p>
+                                </div>
+                            <?php endif; ?>
+
+                            <script>
+                                function confirmDelete(adminId) {
+                                    if (confirm('Are you sure you want to delete this administrator?')) {
+                                        window.location.href = 'delete_admin.php?id=' + adminId;
+                                    }
                                 }
-                            });
-                        });
-                    </script>
+                            </script>
 
+
+                    </div>
 
                     </section>
 

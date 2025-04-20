@@ -13,8 +13,24 @@ $active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'bus';
 
 // Define valid tabs
 $valid_tabs = ['bus', 'driver', 'parent', 'child', 'school'];
-if (!in_array($active_tab, $valid_tabs)) {
-    $active_tab = 'bus'; // Default to bus if invalid tab
+
+// Define role permissions
+$role_permissions = [
+    'super_admin' => ['bus', 'driver', 'parent', 'child', 'school'],
+    'admin' => ['bus', 'driver', 'parent', 'child', 'school'],
+    'transportation_manager' => ['bus', 'driver', 'school'],
+    'support_staff' => ['parent', 'child']
+];
+
+// Get user's role and allowed tabs
+$user_role = $_SESSION['admin_role'] ?? 'admin';
+$allowed_tabs = $role_permissions[$user_role] ?? [];
+
+// Redirect if user tries to access unauthorized tab
+if (!in_array($active_tab, $allowed_tabs)) {
+    $active_tab = $allowed_tabs[0] ?? 'bus';
+    header("Location: ?tab=$active_tab");
+    exit;
 }
 
 // Include the corresponding page content based on active tab
@@ -30,9 +46,9 @@ $content_file = $active_tab . '_management.php';
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" type="image/png" href="../img/favicon/favicon-96x96.png" sizes="96x96" />
-    <link rel="shortcut icon" href="../img/favicon/favicon.ico" />
-    <link rel="icon" type="image/svg+xml" href="../img/favicon/favicon.svg" />
+    <link rel="icon" type="image/png" href="../../img/favicon/favicon-96x96.png" sizes="96x96" />
+    <link rel="shortcut icon" href="../../img/favicon/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="../../img/favicon/favicon.svg" />
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -101,21 +117,35 @@ $content_file = $active_tab . '_management.php';
         <div class="glass-container p-6 mb-8">
             <!-- Navigation Tabs -->
             <div class="flex overflow-x-auto mb-8 bg-white shadow-md rounded-2xl p-2">
-                <a href="?tab=bus" class="flex-shrink-0 px-8 py-4 text-center nav-pill <?php echo $active_tab === 'bus' ? 'tab-active' : 'text-gray-600 hover:text-amber-700'; ?>">
-                    <i class="fas fa-bus mr-2"></i> Buses
-                </a>
-                <a href="?tab=driver" class="flex-shrink-0 px-8 py-4 text-center nav-pill <?php echo $active_tab === 'driver' ? 'tab-active' : 'text-gray-600 hover:text-amber-700'; ?>">
-                    <i class="fas fa-id-card mr-2"></i> Drivers
-                </a>
-                <a href="?tab=parent" class="flex-shrink-0 px-8 py-4 text-center nav-pill <?php echo $active_tab === 'parent' ? 'tab-active' : 'text-gray-600 hover:text-amber-700'; ?>">
-                    <i class="fas fa-user-friends mr-2"></i> Parents
-                </a>
-                <a href="?tab=child" class="flex-shrink-0 px-8 py-4 text-center nav-pill <?php echo $active_tab === 'child' ? 'tab-active' : 'text-gray-600 hover:text-amber-700'; ?>">
-                    <i class="fas fa-child mr-2"></i> Children
-                </a>
-                <a href="?tab=school" class="flex-shrink-0 px-8 py-4 text-center nav-pill <?php echo $active_tab === 'school' ? 'tab-active' : 'text-gray-600 hover:text-amber-700'; ?>">
-                    <i class="fas fa-school mr-2"></i> Schools
-                </a>
+                <?php if (in_array('bus', $allowed_tabs)): ?>
+                    <a href="?tab=bus" class="flex-shrink-0 px-8 py-4 text-center nav-pill <?php echo $active_tab === 'bus' ? 'tab-active' : 'text-gray-600 hover:text-amber-700'; ?>">
+                        <i class="fas fa-bus mr-2"></i> Buses
+                    </a>
+                <?php endif; ?>
+                
+                <?php if (in_array('driver', $allowed_tabs)): ?>
+                    <a href="?tab=driver" class="flex-shrink-0 px-8 py-4 text-center nav-pill <?php echo $active_tab === 'driver' ? 'tab-active' : 'text-gray-600 hover:text-amber-700'; ?>">
+                        <i class="fas fa-id-card mr-2"></i> Drivers
+                    </a>
+                <?php endif; ?>
+                
+                <?php if (in_array('parent', $allowed_tabs)): ?>
+                    <a href="?tab=parent" class="flex-shrink-0 px-8 py-4 text-center nav-pill <?php echo $active_tab === 'parent' ? 'tab-active' : 'text-gray-600 hover:text-amber-700'; ?>">
+                        <i class="fas fa-user-friends mr-2"></i> Parents
+                    </a>
+                <?php endif; ?>
+                
+                <?php if (in_array('child', $allowed_tabs)): ?>
+                    <a href="?tab=child" class="flex-shrink-0 px-8 py-4 text-center nav-pill <?php echo $active_tab === 'child' ? 'tab-active' : 'text-gray-600 hover:text-amber-700'; ?>">
+                        <i class="fas fa-child mr-2"></i> Children
+                    </a>
+                <?php endif; ?>
+                
+                <?php if (in_array('school', $allowed_tabs)): ?>
+                    <a href="?tab=school" class="flex-shrink-0 px-8 py-4 text-center nav-pill <?php echo $active_tab === 'school' ? 'tab-active' : 'text-gray-600 hover:text-amber-700'; ?>">
+                        <i class="fas fa-school mr-2"></i> Schools
+                    </a>
+                <?php endif; ?>
             </div>
 
             <!-- Page Content -->
