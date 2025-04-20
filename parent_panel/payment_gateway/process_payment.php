@@ -1,5 +1,4 @@
 <?php
-// Start session
 session_start();
 
 // Check if user is logged in
@@ -10,7 +9,7 @@ if (!isset($_SESSION['parent_id'])) {
 }
 
 // Include database connection file
-require_once '../includes/db_connection.php';
+require_once '../conn.php';
 
 // Get raw POST data
 $postData = file_get_contents('php://input');
@@ -34,12 +33,13 @@ $parent_id = $_SESSION['parent_id'];
 
 // Validate child belongs to the parent
 try {
-    $stmt = $conn->prepare("SELECT child_id FROM child WHERE child_id = ? AND parent_id = ?");
-    $stmt->bind_param("ii", $child_id, $parent_id);
+    $stmt = $pdo->prepare("SELECT child_id FROM child WHERE child_id = ? AND parent_id = ?");
+    $stmt->bindParam(1, $child_id, PDO::PARAM_INT);
+    $stmt->bindParam(2, $parent_id, PDO::PARAM_INT);
     $stmt->execute();
-    $result = $stmt->get_result();
+    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    if ($result->num_rows === 0) {
+    if (count($result) === 0) {
         header('Content-Type: application/json');
         echo json_encode(['success' => false, 'message' => 'Child does not belong to the logged-in parent']);
         exit;
@@ -51,31 +51,28 @@ try {
 }
 
 // Format the month_covered to ensure it's a valid date
-// If it's in format "January 2024", convert to "2024-MM-01"
-if (preg_match('/^([a-zA-Z]+)\s+(\d{4})$/', $month_covered, $matches)) {
+if (preg_match('/^([a-zA-Z]+)$/', $month_covered, $matches)) {
     $month = date_parse($matches[1]);
-    $year = date('Y'); // Get current year
+    $year = date('Y');
+    $month_covered = sprintf("%04d-%02d-01", $year, $month['month']);
+} else if (preg_match('/^([a-zA-Z]+)\s+(\d{4})$/', $month_covered, $matches)) {
+    $month = date_parse($matches[1]);
+    $year = $matches[2];
     $month_covered = sprintf("%04d-%02d-01", $year, $month['month']);
 } else {
-    // Try to parse the date as is
-    $date = date_parse($month_covered);
-    if ($date['error_count'] > 0) {
-        // If parsing fails, use current month and year
-        $month_covered = date('Y-m-01');
-    } else {
-        // Format the date with current year
-        $month_covered = sprintf("%04d-%02d-01", date('Y'), $date['month']);
-    }
+    // Default to current month
+    $month_covered = date('Y-m-01');
 }
 
 // Check if payment for this month and child already exists
 try {
-    $stmt = $conn->prepare("SELECT payment_id FROM payment WHERE child_id = ? AND month_covered = ? AND status = 'completed'");
-    $stmt->bind_param("is", $child_id, $month_covered);
+    $stmt = $pdo->prepare("SELECT payment_id FROM payment WHERE child_id = ? AND month_covered = ? AND status = 'completed'");
+    $stmt->bindParam(1, $child_id, PDO::PARAM_INT);
+    $stmt->bindParam(2, $month_covered, PDO::PARAM_STR);
     $stmt->execute();
-    $result = $stmt->get_result();
+    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    if ($result->num_rows > 0) {
+    if (count($result) > 0) {
         header('Content-Type: application/json');
         echo json_encode(['success' => false, 'message' => 'Payment for this month already exists']);
         exit;
@@ -88,12 +85,17 @@ try {
 
 // Insert the payment record
 try {
-    $stmt = $conn->prepare("INSERT INTO payment (child_id, amount, payment_date, payment_method, transaction_id, status, description, month_covered) VALUES (?, ?, CURDATE(), ?, ?, 'completed', ?, ?)");
-    $stmt->bind_param("idssss", $child_id, $amount, $payment_method, $transaction_id, $description, $month_covered);
+    $stmt = $pdo->prepare("INSERT INTO payment (child_id, amount, payment_date, payment_method, transaction_id, status, description, month_covered) VALUES (?, ?, CURDATE(), ?, ?, 'completed', ?, ?)");
+    $stmt->bindParam(1, $child_id, PDO::PARAM_INT);
+    $stmt->bindParam(2, $amount, PDO::PARAM_STR);
+    $stmt->bindParam(3, $payment_method, PDO::PARAM_STR);
+    $stmt->bindParam(4, $transaction_id, PDO::PARAM_STR);
+    $stmt->bindParam(5, $description, PDO::PARAM_STR);
+    $stmt->bindParam(6, $month_covered, PDO::PARAM_STR);
     $stmt->execute();
     
-    if ($stmt->affected_rows > 0) {
-        $payment_id = $stmt->insert_id;
+    if ($stmt->rowCount() > 0) {
+        $payment_id = $pdo->lastInsertId();
         header('Content-Type: application/json');
         echo json_encode([
             'success' => true, 

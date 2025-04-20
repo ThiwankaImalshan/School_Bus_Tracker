@@ -399,33 +399,51 @@
         </footer>
     </div>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Get payment result and details from sessionStorage
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Get payment result and details
             const paymentResult = JSON.parse(sessionStorage.getItem('paymentResult') || '{}');
             const paymentDetails = JSON.parse(sessionStorage.getItem('paymentDetails') || '{}');
-            
-            // Debug info
-            console.log('Payment Result:', paymentResult);
-            console.log('Payment Details:', paymentDetails);
-            
-            // Get URL parameters
             const urlParams = new URLSearchParams(window.location.search);
-            const transactionId = urlParams.get('transaction_id');
-            console.log('Transaction ID from URL:', transactionId);
             
-            // Set transaction ID
+            // Process payment
+            try {
+                const response = await fetch('../payment_gateway/process_payment.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        child_id: urlParams.get('child_id'),
+                        amount: paymentResult.amount,
+                        month_covered: paymentResult.monthCovered,
+                        transaction_id: paymentResult.transaction_id,
+                        payment_method: `Credit Card (**** ${paymentResult.card_last_four})`,
+                        description: `Monthly bus fee payment for ${paymentResult.childName}`
+                    })
+                });
+
+                const data = await response.json();
+                if (!data.success) {
+                    console.error('Payment processing failed:', data.message);
+                } else {
+                    console.log('Payment stored successfully:', data);
+                }
+            } catch (error) {
+                console.error('Error processing payment:', error);
+            }
+
+            // Display payment details
             const transactionIdElement = document.getElementById('transaction-id');
             if (transactionIdElement) {
                 if (paymentResult.transaction_id) {
                     transactionIdElement.textContent = paymentResult.transaction_id;
-                } else if (transactionId) {
-                    transactionIdElement.textContent = transactionId;
+                } else if (urlParams.get('transaction_id')) {
+                    transactionIdElement.textContent = urlParams.get('transaction_id');
                 } else if (paymentDetails.transactionId) {
                     transactionIdElement.textContent = paymentDetails.transactionId;
                 }
             }
-            
-            // Set payment amount
+
             const paymentAmountElement = document.getElementById('payment-amount');
             if (paymentAmountElement) {
                 if (paymentResult.amount) {
@@ -434,46 +452,38 @@
                     paymentAmountElement.textContent = 'Rs. ' + parseFloat(paymentDetails.amount).toFixed(2);
                 }
             }
-            
-            // Set payment date (today's date)
+
             const paymentDateElement = document.getElementById('payment-date');
             if (paymentDateElement) {
                 const options = { year: 'numeric', month: 'long', day: 'numeric' };
                 paymentDateElement.textContent = new Date().toLocaleDateString('en-US', options);
             }
-            
-            // Set month covered
+
             const monthCoveredElement = document.getElementById('month-covered');
             if (monthCoveredElement && paymentDetails.monthCovered) {
                 monthCoveredElement.textContent = paymentDetails.monthCovered;
             }
-            
-            // Set child name
+
             const childNameElement = document.getElementById('child-name');
             if (childNameElement && paymentDetails.childName) {
                 childNameElement.textContent = paymentDetails.childName;
             }
-            
-            // Set monthly fee
+
             const monthlyFeeElement = document.getElementById('monthly-fee');
             if (monthlyFeeElement && paymentDetails.productTotal) {
                 monthlyFeeElement.textContent = 'Rs. ' + parseFloat(paymentDetails.productTotal).toFixed(2);
             }
-            
-            // Set payment method
+
             const paymentMethodElement = document.getElementById('payment-method');
             if (paymentMethodElement) {
                 let card_last_four = '';
-                
-                // First check payment result for last four digits
+
                 if (paymentResult.card_last_four) {
                     card_last_four = paymentResult.card_last_four;
-                } 
-                // Then fallback to payment details
-                else if (paymentDetails.card_last_four) {
+                } else if (paymentDetails.card_last_four) {
                     card_last_four = paymentDetails.card_last_four;
                 }
-                
+
                 if (card_last_four) {
                     paymentMethodElement.textContent = 'Credit Card (**** ' + card_last_four + ')';
                 } else {
@@ -482,22 +492,12 @@
             }
         });
 
-        // Update your onclick handler for the Print Receipt button
         function printReceipt() {
-            // Add a class to the payment details div for targeting in print styles
             const paymentDetails = document.querySelector('.payment-details');
-            
-            // Create a print container to hold all elements we want to print
             const printContainer = document.createElement('div');
             printContainer.className = 'print-container';
-            
-            // Add print container to body
             document.body.appendChild(printContainer);
-            
-            // Print the page
             window.print();
-            
-            // Clean up after printing
             setTimeout(() => {
                 document.body.removeChild(printContainer);
             }, 500);
