@@ -34,9 +34,9 @@ $current_minute = (int)date('i', $current_time);
 $time_in_minutes = ($current_hour * 60) + $current_minute;
 
 $morning_start = (5 * 60); // 5:00 AM
-$morning_end = (9 * 60); // 9:00 AM
+$morning_end = (19 * 60); // 9:00 AM
 $evening_start = (12 * 60); // 12:00 PM
-$evening_end = (17 * 60); // 5:00 PM
+$evening_end = (19 * 60); // 5:00 PM
 
 if ($time_in_minutes >= $morning_start && $time_in_minutes < $morning_end) {
     $current_route = "morning";
@@ -275,6 +275,120 @@ if (isset($driver['bus_id'])) {
                 min-width: 320px;
             }
         }
+
+        /* Add to existing styles */
+        .card-front {
+            transition: transform 0.3s ease;
+        }
+        
+        .card-front:hover {
+            transform: translateY(-5px);
+        }
+        
+        @media (max-width: 640px) {
+            .card-front {
+                height: 380px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .card-front {
+                height: 340px;
+            }
+        }
+
+        /* Update student card styles */
+        .student-card {
+            width: 360px;
+            height: 500px;
+            margin: 0 auto;
+        }
+        
+        .student-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            justify-content: center;
+        }
+
+        @media (max-width: 1400px) {
+            .student-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 1000px) {
+            .student-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card-front {
+            height: 100%;
+            width: 100%;
+            transition: transform 0.3s ease;
+        }
+        
+        .student-image {
+            margin-top: 7rem;
+            margin-bottom: 1rem;
+        }
+        
+        .student-image img {
+            width: 10rem;
+            height: 10rem;
+        }
+        
+        @media (max-width: 1280px) {
+            .student-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .student-card {
+                width: 100%;
+                max-width: 360px;
+            }
+        }
+
+        /* Add responsive styles for screens between 800-1024px */
+        @media (min-width: 800px) and (max-width: 1024px) {
+            .student-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem;
+                max-width: 900px;
+                margin: 0 auto;
+            }
+
+            .student-card {
+                width: 320px;
+                height: 480px;
+            }
+
+            .student-image {
+                margin-top: 5rem;
+            }
+
+            .student-image img {
+                width: 8rem;
+                height: 8rem;
+            }
+
+            .card-front h2 {
+                font-size: 1.5rem;
+            }
+
+            .card-front p {
+                font-size: 1rem;
+            }
+        }
+
+        .route-section {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
     </style>
 </head>
 <body class="min-h-screen">
@@ -309,26 +423,26 @@ if (isset($driver['bus_id'])) {
                     </p>
                 </div>
                 
-                <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 mt-4 md:mt-0">
-                    <a href="attendance-scanner.php" target="_blank" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg flex items-center justify-center transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="flex flex-row space-x-1 sm:space-x-3 mt-4 md:mt-0">
+                    <a href="attendance-scanner.php" target="_blank" class="bg-yellow-500 hover:bg-yellow-600 text-white text-xs sm:text-base px-2 sm:px-4 py-1 sm:py-2 rounded-lg flex items-center justify-center transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
                         </svg>
-                        QR Scanner
+                        <span class="text-xs sm:text-sm">QR</span>
                     </a>
                     <?php if ($current_route == 'morning'): ?>
-                    <button id="mark-all-dropped" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg flex items-center justify-center transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <button id="mark-all-dropped" class="bg-yellow-500 hover:bg-yellow-600 text-white text-xs sm:text-base px-2 sm:px-4 py-1 sm:py-2 rounded-lg flex items-center justify-center transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        Mark All Dropped
+                        <span class="text-xs sm:text-sm">Mark All</span>
                     </button>
                     <?php endif; ?>
-                    <button id="refresh-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg flex items-center justify-center transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <button id="refresh-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white text-xs sm:text-base px-2 sm:px-4 py-1 sm:py-2 rounded-lg flex items-center justify-center transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                         </svg>
-                        Refresh
+                        <span class="text-xs sm:text-sm">Refresh</span>
                     </button>
                 </div>
             </div>
@@ -380,101 +494,222 @@ if (isset($driver['bus_id'])) {
                     </div>
                 </div>
             </div>
+        </div>
+    </main>
 
-            <div class="bg-white/50 backdrop-blur rounded-xl shadow-lg p-6 mb-8">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-semibold text-gray-800">Bus Seating Map</h3>
-                    <p class="text-gray-500 text-sm">Last updated: <span id="last-updated"><?php echo date('h:i A'); ?></span></p>
+    <!-- Student Cards Section -->
+    <main class="container mx-auto px-4 py-8">
+        <div class="glass-container p-6 mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">Student Cards</h2>
+                    <p class="text-gray-600">
+                        Bus <?php echo htmlspecialchars($driver['bus_number'] ?? 'N/A'); ?> | 
+                        <span id="route-display" class="font-medium">
+                            <?php echo htmlspecialchars($route_text); ?>
+                        </span>
+                    </p>
                 </div>
-                
-                <div class="bus-layout-container">
-                    <div class="bus-layout">
-                        <div class="driver-seat bus-seat">
-                            <span>Driver</span>
-                        </div>
-                        
-                        <?php 
-                        // Sort seats by row number and type
-                        usort($bus_seats, function($a, $b) {
-                            $row_a = (int)substr($a['seat_number'], 5);
-                            $row_b = (int)substr($b['seat_number'], 5);
-                            
-                            if ($row_a === $row_b) {
-                                $type_order = ['window' => 1, 'middle' => 2, 'aisle' => 3];
-                                return $type_order[$a['seat_type']] - $type_order[$b['seat_type']];
-                            }
-                            return $row_a - $row_b;
-                        });
+            </div>
 
-                        foreach ($bus_seats as $seat): 
-                            $seat_class = 'seat-empty';
-                            $display_name = 'Empty';
-                            
-                            if ($current_route === 'none') {
-                                // Outside route hours - only show reserved/empty
-                                if ($seat['is_reserved'] == 1) {
-                                    $seat_class = 'seat-reserved';
-                                    $display_name = $seat['short_name'] ?? 'Reserved';
-                                }
-                            } else {
-                                // During route hours - show attendance status
-                                if ($seat['is_reserved'] == 1) {
-                                    // Check attendance status based on bus_seat_id
-                                    $status = $seat['status'] ?? 'pending';
-                                    switch($status) {
-                                        case 'pending':
-                                            $seat_class = 'seat-pending';
-                                            $display_name = $seat['short_name'] ?? 'Pending';
-                                            break;
-                                        case 'present':
-                                            $seat_class = 'seat-present';
-                                            $display_name = $seat['short_name'] ?? 'Present';
-                                            break;
-                                        case 'absent':
-                                            $seat_class = 'seat-absent';
-                                            $display_name = $seat['short_name'] ?? 'Absent';
-                                            break;
-                                        case 'picked':
-                                            $seat_class = 'seat-picked';
-                                            $display_name = $seat['short_name'] ?? 'Picked';
-                                            break;
-                                        case 'drop':
-                                            $seat_class = 'seat-drop';
-                                            $display_name = $seat['short_name'] ?? 'Drop';
-                                            break;
+            <div class="grid grid-cols-1 gap-6">
+                <!-- Morning Route - Picked Up Students -->
+                <?php if ($current_route === 'morning'): ?>
+                <div class="route-section">
+                    <div class="bg-white/80 backdrop-blur rounded-xl shadow-lg p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-6">
+                            <span class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                                </svg>
+                                Picked Up Students
+                            </span>
+                        </h3>
+                        <div class="student-grid">
+                            <?php
+                            try {
+                                // Get today's date
+                                $today = date('Y-m-d');
+                                
+                                // Fetch children who are marked as picked up (status = 'picked')
+                                $stmt = $pdo->prepare("
+                                    SELECT c.*, s.name AS school_name, p.full_name AS parent_name, a.status 
+                                    FROM attendance a
+                                    JOIN child c ON a.child_id = c.child_id
+                                    JOIN school s ON c.school_id = s.school_id
+                                    JOIN parent p ON c.parent_id = p.parent_id
+                                    WHERE a.attendance_date = ? 
+                                    AND a.status = 'picked'
+                                    AND c.bus_id = ?
+                                ");
+                                $stmt->execute([$today, $driver['bus_id']]);
+                                $pickedStudents = $stmt->fetchAll();
+                                
+                                if (empty($pickedStudents)) {
+                                    echo '<div class="col-span-full text-center text-gray-500 py-12">No students picked up yet.</div>';
+                                } else {
+                                    foreach ($pickedStudents as $student) {
+                                        $photoUrl = !empty($student['photo_url']) ? $student['photo_url'] : '../img/child.jpg';
+                                        $cardGradient = $current_route === 'morning' 
+                                            ? 'background: linear-gradient(135deg, rgba(255, 154, 0, 0.9) 0%, rgba(255, 106, 0, 0.9) 100%);' 
+                                            : 'background: linear-gradient(135deg, rgba(99, 102, 241, 0.9) 0%, rgba(79, 70, 229, 0.9) 100%);';
+                                        $borderColor = $current_route === 'morning' ? 'border-yellow-600' : 'border-yellow-600';
+                                        ?>
+                                        
+                                        <div class="bg-white rounded-lg overflow-hidden shadow-lg mb-4 student-card">
+                                            <div class="card-front text-white relative" 
+                                                 style="background-image: url('../img/front1.jpg'); 
+                                                        background-size: cover; 
+                                                        background-position: center;">
+                                                <!-- Gradient Overlay -->
+                                                <!-- <div class="absolute inset-0" style="<?php echo $cardGradient; ?>"></div> -->
+                                                
+                                                <!-- Content -->
+                                                <div class="relative z-10 p-4 h-full flex flex-col">
+                                                    <!-- Student Image -->
+                                                    <div class="flex justify-center student-image">
+                                                        <div class="rounded-full border-4 <?php echo $borderColor; ?> bg-white p-1">
+                                                            <img src="<?php echo $photoUrl; ?>" 
+                                                                 alt="Student Photo" 
+                                                                 class="rounded-full w-40 h-40 object-cover"/>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Student Info -->
+                                                    <div class="text-center mb-2">
+                                                        <h2 class="text-3xl font-bold"><?php echo htmlspecialchars($student['first_name'] . ' ' . $student['last_name']); ?></h2>
+                                                        <p class="text-xl">Grade <?php echo htmlspecialchars($student['grade']); ?></p>
+                                                    </div>
+
+                                                    <!-- Additional Details -->
+                                                    <div class="grid grid-cols-3 gap-1 text-sm pb-4">
+                                                        <div class="font-bold">ID:</div>
+                                                        <div class="col-span-2"><?php echo htmlspecialchars($student['child_id']); ?></div>
+                                                        
+                                                        <div class="font-bold">School:</div>
+                                                        <div class="col-span-2"><?php echo htmlspecialchars($student['school_name']); ?></div>
+                                                        
+                                                        <div class="font-bold">Parent:</div>
+                                                        <div class="col-span-2"><?php echo htmlspecialchars($student['parent_name']); ?></div>
+                                                        
+                                                        <div class="font-bold">Phone:</div>
+                                                        <div class="col-span-2"><?php echo htmlspecialchars($student['emergency_contact']); ?></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <?php
                                     }
                                 }
+                            } catch (PDOException $e) {
+                                echo '<div class="col-span-full text-red-500">Error fetching students: ' . $e->getMessage() . '</div>';
                             }
-                        ?>
-                            <div id="seat-<?php echo $seat['seat_id']; ?>" 
-                                 class="bus-seat <?php echo $seat_class; ?> <?php echo 'seat-' . $seat['seat_type']; ?>"
-                                 data-seat-id="<?php echo $seat['seat_id']; ?>"
-                                 data-child-id="<?php echo $seat['child_id'] ?? ''; ?>"
-                                 data-status="<?php echo $seat['status'] ?? ''; ?>">
-                                <span style="font-size: 0.8rem;"><?php echo $seat['seat_number']; ?></span>
-                                <span class="name-display" style="font-weight: 500;">
-                                    <?php echo $current_route === 'none' ? $display_name : ($seat['short_name'] ?? $display_name); ?>
-                                </span>
-                                <div class="seat-tooltip">
-                                    <?php if ($seat['is_reserved'] == 1 && isset($seat['first_name']) && isset($seat['last_name'])): ?>
-                                        <strong><?php echo htmlspecialchars($seat['first_name'] . ' ' . $seat['last_name']); ?></strong>
-                                        <?php if (!empty($seat['status'])): ?>
-                                            <br>Status: <?php echo $seat['status']; ?>
-                                        <?php endif; ?>
-                                        <?php if (!empty($seat['pickup_time'])): ?>
-                                            <br>Pickup: <?php echo date('h:i A', strtotime($seat['pickup_time'])); ?>
-                                        <?php endif; ?>
-                                        <?php if (!empty($seat['drop_time'])): ?>
-                                            <br>Drop: <?php echo date('h:i A', strtotime($seat['drop_time'])); ?>
-                                        <?php endif; ?>
-                                    <?php else: ?>
-                                        Empty Seat
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
+                            ?>
+                        </div>
                     </div>
                 </div>
+                <?php endif; ?>
+
+                <!-- Evening Route - To Be Dropped Off -->
+                <?php if ($current_route === 'evening'): ?>
+                <div class="route-section">
+                    <div class="bg-white/80 backdrop-blur rounded-xl shadow-lg p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-6">
+                            <span class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                                </svg>
+                                Students To Be Dropped Off
+                            </span>
+                        </h3>
+                        <div class="student-grid">
+                            <?php
+                            try {
+                                // Get today's date
+                                $today = date('Y-m-d');
+                                
+                                // Fetch children who are picked up but not yet dropped (status = 'picked')
+                                $stmt = $pdo->prepare("
+                                    SELECT c.*, s.name AS school_name, p.full_name AS parent_name, a.status 
+                                    FROM attendance a
+                                    JOIN child c ON a.child_id = c.child_id
+                                    JOIN school s ON c.school_id = s.school_id
+                                    JOIN parent p ON c.parent_id = p.parent_id
+                                    WHERE a.attendance_date = ? 
+                                    AND a.status = 'picked'
+                                    AND c.bus_id = ?
+                                ");
+                                $stmt->execute([$today, $driver['bus_id']]);
+                                $toDropStudents = $stmt->fetchAll();
+                                
+                                if (empty($toDropStudents)) {
+                                    echo '<div class="col-span-full text-center text-gray-500 py-12">No students to be dropped off.</div>';
+                                } else {
+                                    foreach ($toDropStudents as $student) {
+                                        $photoUrl = !empty($student['photo_url']) ? $student['photo_url'] : '../img/child.jpg';
+                                        ?>
+                                        
+                                        <div class="bg-white rounded-lg overflow-hidden shadow-lg mb-4 student-card" id="drop-card-<?php echo $student['child_id']; ?>">
+                                            <div class="card-front text-white relative" 
+                                                 style="background-image: url('../img/front1.jpg'); 
+                                                        background-size: cover; 
+                                                        background-position: center;">
+                                                <!-- Gradient Overlay -->
+                                                <!-- <div class="absolute inset-0" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.9) 0%, rgba(5, 150, 105, 0.9) 100%);"></div> -->
+                                                
+                                                <!-- Content -->
+                                                <div class="relative z-10 p-4 h-full flex flex-col">
+                                                    <!-- Student Image -->
+                                                    <div class="flex justify-center student-image">
+                                                        <div class="rounded-full border-4 border-yellow-600 bg-white p-1">
+                                                            <img src="<?php echo $photoUrl; ?>" 
+                                                                 alt="Student Photo" 
+                                                                 class="rounded-full w-40 h-40 object-cover"/>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Student Info -->
+                                                    <div class="text-center mb-2">
+                                                        <h2 class="text-3xl font-bold"><?php echo htmlspecialchars($student['first_name'] . ' ' . $student['last_name']); ?></h2>
+                                                        <p class="text-xl">Grade <?php echo htmlspecialchars($student['grade']); ?></p>
+                                                    </div>
+
+                                                    <!-- Additional Details -->
+                                                    <div class="grid grid-cols-3 gap-1 text-sm pb-4">
+                                                        <div class="font-bold">ID:</div>
+                                                        <div class="col-span-2"><?php echo htmlspecialchars($student['child_id']); ?></div>
+                                                        
+                                                        <div class="font-bold">School:</div>
+                                                        <div class="col-span-2"><?php echo htmlspecialchars($student['school_name']); ?></div>
+                                                        
+                                                        <div class="font-bold">Parent:</div>
+                                                        <div class="col-span-2"><?php echo htmlspecialchars($student['parent_name']); ?></div>
+                                                        
+                                                        <div class="font-bold">Phone:</div>
+                                                        <div class="col-span-2"><?php echo htmlspecialchars($student['emergency_contact']); ?></div>
+                                                    </div>
+                                                    
+                                                    <!-- Drop Off Button -->
+                                                    <div class="mt-auto flex justify-center">
+                                                        <button class="drop-student-btn bg-white text-green-700 font-semibold py-2 px-4 rounded-full shadow-md hover:bg-gray-100 transition" 
+                                                                data-child-id="<?php echo $student['child_id']; ?>">
+                                                            Mark as Dropped Off
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <?php
+                                    }
+                                }
+                            } catch (PDOException $e) {
+                                echo '<div class="col-span-full text-red-500">Error fetching students: ' . $e->getMessage() . '</div>';
+                            }
+                            ?>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
             </div>
         </div>
     </main>
@@ -660,6 +895,65 @@ if (isset($driver['bus_id'])) {
             
             // Auto-refresh every 30 seconds
             setInterval(refreshData, 30000);
+
+            // Function to refresh student cards
+            function refreshStudentCards() {
+                fetch('refresh_student_cards.php')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Refresh the cards if needed
+                            if (data.html.picked) {
+                                document.getElementById('picked-students').innerHTML = data.html.picked;
+                            }
+                            if (data.html.toDrop) {
+                                document.getElementById('to-drop-students').innerHTML = data.html.toDrop;
+                            }
+                        }
+                    })
+                    .catch(error => console.error('Error refreshing student cards:', error));
+            }
+            
+            // Add event listeners for drop off buttons
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.drop-student-btn')) {
+                    const btn = e.target.closest('.drop-student-btn');
+                    const childId = btn.getAttribute('data-child-id');
+                    
+                    if (confirm('Are you sure you want to mark this student as dropped off?')) {
+                        // Update attendance status
+                        fetch('update_drop_status.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: 'child_id=' + childId
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Remove the card
+                                const card = document.getElementById('drop-card-' + childId);
+                                if (card) {
+                                    card.classList.add('animate__animated', 'animate__fadeOut');
+                                    setTimeout(() => {
+                                        card.remove();
+                                    }, 500);
+                                }
+                            } else {
+                                alert('Error: ' + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('An error occurred. Please try again.');
+                        });
+                    }
+                }
+            });
+            
+            // Refresh student cards every minute
+            setInterval(refreshStudentCards, 60000);
         });
     </script>
 </body>

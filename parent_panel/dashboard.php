@@ -579,7 +579,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                 <section id="home-section" class="dashboard-section pb-20 md:pb-0">
                     <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
                         <div class="flex items-center space-x-3">
-                            <div class="h-10 w-1 bg-orange-500 rounded-full"></div>
+                            <!-- <div class="h-10 w-1 bg-orange-500 rounded-full"></div> -->
                             <h2 class="text-3xl font-bold heading-brown">Dashboard</h2>
                         </div>
                         <p class="text-gray-600 mt-2 md:mt-0">Welcome back, <span class="font-medium"><?php echo htmlspecialchars($_SESSION['parent_name']); ?></span></p>
@@ -587,13 +587,13 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
 
                     <!-- Child Profile Switcher -->
                     <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 p-6 mb-8">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-lg font-semibold heading-brown">Current Child Profile</h3>
+                        <div class="flex flex-col md:flex-row items-center md:items-center justify-between mb-4">
+                            <h3 class="text-lg md:text-lg sm:text-base xs:text-sm font-semibold heading-brown">Current Child Profile</h3>
                             
                             <!-- Simple Select Dropdown -->
-                            <div class="relative">
+                            <div class="relative mt-3 md:mt-0 self-center md:self-auto">
                                 <form action="" method="get" id="childSelectForm">
-                                    <select name="child_id" id="childSelect" class="bg-orange-50 px-4 py-2 rounded-lg border border-orange-200 focus:outline-none focus:ring-2 focus:ring-orange-300" onchange="this.form.submit()">
+                                    <select name="child_id" id="childSelect" class="bg-orange-50 px-4 py-2 text-sm md:text-base rounded-lg border border-orange-200 focus:outline-none focus:ring-2 focus:ring-orange-300" onchange="this.form.submit()">
                                         <?php foreach ($children as $child): ?>
                                             <option value="<?php echo $child['child_id']; ?>" <?php echo ($child['child_id'] == $selectedChildId) ? 'selected' : ''; ?>>
                                                 <?php echo $child['first_name'] . ' ' . $child['last_name']; ?>
@@ -609,19 +609,17 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                         <div id="currentChildProfile" class="flex items-center space-x-4">
                             <img src="<?php echo !empty($selectedChild['photo_url']) ? $selectedChild['photo_url'] : 'assets\img\student1.jpg'; ?>" 
                                 alt="<?php echo $selectedChild['first_name'] . ' ' . $selectedChild['last_name']; ?>" 
-                                class="w-20 h-20 rounded-full object-cover border-4 border-orange-200"/>
+                                class="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover border-4 border-orange-200"/>
                             <div>
-                                <h4 class="text-xl font-medium text-gray-800"><?php echo $selectedChild['first_name'] . ' ' . $selectedChild['last_name']; ?></h4>
+                                <h4 class="text-lg md:text-xl sm:text-base xs:text-sm font-medium text-gray-800"><?php echo $selectedChild['first_name'] . ' ' . $selectedChild['last_name']; ?></h4>
                                 <!-- <p class="text-gray-500">Grade <?php echo $selectedChild['grade']; ?> • Bus #<?php echo $selectedChild['bus_id']; ?></p> -->
-                                <p class="text-gray-500">Grade <?php echo $selectedChild['grade']; ?></p>
+                                <p class="text-sm md:text-base xs:text-xs text-gray-500">Grade <?php echo $selectedChild['grade']; ?></p>
                             </div>
                         </div>
                         <?php else: ?>
                         <div class="text-center p-4 text-gray-500">No children found</div>
                         <?php endif; ?>
                     </div>
-
-                    <!-- Stats Overview -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                      
                     </div>
@@ -845,7 +843,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                                     $notReturning = (!empty($attendanceData['notes']) && strpos($attendanceData['notes'], 'Not returning') !== false);
                                                     $eveningStatusBg = $notReturning ? 'bg-orange-100' : 'bg-blue-100';
                                                     $eveningTextColor = $notReturning ? 'text-orange-800' : 'text-blue-800';
-                                                    $eveningLabel = $notReturning ? 'Not Returning' : 'Returning by Bus';
+                                                    $eveningLabel = $notReturning ? 'Not Returning' : 'Returning';
                                                     ?>
                                                     <div id="eveningRouteLabel" class="<?php echo $eveningStatusBg; ?> <?php echo $eveningTextColor; ?> px-3 py-1 rounded-full text-sm font-medium">
                                                         <?php echo $eveningLabel; ?>
@@ -1327,15 +1325,15 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                     <!-- Header with Child Info -->
                     <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
                         <div class="flex items-center space-x-3">
-                            <h2 class="text-3xl font-bold heading-brown">Payment History</h2>
-                            <span id="child-name" class="text-lg text-gray-600">for <?php echo htmlspecialchars($child_info['first_name'] . ' ' . $child_info['last_name']); ?></span>
+                            <h2 class="text-2xl md:text-3xl font-bold heading-brown">Payment History</h2>
+                            <span id="child-name" class="text-base md:text-lg text-gray-600">for <?php echo htmlspecialchars($child_info['first_name'] . ' ' . $child_info['last_name']); ?></span>
                         </div>
                         <div class="flex items-center mt-4 md:mt-0">
-                            <div class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium flex items-center">
+                            <div class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs md:text-sm font-medium flex items-center">
                                 <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
                                 <span id="payment-status"><?php echo $current_month_paid ? 'Current' : 'Payment Due'; ?></span>
                             </div>
-                            <span id="last-payment-date" class="ml-2 text-sm text-gray-500">Last payment: <?php echo $last_payment_formatted; ?></span>
+                            <span id="last-payment-date" class="ml-2 text-xs md:text-sm text-gray-500">Last payment: <?php echo $last_payment_formatted; ?></span>
                         </div>
                     </div>
 
@@ -1345,22 +1343,22 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                         <div class="lg:col-span-2">
                             <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden h-full">
                                 <div class="p-4 border-b border-gray-100 flex justify-between items-center">
-                                    <h3 class="text-lg font-semibold heading-brown">Current Payment Status</h3>
-                                    <span class="text-sm text-gray-500" id="academic-year">For Year <?php echo $academic_year; ?></span>
+                                    <h3 class="text-base md:text-lg font-semibold heading-brown">Current Payment Status</h3>
+                                    <span class="text-xs md:text-sm text-gray-500" id="academic-year">For Year <?php echo $academic_year; ?></span>
                                 </div>
                                 
                                 <!-- Current Month Payment Status -->
                                 <div class="p-6">
                                     <div class="flex flex-col md:flex-row md:items-center justify-between">
                                         <div class="flex items-center">
-                                            <div class="w-16 h-16 <?php echo $current_month_paid ? 'bg-green-100' : 'bg-red-100'; ?> rounded-full flex items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 <?php echo $current_month_paid ? 'text-green-600' : 'text-red-600'; ?>" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <div class="w-12 h-12 md:w-16 md:h-16 <?php echo $current_month_paid ? 'bg-green-100' : 'bg-red-100'; ?> rounded-full flex items-center justify-center">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 md:h-8 md:w-8 <?php echo $current_month_paid ? 'text-green-600' : 'text-red-600'; ?>" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                                                 </svg>
                                             </div>
                                             <div class="ml-4">
-                                                <h4 class="text-xl font-semibold text-gray-800" id="current-month-payment"><?php echo $current_month_name; ?> Payment</h4>
-                                                <p class="text-sm <?php echo $current_month_paid ? 'text-green-600' : 'text-red-600'; ?> mt-1" id="payment-due-date">
+                                                <h4 class="text-lg md:text-xl font-semibold text-gray-800" id="current-month-payment"><?php echo $current_month_name; ?> Payment</h4>
+                                                <p class="text-xs md:text-sm <?php echo $current_month_paid ? 'text-green-600' : 'text-red-600'; ?> mt-1" id="payment-due-date">
                                                     <?php echo $current_month_paid ? 'Paid' : 'Due by: ' . $due_date_formatted; ?>
                                                 </p>
                                             </div>
@@ -1369,15 +1367,15 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                         <div class="mt-4 md:mt-0 flex flex-col items-end">
                                             <div class="flex items-center">
                                                 <?php if (!$current_month_paid): ?>
-                                                <span class="mr-2 text-lg font-bold" id="monthly-fee">Rs.<?php echo number_format($monthly_fee, 2); ?></span>
-                                                <span id="current-payment-status" class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">Unpaid</span>
+                                                <span class="mr-2 text-base md:text-lg font-bold" id="monthly-fee">Rs.<?php echo number_format($monthly_fee, 2); ?></span>
+                                                <span id="current-payment-status" class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-xs md:text-sm font-medium">Unpaid</span>
                                                 <?php else: ?>
-                                                <span id="current-payment-status" class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">Paid</span>
+                                                <span id="current-payment-status" class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs md:text-sm font-medium">Paid</span>
                                                 <?php endif; ?>
                                             </div>
                                             <?php if (!$current_month_paid): ?>
                                             <a href="payment_gateway/payment_gateway.html?child_id=<?php echo $child_id; ?>&month=<?php echo $current_month_name; ?>" 
-                                            class="btn-gradient text-sm px-6 py-2 rounded-lg mt-2 text-white cursor-pointer hover:opacity-90 transition duration-300 ease-in-out inline-block" style="background-image: linear-gradient(to right, #f97316, #facc15); transform: translateZ(0);">
+                                            class="btn-gradient text-xs md:text-sm px-4 md:px-6 py-2 rounded-lg mt-2 text-white cursor-pointer hover:opacity-90 transition duration-300 ease-in-out inline-block" style="background-image: linear-gradient(to right, #f97316, #facc15); transform: translateZ(0);">
                                                 Pay Now
                                             </a>
                                             <?php endif; ?>
@@ -1405,16 +1403,16 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                     <div class="flex flex-wrap gap-4">
                                         <div class="bg-white rounded-lg p-3 shadow-sm flex-1 min-w-max">
                                             <div class="text-xs text-gray-500">Accepted Payment Methods</div>
-                                            <div class="text-sm font-medium flex items-center mt-2">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <div class="text-xs md:text-sm font-medium flex items-center mt-2">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 md:h-5 md:w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                                                 </svg>
                                                 <span class="mr-3">VISA</span>
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 md:h-5 md:w-5 text-red-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                                                 </svg>
                                                 <span class="mr-3">Mastercard</span>
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-800 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 md:h-5 md:w-5 text-blue-800 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                                                 </svg>
                                                 <span>Amex</span>
@@ -1422,7 +1420,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                         </div>
                                         <div class="bg-white rounded-lg p-3 shadow-sm flex-1 min-w-max">
                                             <div class="text-xs text-gray-500">Monthly Fee</div>
-                                            <div class="text-lg font-medium">Rs. <?php echo number_format($monthly_fee, 2); ?></div>
+                                            <div class="text-base md:text-lg font-medium">Rs. <?php echo number_format($monthly_fee, 2); ?></div>
                                         </div>
                                         <!-- <div class="bg-white rounded-lg p-3 shadow-sm flex-1 min-w-max">
                                             <div class="text-xs text-gray-500">Yearly Plan Savings</div>
@@ -1437,7 +1435,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                         <div class="lg:col-span-1">
                             <div class="bg-white rounded-2xl shadow-enhanced border border-blue-100 overflow-hidden h-full">
                                 <div class="p-4 border-b border-gray-100">
-                                    <h3 class="text-lg font-semibold heading-brown">Payment Options</h3>
+                                    <h3 class="text-base md:text-lg font-semibold heading-brown">Payment Options</h3>
                                 </div>
                                 
                                 <!-- Payment Plans -->
@@ -1445,9 +1443,9 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                     <div class="flex items-center justify-between mb-3">
                                         <div class="flex items-center">
                                             <!-- <input id="monthly-plan" name="payment-plan" type="radio" checked class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300"> -->
-                                            <label for="monthly-plan" class="ml-2 text-sm font-medium text-gray-700">Monthly Plan</label>
+                                            <label for="monthly-plan" class="ml-2 text-xs md:text-sm font-medium text-gray-700">Monthly Plan</label>
                                         </div>
-                                        <span class="text-sm font-medium">Rs. <?php echo number_format($monthly_fee, 2); ?>/month</span>
+                                        <span class="text-xs md:text-sm font-medium">Rs. <?php echo number_format($monthly_fee, 2); ?>/month</span>
                                     </div>
                                     <!-- <div class="flex items-center justify-between">
                                         <div class="flex items-center">
@@ -1460,7 +1458,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                 
                                 <!-- Payment History -->
                                 <div class="p-4 overflow-y-auto" style="max-height: 350px;">
-                                    <h4 class="text-sm font-medium text-gray-700 mb-4">Payment History</h4>
+                                    <h4 class="text-xs md:text-sm font-medium text-gray-700 mb-4">Payment History</h4>
                                     
                                     <div class="relative">
                                         <!-- Timeline Line -->
@@ -1469,7 +1467,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                         <!-- Timeline Payments -->
                                         <div class="space-y-5">
                                             <?php if (empty($payments)): ?>
-                                                <p class="ml-8 text-sm text-gray-600">No payment history available.</p>
+                                                <p class="ml-8 text-xs md:text-sm text-gray-600">No payment history available.</p>
                                             <?php else: ?>
                                                 <?php foreach ($payments as $payment): 
                                                     $payment_date = new DateTime($payment['payment_date']);
@@ -1482,7 +1480,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                                     <div class="ml-8">
                                                         <div class="flex justify-between items-start">
                                                             <div>
-                                                                <h5 class="text-sm font-medium text-gray-800"><?php echo $month_name; ?> Payment</h5>
+                                                                <h5 class="text-xs md:text-sm font-medium text-gray-800"><?php echo $month_name; ?> Payment</h5>
                                                                 <p class="text-xs text-gray-500">Transaction ID: <?php echo htmlspecialchars($transaction_id); ?></p>
                                                             </div>
                                                             <span class="text-xs <?php echo $payment['status'] === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'; ?> px-2 py-0.5 rounded">
@@ -1596,7 +1594,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
 
 
 
-                <section id="children-section" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-72 md:mr-8 mx-4 md:mx-0">
+                <section id="children-section" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-72 md:mr-8 mx-4 md:mx-0 pb-20 md:pb-0">
                     <?php
                     // Ensure session is started and parent is logged in
                     // session_start();
@@ -2663,25 +2661,25 @@ document.getElementById('locationForm').addEventListener('submit', async functio
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-500">Full Name</label>
-                                    <p class="mt-1 text-gray-900">
+                                    <p class="mt-1 text-gray-900 text-sm xs:text-xs pr-4">
                                         <?php echo isset($parentInfo['full_name']) ? htmlspecialchars($parentInfo['full_name']) : 'Not available'; ?>
                                     </p>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-500">Email</label>
-                                    <p class="mt-1 text-gray-900">
+                                    <p class="mt-1 text-gray-900 text-sm xs:text-xs pr-4">
                                         <?php echo isset($parentInfo['email']) ? htmlspecialchars($parentInfo['email']) : 'Not available'; ?>
                                     </p>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-500">Phone</label>
-                                    <p class="mt-1 text-gray-900">
+                                    <p class="mt-1 text-gray-900 text-sm xs:text-xs pr-4">
                                         <?php echo !empty($parentInfo['phone']) ? htmlspecialchars($parentInfo['phone']) : 'Not provided'; ?>
                                     </p>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-500">Home Address</label>
-                                    <p class="mt-1 text-gray-900">
+                                    <p class="mt-1 text-gray-900 text-sm xs:text-xs pr-4">
                                         <?php echo isset($parentInfo['home_address']) ? htmlspecialchars($parentInfo['home_address']) : 'Not available'; ?>
                                     </p>
                                 </div>

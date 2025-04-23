@@ -328,7 +328,7 @@ function canAccessMenu($menuItem, $userRole, $permissions) {
                 <section id="home-section" class="dashboard-section pb-20 md:pb-0">
                     <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
                         <div class="flex items-center space-x-3">
-                            <div class="h-10 w-1 bg-orange-500 rounded-full"></div>
+                            <!-- <div class="h-10 w-1 bg-orange-500 rounded-full"></div> -->
                             <h2 class="text-3xl font-bold heading-brown">Dashboard</h2>
                         </div>
                         <p class="text-gray-600 mt-2 md:mt-0">Welcome back, <span class="font-medium"><?php echo htmlspecialchars($admin_name); ?></span></p>
@@ -635,7 +635,7 @@ function canAccessMenu($menuItem, $userRole, $permissions) {
 
 
 
-                <section id="settings-section" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-14 md:mr-8 mx-4 md:mx-0">
+                <section id="settings-section" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-14 md:mr-8 mx-4 md:mx-0 pb-20 md:pb-0">
 
                 <?php
                 // Fetch current admin details
@@ -679,20 +679,20 @@ function canAccessMenu($menuItem, $userRole, $permissions) {
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
                                     <input type="text" name="full_name" 
                                         value="<?php echo htmlspecialchars($current_admin['full_name']); ?>" 
-                                        class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition"
+                                        class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition text-xs sm:text-sm"
                                         <?php echo $current_admin['role'] === 'super_admin' ? 'readonly' : ''; ?>>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
                                     <input type="email" name="email" 
                                         value="<?php echo htmlspecialchars($current_admin['email']); ?>" 
-                                        class="w-full p-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" 
+                                        class="w-full p-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed text-xs sm:text-sm" 
                                         readonly>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
                                     <select name="role" 
-                                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition"
+                                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none transition text-xs sm:text-sm"
                                             <?php echo $current_admin['role'] === 'super_admin' ? 'disabled' : ''; ?>>
                                         <option value="super_admin" <?php echo $current_admin['role'] === 'super_admin' ? 'selected' : 'disabled'; ?>>Super Admin</option>
                                         <option value="admin" <?php echo $current_admin['role'] === 'admin' ? 'selected' : ''; ?>>Admin</option>
@@ -718,7 +718,7 @@ function canAccessMenu($menuItem, $userRole, $permissions) {
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                             </svg>
-                                            <span>Change Password</span>
+                                            <span class="text-xs sm:text-sm">Change Password</span>
                                         </button>
                                     </a>
 
@@ -728,13 +728,13 @@ function canAccessMenu($menuItem, $userRole, $permissions) {
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                                             </svg>
-                                            <span>Register New Admin</span>
+                                            <span class="text-xs sm:text-sm">Register New Admin</span>
                                         </button>
                                     </a>
                                 </div>
 
                                 <!-- Admins Table -->
-                                <div class="p-6">
+                                <div class="p-0">
                                     <h3 class="text-xl font-semibold mb-4">Administrators</h3>
                                     <div class="overflow-x-auto relative shadow-md sm:rounded-lg">
                                         <div class="min-w-full inline-block align-middle">

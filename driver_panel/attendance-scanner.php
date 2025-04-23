@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             // Morning pickup (5:00 AM - 9:00 AM)
-            if ($current_hour >= 5 && $current_hour < 9) {
+            if ($current_hour >= 5 && $current_hour < 12) {
                 $stmt = $pdo->prepare("UPDATE attendance 
                                      SET pickup_time = ?, 
                                          status = 'picked'

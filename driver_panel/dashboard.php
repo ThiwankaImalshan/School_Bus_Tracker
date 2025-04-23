@@ -307,7 +307,7 @@ try {
                 <section id="home-section" class="dashboard-section pb-20 md:pb-0">
                     <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
                         <div class="flex items-center space-x-3">
-                            <div class="h-10 w-1 bg-orange-500 rounded-full"></div>
+                            <!-- <div class="h-10 w-1 bg-orange-500 rounded-full"></div> -->
                             <h2 class="text-3xl font-bold heading-brown">Dashboard</h2>
                         </div>
                         <p class="text-gray-600 mt-2 md:mt-0">Welcome back, <span class="font-medium"><?php echo htmlspecialchars($driver['full_name']); ?></span></p>

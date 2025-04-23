@@ -39,7 +39,7 @@ $current_minute = (int)date('i', $current_time);
 $time_in_minutes = ($current_hour * 60) + $current_minute;
 
 $morning_start = (5 * 60); // 5:00 AM
-$morning_end = (9 * 60); // 9:00 AM
+$morning_end = (12 * 60); // 9:00 AM
 $evening_start = (12 * 60); // 12:00 PM
 $evening_end = (17 * 60); // 5:00 PM
 
@@ -405,7 +405,7 @@ $waypointsJson = json_encode($waypoints);
                     <h2 class="text-2xl font-bold heading-brown">Live Route Tracking</h2>
                     <p class="text-gray-600">
                         Bus <?php echo htmlspecialchars($driver['bus_number'] ?? 'N/A'); ?> | 
-                        <span id="route-display" class="font-medium">
+                        <span id="route-display" class="font-medium sm:text-xs xs:text-[10px]">
                             <?php echo htmlspecialchars($route_text); ?>
                         </span>
                     </p>

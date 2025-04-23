@@ -156,12 +156,12 @@ try {
 </head>
 
 <div class="mb-6">
-    <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-gray-800">
-            <i class="fas fa-child mr-2 text-yellow-600"></i>Child Management
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-0 mb-4 sm:mb-6">
+        <h2 class="text-xl sm:text-2xl font-bold text-gray-800">
+            <i class="fas fa-child mr-1 sm:mr-2 text-yellow-600"></i>Child Management
         </h2>
-        <button id="addChildBtn" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg transition duration-300">
-            <i class="fas fa-plus mr-2"></i>Add New Child
+        <button id="addChildBtn" class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 sm:px-4 py-1 sm:py-2 text-sm sm:text-base rounded-lg transition duration-300 w-full sm:w-auto">
+            <i class="fas fa-plus mr-1 sm:mr-2"></i>Add New Child
         </button>
     </div>
 

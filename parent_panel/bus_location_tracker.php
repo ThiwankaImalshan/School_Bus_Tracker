@@ -90,39 +90,46 @@ $route_history = null;
 if (!$is_current_day) {
     // Get morning route data
     $stmt = $pdo->prepare("
-        SELECT bt.latitude, bt.longitude, bt.timestamp, 'morning' as route_type 
-        FROM bus_tracking bt
-        INNER JOIN route_school rs ON rs.bus_id = bt.bus_id 
-            AND DATE(rs.date) = DATE(bt.timestamp)
-        INNER JOIN attendance a ON a.child_id = ? 
-            AND DATE(a.attendance_date) = DATE(bt.timestamp)
+        SELECT bt.latitude, bt.longitude, bt.timestamp, 'morning' as route_type
+        FROM bus_tracking bt 
         WHERE bt.bus_id = ? 
         AND DATE(bt.timestamp) = ?
-        AND TIME(bt.timestamp) BETWEEN 
-            COALESCE(a.pickup_time, '05:00:00') 
-            AND rs.arrival_time
+        AND (
+            HOUR(bt.timestamp) * 60 + MINUTE(bt.timestamp) 
+            BETWEEN ? AND ?
+        )
         ORDER BY bt.timestamp ASC
     ");
-    $stmt->execute([$child_id, $childDetails['bus_id'], $selected_date]);
+    $stmt->execute([$childDetails['bus_id'], $selected_date, $morning_start, $morning_end]);
     $morning_route = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Get evening route data
     $stmt = $pdo->prepare("
         SELECT bt.latitude, bt.longitude, bt.timestamp, 'evening' as route_type
-        FROM bus_tracking bt
-        INNER JOIN route_school rs ON rs.bus_id = bt.bus_id 
-            AND DATE(rs.date) = DATE(bt.timestamp)
-        INNER JOIN attendance a ON a.child_id = ? 
-            AND DATE(a.attendance_date) = DATE(bt.timestamp)
+        FROM bus_tracking bt 
         WHERE bt.bus_id = ? 
         AND DATE(bt.timestamp) = ?
-        AND TIME(bt.timestamp) BETWEEN 
-            rs.departure_time 
-            AND COALESCE(a.drop_time, CURRENT_TIME())
+        AND (
+            HOUR(bt.timestamp) * 60 + MINUTE(bt.timestamp) 
+            BETWEEN ? AND ?
+        )
         ORDER BY bt.timestamp ASC
     ");
-    $stmt->execute([$child_id, $childDetails['bus_id'], $selected_date]);
+    $stmt->execute([$childDetails['bus_id'], $selected_date, $evening_start, $evening_end]);
     $evening_route = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+// Get selected date's tracking data
+if (!$is_current_day && $childDetails['bus_id']) {
+    $stmt = $pdo->prepare("
+        SELECT latitude, longitude, timestamp, speed
+        FROM bus_tracking 
+        WHERE bus_id = ? 
+        AND DATE(timestamp) = ?
+        ORDER BY timestamp ASC
+    ");
+    $stmt->execute([$childDetails['bus_id'], $selected_date]);
+    $historical_route = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
 // Get list of dates with route data for the dropdown
@@ -249,30 +256,33 @@ if ($childDetails['bus_id']) {
         
         // Calculate total distance traveled today
         $stmt = $pdo->prepare("
-            WITH ordered_points AS (
-                SELECT 
-                    latitude, longitude,
-                    LAG(latitude) OVER (ORDER BY timestamp) as prev_lat,
-                    LAG(longitude) OVER (ORDER BY timestamp) as prev_lon
-                FROM bus_tracking 
-                WHERE bus_id = ? 
-                AND DATE(timestamp) = CURDATE()
-                ORDER BY timestamp
-            )
             SELECT 
                 SUM(
                     6371 * acos(
-                        cos(radians(prev_lat)) 
-                        * cos(radians(latitude))
-                        * cos(radians(longitude) - radians(prev_lon))
-                        + sin(radians(prev_lat))
-                        * sin(radians(latitude))
+                        cos(radians(t1.latitude)) 
+                        * cos(radians(t2.latitude))
+                        * cos(radians(t2.longitude) - radians(t1.longitude))
+                        + sin(radians(t1.latitude))
+                        * sin(radians(t2.latitude))
                     )
                 ) as total_distance
-            FROM ordered_points
-            WHERE prev_lat IS NOT NULL
+            FROM
+                (SELECT latitude, longitude, timestamp FROM bus_tracking
+                WHERE bus_id = ? AND DATE(timestamp) = CURDATE()
+                ORDER BY timestamp) AS t1
+            JOIN
+                (SELECT latitude, longitude, timestamp FROM bus_tracking
+                WHERE bus_id = ? AND DATE(timestamp) = CURDATE()
+                ORDER BY timestamp) AS t2
+            WHERE
+                t2.timestamp > t1.timestamp
+                AND t2.timestamp = (
+                    SELECT MIN(timestamp) FROM bus_tracking
+                    WHERE bus_id = ? AND DATE(timestamp) = CURDATE()
+                    AND timestamp > t1.timestamp
+                )
         ");
-        $stmt->execute([$childDetails['bus_id']]);
+        $stmt->execute([$childDetails['bus_id'], $childDetails['bus_id'], $childDetails['bus_id']]);
         $distance_result = $stmt->fetch(PDO::FETCH_ASSOC);
         $tracking_stats['total_distance'] = round($distance_result['total_distance'] ?? 0, 1);
     }
@@ -329,6 +339,15 @@ if ($childDetails['bus_id']) {
             align-items: center;
             z-index: 1000;
             pointer-events: auto;
+        }
+
+        @media (max-width: 640px) {
+            .driver-info-card {
+                width: 14rem;
+                padding: 0.5rem;
+                top: 0.5rem;
+                right: 0.5rem;
+            }
         }
         .heading-brown {
             color: #92400e;
@@ -503,9 +522,9 @@ if ($childDetails['bus_id']) {
                             View Route
                         </button>
                         <?php if ($selected_date != date('Y-m-d')): ?>
-                            <a href="?date=<?php echo date('Y-m-d'); ?>" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
+                            <!-- <a href="?date=<?php echo date('Y-m-d'); ?>" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
                                 Back to Today
-                            </a>
+                            </a> -->
                         <?php endif; ?>
                     </div>
                 </form>
@@ -537,19 +556,19 @@ if ($childDetails['bus_id']) {
                         </div>
                         <div class="relative">
                             <div id="map"></div>
-                            <div class="driver-info-card">
-                                <div class="w-12 h-12 rounded-full overflow-hidden mr-3 flex-shrink-0 border-2 border-orange-300 bg-orange-100 flex items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-500" viewBox="0 0 20 20" fill="currentColor">
+                            <div class="driver-info-card sm:w-14rem sm:p-2 sm:top-2 sm:right-2">
+                                <div class="w-12 h-12 sm:w-10 sm:h-10 rounded-full overflow-hidden mr-3 sm:mr-2 flex-shrink-0 border-2 border-orange-300 bg-orange-100 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 sm:h-5 sm:w-5 text-orange-500" viewBox="0 0 20 20" fill="currentColor">
                                         <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
                                     </svg>
                                 </div>
                                 <div class="flex-1">
-                                    <h4 class="font-medium text-gray-800"><?php echo htmlspecialchars($childDetails['driver_name'] ?? 'Driver'); ?></h4>
+                                    <h4 class="font-medium text-gray-800 sm:text-sm"><?php echo htmlspecialchars($childDetails['driver_name'] ?? 'Driver'); ?></h4>
                                     <div class="flex items-center mt-1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-orange-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-3 sm:w-3 text-orange-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
-                                        <span class="text-sm text-gray-600">Bus <?php echo htmlspecialchars($childDetails['bus_number'] ?? 'N/A'); ?></span>
+                                        <span class="text-sm sm:text-xs text-gray-600">Bus <?php echo htmlspecialchars($childDetails['bus_number'] ?? 'N/A'); ?></span>
                                     </div>
                                 </div>
                             </div>
@@ -557,7 +576,7 @@ if ($childDetails['bus_id']) {
                         <div class="p-4 bg-gray-50 border-t border-gray-100">
                             <div class="flex flex-wrap gap-4">
                                 <div class="bg-white rounded-lg p-3 shadow-sm flex-1 min-w-max">
-                                    <div class="text-xs text-gray-500">Current Speed</div>
+                                    <div class="text-xs text-gray-500">Speed</div>
                                     <div class="text-lg font-medium" id="display-speed">
                                         <?php echo isset($current_speed['speed']) ? round($current_speed['speed']) : '0'; ?> km/h
                                     </div>
@@ -623,7 +642,7 @@ if ($childDetails['bus_id']) {
                                 $total_time = 0;
                             ?>
                             <div class="space-y-3 mt-4">
-                                <div class="text-sm font-medium text-gray-700">Today's Route Segments</div>
+                                <div class="text-sm font-medium text-gray-700">Route Segments</div>
                                 <div class="max-h-48 overflow-y-auto space-y-2">
                                     <?php foreach ($tracking_points as $point): 
                                         $total_distance += $point['segment_distance'];
@@ -633,10 +652,10 @@ if ($childDetails['bus_id']) {
                                         <div class="bg-gray-50 rounded-lg p-2 text-xs">
                                             <div class="flex justify-between text-gray-600">
                                                 <span><?php echo date('h:i A', strtotime($point['time1'])); ?></span>
-                                                <span class="font-medium"><?php echo number_format($point['segment_distance'], 2); ?> km</span>
+                                                <span class="font-medium"><?php echo number_format($point['segment_distance'] ?? 0, 2); ?> km</span>
                                             </div>
                                             <div class="mt-1 text-gray-500">
-                                                Speed: <?php echo round($point['speed']); ?> km/h
+                                                Speed: <?php echo round($point['speed'] ?? 0); ?> km/h
                                             </div>
                                         </div>
                                     <?php endforeach; ?>
@@ -988,10 +1007,52 @@ if ($childDetails['bus_id']) {
             // Date selector change event
             document.getElementById('date-select').addEventListener('change', function() {
                 if (this.value) {
-                    window.location.href = '?date=' + this.value;
+                    window.location.href = '?child_id=<?php echo $child_id; ?>&date=' + this.value;
                 }
             });
             
+            <?php if (!$is_current_day && !empty($historical_route)): ?>
+            var historicalData = <?php echo json_encode($historical_route); ?>;
+            if (historicalData.length > 0) {
+                // Get start and end points
+                var endPoint = [
+                    parseFloat(historicalData[0].latitude), 
+                    parseFloat(historicalData[0].longitude)
+                ];
+                var startPoint = [
+                    parseFloat(historicalData[historicalData.length - 1].latitude),
+                    parseFloat(historicalData[historicalData.length - 1].longitude)
+                ];
+
+                // Create routing control for road path only (no markers)
+                var routingControl = L.Routing.control({
+                    waypoints: [
+                        L.latLng(startPoint[0], startPoint[1]),
+                        L.latLng(endPoint[0], endPoint[1])
+                    ],
+                    routeWhileDragging: false,
+                    lineOptions: {
+                        styles: [{color: '#FF5733', opacity: 0.8, weight: 5}]
+                    },
+                    createMarker: function() { return null; }, // Don't create any markers
+                    addWaypoints: false,
+                    draggableWaypoints: false,
+                    fitSelectedRoutes: true,
+                    showAlternatives: false
+                }).addTo(map);
+
+                // Hide routing instructions
+                routingControl.hide();
+
+                // Center map on route
+                routingControl.on('routesfound', function(e) {
+                    map.fitBounds(L.latLngBounds(startPoint, endPoint), {
+                        padding: [50, 50]
+                    });
+                });
+            }
+            <?php endif; ?>
+
             // Function to update the bus marker on the map
             function showBusOnMap(position) {
                 if (busMarker) {
@@ -1031,18 +1092,19 @@ if ($childDetails['bus_id']) {
             
             // Function to show historical route
             function showHistoricalRoute(points, routeType) {
-                // Clear existing route control
+                // Clear existing route if any
                 if (routeControl) {
                     map.removeControl(routeControl);
                 }
-
-                if (points.length > 1) {
+                
+                if (points && points.length > 1) {
+                    var routeColor = routeType === 'morning' ? '#3b82f6' : '#ef4444'; // Blue for morning, Red for evening
+                    var routeLabel = routeType === 'morning' ? 'Morning Route' : 'Evening Route';
+                    
+                    // Create path points
                     var waypoints = points.map(function(point) {
                         return L.latLng(point.latitude, point.longitude);
                     });
-
-                    // Set color based on route type
-                    var routeColor = routeType === 'morning' ? '#3b82f6' : '#ef4444'; // Blue for morning, Red for evening
 
                     routeControl = L.Routing.control({
                         waypoints: waypoints,
@@ -1057,27 +1119,35 @@ if ($childDetails['bus_id']) {
                                     {hour: 'numeric', minute: '2-digit', hour12: true}
                                 );
                                 
-                                var markerColor = routeType === 'morning' ? '#3b82f6' : '#ef4444';
+                                var markerHtml = '<div style="background-color: ' + routeColor + 
+                                               '; color: white; padding: 5px; border-radius: 3px;">' + 
+                                               (i === 0 ? 'Start: ' : 'End: ') + formattedTime + '</div>';
+                                
                                 var icon = L.divIcon({
                                     className: 'point-icon',
-                                    html: '<div style="background-color: ' + markerColor + 
-                                          '; color: white; padding: 5px; border-radius: 3px;">' + 
-                                          formattedTime + '</div>',
-                                    iconSize: [60, 25]
+                                    html: markerHtml,
+                                    iconSize: [80, 25]
                                 });
                                 
                                 return L.marker(wp.latLng, {icon: icon})
-                                    .bindPopup((i === 0 ? "Start: " : "End: ") + formattedTime);
+                                    .bindPopup(routeLabel + ' - ' + (i === 0 ? "Start: " : "End: ") + formattedTime);
                             }
                             return null;
                         },
                         addWaypoints: false,
                         draggableWaypoints: false,
-                        fitSelectedRoutes: true
+                        fitSelectedRoutes: true,
+                        showAlternatives: false
                     }).addTo(map);
 
                     // Hide routing instructions
                     routeControl.hide();
+
+                    // Fit bounds with padding
+                    var bounds = L.latLngBounds(waypoints);
+                    map.fitBounds(bounds, { padding: [50, 50] });
+                } else {
+                    alert('No route data available for ' + (routeType === 'morning' ? 'morning' : 'evening'));
                 }
             }
             
@@ -1389,8 +1459,8 @@ if ($childDetails['bus_id']) {
             }).addTo(miniMap);
 
             <?php if (!empty($tracking_points)): ?>
-                var startPoint = [<?php echo $tracking_points[0]['lat1']; ?>, <?php echo $tracking_points[0]['lon1']; ?>];
-                var endPoint = [<?php echo end($tracking_points)['lat2']; ?>, <?php echo end($tracking_points)['lon2']; ?>];
+                var endPoint = [<?php echo $tracking_points[0]['lat1']; ?>, <?php echo $tracking_points[0]['lon1']; ?>];
+                var startPoint = [<?php echo end($tracking_points)['lat2']; ?>, <?php echo end($tracking_points)['lon2']; ?>];
                 
                 // Create route path through roads
                 var miniRouteControl = L.Routing.control({
@@ -1412,7 +1482,7 @@ if ($childDetails['bus_id']) {
                 // Hide routing instructions
                 miniRouteControl.hide();
 
-                // Add start marker (Green S)
+                // Add start marker (Green S) first
                 L.marker(startPoint, {
                     icon: L.divIcon({
                         className: 'point-icon',
@@ -1422,7 +1492,7 @@ if ($childDetails['bus_id']) {
                     })
                 }).addTo(miniMap);
                 
-                // Add end marker (Red E)
+                // Add end marker (Red E) second
                 L.marker(endPoint, {
                     icon: L.divIcon({
                         className: 'point-icon',
