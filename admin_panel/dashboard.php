@@ -231,6 +231,10 @@ function canAccessMenu($menuItem, $userRole, $permissions) {
                     <i class="fas fa-cog h-5 w-5 mr-3"></i>
                     Settings
                 </button>
+                <button onclick="showSection('route-times')" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
+                    <i class="fas fa-clock h-5 w-5 mr-3"></i>
+                    Route Times
+                </button>
             </nav>
         </div>
     </div>
@@ -261,6 +265,10 @@ function canAccessMenu($menuItem, $userRole, $permissions) {
             <button onclick="showSection('settings')" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
                 <i class="fas fa-cog h-6 w-6"></i>
                 <span>Settings</span>
+            </button>
+            <button onclick="showSection('route-times')" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
+                <i class="fas fa-clock h-6 w-6"></i>
+                <span>Route Times</span>
             </button>
         </div>
     </div>
@@ -716,7 +724,7 @@ function canAccessMenu($menuItem, $userRole, $permissions) {
                                     <a href="forgot_password.html" class="block">
                                         <button class="w-full bg-yellow-500 text-white py-3 rounded-lg hover:bg-yellow-600 transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-2">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2-2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                             </svg>
                                             <span class="text-xs sm:text-sm">Change Password</span>
                                         </button>
@@ -844,7 +852,87 @@ function canAccessMenu($menuItem, $userRole, $permissions) {
 
                     </section>
 
+                    <section id="route-times-section" class="dashboard-section p-6 px-8 bg-white rounded-lg shadow-md mt-6 mb-6 md:ml-14 md:mr-8 mx-4 md:mx-0">
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
+        <div class="flex items-center space-x-3">
+            <h2 class="text-2xl font-bold heading-brown">Route Times Management</h2>
+        </div>
+    </div>
 
+    <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden mb-6">
+        <div class="p-4 border-b border-gray-100">
+            <h3 class="text-lg font-semibold heading-brown">Set Bus Route Times</h3>
+        </div>
+        
+        <div class="p-6">
+            <?php
+            // Fetch all active buses
+            $buses_query = "SELECT bus_id, bus_number FROM bus WHERE is_active = 1 ORDER BY bus_number";
+            $buses_result = $conn->query($buses_query);
+            ?>
+
+            <form id="routeTimeForm" class="space-y-6">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Select Bus</label>
+                    <select id="busSelect" name="bus_id" class="w-full p-2 border rounded-lg bg-white cursor-pointer z-50" onchange="loadBusRouteTimes(this.value)" style="position: relative;">
+                        <option value="">Select a bus...</option>
+                        <?php while($bus = $buses_result->fetch_assoc()): ?>
+                            <option value="<?php echo $bus['bus_id']; ?>">
+                                Bus <?php echo htmlspecialchars($bus['bus_number']); ?>
+                            </option>
+                        <?php endwhile; ?>
+                    </select>
+                </div>
+
+                <div id="routeTimesContainer" class="hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Morning Route -->
+                        <div class="space-y-4">
+                            <h4 class="text-md font-medium mb-3">Morning Route</h4>
+                            <div>
+                                <label class="block text-sm text-gray-700 mb-1">Start Time</label>
+                                <input type="time" name="morning_start" id="morningStart" 
+                                       class="w-full p-2 border rounded-lg relative z-[60] bg-white cursor-pointer" 
+                                       onchange="updateEndTime(this, 'morningEnd')"
+                                       style="position: relative;">
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-700 mb-1">End Time (Auto-set to +5hrs)</label>
+                                <input type="time" name="morning_end" id="morningEnd"
+                                       class="w-full p-2 border rounded-lg bg-gray-100" readonly>
+                            </div>
+                        </div>
+
+                        <!-- Evening Route -->
+                        <div class="space-y-4">
+                            <h4 class="text-md font-medium mb-3">Evening Route</h4>
+                            <div>
+                                <label class="block text-sm text-gray-700 mb-1">Start Time</label>
+                                <input type="time" name="evening_start" id="eveningStart"
+                                       class="w-full p-2 border rounded-lg relative z-[60] bg-white cursor-pointer" 
+                                       onchange="updateEndTime(this, 'eveningEnd')"
+                                       style="position: relative;">
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-700 mb-1">End Time (Auto-set to +5hrs)</label>
+                                <input type="time" name="evening_end" id="eveningEnd"
+                                       class="w-full p-2 border rounded-lg bg-gray-100" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 flex justify-end space-x-4">
+                        <button type="button" onclick="saveRouteTimes()" 
+                                class="bg-yellow-500 text-white px-6 py-2 rounded-lg hover:bg-yellow-600 transform hover:scale-105 hover:shadow-lg active:scale-95 transition duration-300 flex items-center space-x-2 cursor-pointer">
+                            <i class="fas fa-save mr-2"></i>
+                            <span>Save Changes</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
 
             </div>
         </main>
@@ -979,7 +1067,7 @@ function switchProfile(childId) {
 // Initialize everything when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     // Create placeholder sections
-    const sectionIds = ['home', 'tracker', 'history', 'payments', 'settings'];
+    const sectionIds = ['home', 'tracker', 'history', 'payments', 'settings', 'route-times'];
     createPlaceholderSections(sectionIds);
     
     // Initialize profile dropdown
@@ -1092,6 +1180,168 @@ function removeRouteStop(button) {
         stopInput.remove();
     }
 }
+
+function loadBusRouteTimes(busId) {
+    if (!busId) {
+        document.getElementById('routeTimesContainer').classList.add('hidden');
+        return;
+    }
+
+    const container = document.getElementById('routeTimesContainer');
+    container.classList.remove('hidden');
+
+    fetch(`get_route_times.php?bus_id=${busId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                document.getElementById('morningStart').value = data.times.morning?.start || '05:00';
+                document.getElementById('morningEnd').value = data.times.morning?.end || '12:00';
+                document.getElementById('eveningStart').value = data.times.evening?.start || '12:00';
+                document.getElementById('eveningEnd').value = data.times.evening?.end || '17:00';
+                container.classList.remove('hidden');
+            } else {
+                console.error('Error:', data.error);
+                // Set default times if there's an error
+                document.getElementById('morningStart').value = '05:00';
+                document.getElementById('morningEnd').value = '12:00';
+                document.getElementById('eveningStart').value = '12:00';
+                document.getElementById('eveningEnd').value = '17:00';
+                container.classList.remove('hidden');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Set default times if there's a network error
+            document.getElementById('morningStart').value = '05:00';
+            document.getElementById('morningEnd').value = '12:00';
+            document.getElementById('eveningStart').value = '12:00';
+            document.getElementById('eveningEnd').value = '17:00';
+            container.classList.remove('hidden');
+        });
+}
+
+function updateEndTime(input, endFieldId) {
+    const startTime = new Date(`2000-01-01T${input.value}`);
+    const endTime = new Date(startTime.getTime() + (5 * 60 * 60 * 1000));
+    const endTimeString = endTime.toTimeString().substring(0, 5);
+    document.getElementById(endFieldId).value = endTimeString;
+}
+
+function saveRouteTimes() {
+    const form = document.getElementById('routeTimeForm');
+    const formData = new FormData(form);
+    const busId = formData.get('bus_id');
+
+    if (!busId) {
+        alert('Please select a bus');
+        return;
+    }
+
+    if (!validateRouteTimes(formData)) {
+        return;
+    }
+
+    fetch('save_route_times.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Route times saved successfully! Times will reset to default tomorrow.');
+        } else {
+            alert('Error saving route times: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Network error:', error);
+        alert('Failed to save route times. Please try again.');
+    });
+}
+
+function validateRouteTimes(formData) {
+    const morningStart = formData.get('morning_start');
+    const eveningStart = formData.get('evening_start');
+
+    // Convert times to minutes for comparison
+    const getMinutes = (time) => {
+        const [hours, minutes] = time.split(':').map(Number);
+        return hours * 60 + minutes;
+    };
+
+    const morningMins = getMinutes(morningStart);
+    const eveningMins = getMinutes(eveningStart);
+
+    if (morningMins >= eveningMins) {
+        alert('Morning start time must be earlier than evening start time');
+        return false;
+    }
+
+    return true;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // ...existing code...
+
+    // Add event listener for bus select
+    const busSelect = document.getElementById('busSelect');
+    if (busSelect) {
+        busSelect.addEventListener('change', function() {
+            const busId = this.value;
+            loadBusRouteTimes(busId);
+        });
+    }
+
+    // Initialize timepicker handlers
+    const startTimeInputs = document.querySelectorAll('input[type="time"]');
+    startTimeInputs.forEach(input => {
+        if (input.id === 'morningStart' || input.id === 'eveningStart') {
+            input.addEventListener('change', function() {
+                updateEndTime(this, this.id === 'morningStart' ? 'morningEnd' : 'eveningEnd');
+            });
+        }
+    });
+});
+
+function loadBusRouteTimes(busId) {
+    if (!busId) {
+        document.getElementById('routeTimesContainer').classList.add('hidden');
+        return;
+    }
+
+    const container = document.getElementById('routeTimesContainer');
+    container.classList.remove('hidden');
+
+    // Set default times first
+    document.getElementById('morningStart').value = '05:00';
+    document.getElementById('morningEnd').value = '12:00';
+    document.getElementById('eveningStart').value = '12:00';
+    document.getElementById('eveningEnd').value = '17:00';
+    container.classList.remove('hidden');
+
+    // Then try to load any custom times for today
+    fetch(`get_route_times.php?bus_id=${busId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.times) {
+                if (data.times.morning) {
+                    document.getElementById('morningStart').value = data.times.morning.start;
+                    document.getElementById('morningEnd').value = data.times.morning.end;
+                }
+                if (data.times.evening) {
+                    document.getElementById('eveningStart').value = data.times.evening.start;
+                    document.getElementById('eveningEnd').value = data.times.evening.end;
+                }
+            }
+        })
+        .catch(error => console.error('Error:', error));
+}
 </script>
 </body>
 </html>
+

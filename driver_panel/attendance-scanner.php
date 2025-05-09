@@ -21,6 +21,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $response = ['success' => false, 'message' => ''];
 
         try {
+            // Get driver's assigned bus_id first
+            $stmt = $pdo->prepare("SELECT bus_id FROM driver WHERE driver_id = ?");
+            $stmt->execute([$_SESSION['driver_id']]);
+            $driver = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$driver || !$driver['bus_id']) {
+                throw new PDOException('No bus assigned to driver');
+            }
+
+            // Get route time settings for current date
+            $stmt = $pdo->prepare("
+                SELECT 
+                    m.start_time as morning_start,
+                    m.end_time as morning_end,
+                    e.start_time as evening_start,
+                    e.end_time as evening_end
+                FROM route_times m
+                LEFT JOIN route_times e ON e.bus_id = m.bus_id 
+                    AND e.route_type = 'evening'
+                    AND DATE(e.created_at) = CURDATE()
+                WHERE m.bus_id = ?
+                    AND m.route_type = 'morning'
+                    AND DATE(m.created_at) = CURDATE()
+                LIMIT 1
+            ");
+            $stmt->execute([$driver['bus_id']]);
+            $route_times = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            // Set default times if no custom times exist
+            if (!$route_times) {
+                $route_times = [
+                    'morning_start' => '05:00:00',
+                    'morning_end' => '12:00:00',
+                    'evening_start' => '12:00:00', 
+                    'evening_end' => '17:00:00'
+                ];
+            }
+
             // Check if attendance record exists for today
             $stmt = $pdo->prepare("SELECT * FROM attendance WHERE child_id = ? AND attendance_date = ?");
             $stmt->execute([$child_id, $today]);
@@ -32,8 +70,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute([$child_id, $today]);
             }
 
-            // Morning pickup (5:00 AM - 9:00 AM)
-            if ($current_hour >= 5 && $current_hour < 12) {
+            // Compare current time with route times
+            $current_minutes = (int)date('H') * 60 + (int)date('i');
+            $morning_start = (int)substr($route_times['morning_start'], 0, 2) * 60 + (int)substr($route_times['morning_start'], 3, 2);
+            $morning_end = (int)substr($route_times['morning_end'], 0, 2) * 60 + (int)substr($route_times['morning_end'], 3, 2);
+            $evening_start = (int)substr($route_times['evening_start'], 0, 2) * 60 + (int)substr($route_times['evening_start'], 3, 2);
+            $evening_end = (int)substr($route_times['evening_end'], 0, 2) * 60 + (int)substr($route_times['evening_end'], 3, 2);
+
+            // Morning pickup
+            if ($current_minutes >= $morning_start && $current_minutes < $morning_end) {
                 $stmt = $pdo->prepare("UPDATE attendance 
                                      SET pickup_time = ?, 
                                          status = 'picked'
@@ -42,8 +87,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute([$current_time, $child_id, $today]);
                 $response = ['success' => true, 'message' => 'Pickup recorded'];
             }
-            // Evening drop-off (12:00 PM - 5:00 PM)
-            elseif ($current_hour >= 12 && $current_hour < 17) {
+            // Evening drop-off
+            elseif ($current_minutes >= $evening_start && $current_minutes < $evening_end) {
                 $stmt = $pdo->prepare("UPDATE attendance 
                                      SET drop_time = ?, 
                                          status = 'drop'
@@ -53,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $response = ['success' => true, 'message' => 'Drop-off recorded'];
             }
             else {
-                $response = ['success' => false, 'message' => 'Outside of valid time window'];
+                $response = ['success' => false, 'message' => 'Outside of valid route time window'];
             }
 
             header('Content-Type: application/json');

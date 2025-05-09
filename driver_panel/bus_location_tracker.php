@@ -32,16 +32,52 @@ $stmt = $pdo->prepare("SELECT * FROM bus_tracking WHERE bus_id = ? ORDER BY time
 $stmt->execute([$driver['bus_id']]);
 $location = $stmt->fetch(PDO::FETCH_ASSOC);
 
+// Get route time settings from database for current date
+$stmt = $pdo->prepare("
+    SELECT 
+        m.start_time as morning_start,
+        m.end_time as morning_end,
+        e.start_time as evening_start,
+        e.end_time as evening_end
+    FROM route_times m
+    LEFT JOIN route_times e ON e.bus_id = m.bus_id 
+        AND e.route_type = 'evening'
+        AND DATE(e.created_at) = CURDATE()
+    WHERE m.bus_id = ?
+        AND m.route_type = 'morning'
+        AND DATE(m.created_at) = CURDATE()
+    LIMIT 1
+");
+
+$stmt->execute([$driver['bus_id']]);
+$route_settings = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// Set default times if no custom times are set
+if (!$route_settings || !$route_settings['morning_start']) {
+    $route_settings = [
+        'morning_start' => '05:00:00',
+        'morning_end' => '12:00:00',
+        'evening_start' => '12:00:00',
+        'evening_end' => '17:00:00'
+    ];
+}
+
+// Convert times to minutes for comparison
+function timeToMinutes($time) {
+    list($hours, $minutes) = explode(':', $time);
+    return ($hours * 60) + $minutes;
+}
+
+$morning_start = timeToMinutes($route_settings['morning_start']);
+$morning_end = timeToMinutes($route_settings['morning_end']);
+$evening_start = timeToMinutes($route_settings['evening_start']);
+$evening_end = timeToMinutes($route_settings['evening_end']);
+
 // Determine current route based on time
 $current_time = isset($_POST['device_time']) ? strtotime($_POST['device_time']) : time();
 $current_hour = (int)date('H', $current_time);
 $current_minute = (int)date('i', $current_time);
 $time_in_minutes = ($current_hour * 60) + $current_minute;
-
-$morning_start = (5 * 60); // 5:00 AM
-$morning_end = (12 * 60); // 9:00 AM
-$evening_start = (12 * 60); // 12:00 PM
-$evening_end = (17 * 60); // 5:00 PM
 
 if ($time_in_minutes >= $morning_start && $time_in_minutes < $morning_end) {
     $current_route = "morning";
@@ -488,7 +524,7 @@ $waypointsJson = json_encode($waypoints);
                                     'type' => 'pickup',
                                     'is_completed' => $wp['is_picked']
                                 ];
-                            }, array_filter($waypoints, fn($w) => !$w['is_picked'])),
+                            }, array_filter($waypoints, function($w) { return !$w['is_picked']; })),
                             array_map(function($dest) {
                                 return [
                                     'id' => isset($dest['school_id']) ? 'school_' . $dest['school_id'] : 'school_0',
@@ -498,7 +534,7 @@ $waypointsJson = json_encode($waypoints);
                                     'is_completed' => $dest['is_arrived'],
                                     'arrival_time' => $dest['arrival_time']
                                 ];
-                            }, array_filter($destinations, fn($d) => $d['type'] === 'school' && !$d['is_arrived']))
+                            }, array_filter($destinations, function($d) { return $d['type'] === 'school' && !$d['is_arrived']; }))
                         );
                         ?>
                     <?php else: ?>
@@ -511,7 +547,7 @@ $waypointsJson = json_encode($waypoints);
                                 'type' => 'dropoff',
                                 'is_completed' => $dest['is_dropped']
                             ];
-                        }, array_filter($destinations, fn($d) => !$d['is_dropped']));
+                        }, array_filter($destinations, function($d) { return !$d['is_dropped']; }));
                         ?>
                     <?php endif; ?>
 

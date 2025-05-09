@@ -59,16 +59,46 @@ if ($childDetails['bus_id']) {
 // Set timezone for Sri Lanka
 date_default_timezone_set('Asia/Colombo');
 
+// Get route times from database
+$route_times = [];
+if ($childDetails['bus_id']) {
+    $stmt = $pdo->prepare("
+        SELECT route_type, start_time, end_time
+        FROM route_times 
+        WHERE bus_id = ?
+    ");
+    $stmt->execute([$childDetails['bus_id']]);
+    $route_times = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+// Set default times in case no route times are found
+$morning_start = (5 * 60); // Default 5:00 AM
+$morning_end = (12 * 60); // Default 12:00 PM
+$evening_start = (12 * 60); // Default 12:00 PM
+$evening_end = (17 * 60); // Default 5:00 PM
+
+// Update times if found in database
+foreach ($route_times as $rt) {
+    if ($rt['route_type'] === 'morning') {
+        $morning_time = strtotime($rt['start_time']);
+        $morning_start = (int)date('H', $morning_time) * 60 + (int)date('i', $morning_time);
+        
+        $morning_end_time = strtotime($rt['end_time']);
+        $morning_end = (int)date('H', $morning_end_time) * 60 + (int)date('i', $morning_end_time);
+    } else if ($rt['route_type'] === 'evening') {
+        $evening_time = strtotime($rt['start_time']);
+        $evening_start = (int)date('H', $evening_time) * 60 + (int)date('i', $evening_time);
+        
+        $evening_end_time = strtotime($rt['end_time']);
+        $evening_end = (int)date('H', $evening_end_time) * 60 + (int)date('i', $evening_end_time);
+    }
+}
+
 // Determine current route based on time
 $current_time = isset($_POST['device_time']) ? strtotime($_POST['device_time']) : time();
 $current_hour = (int)date('H', $current_time);
 $current_minute = (int)date('i', $current_time);
 $time_in_minutes = ($current_hour * 60) + $current_minute;
-
-$morning_start = (5 * 60); // 5:00 AM
-$morning_end = (12 * 60); // 9:00 AM
-$evening_start = (12 * 60); // 12:00 PM
-$evening_end = (17 * 60); // 5:00 PM
 
 if ($time_in_minutes >= $morning_start && $time_in_minutes < $morning_end) {
     $current_route = "morning";
@@ -179,6 +209,45 @@ if ($is_current_day && $childDetails['bus_id']) {
     $stmt->execute([$childDetails['bus_id']]);
     $today_route = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
+// Update the route segment query to be time-sensitive
+$tracking_points_query = "
+    SELECT 
+        t1.latitude as lat1, t1.longitude as lon1,
+        t1.timestamp as time1,
+        t2.latitude as lat2, t2.longitude as lon2,
+        t2.timestamp as time2,
+        t1.speed,
+        ROUND(
+            (6371 * acos(
+                cos(radians(t1.latitude)) 
+                * cos(radians(t2.latitude))
+                * cos(radians(t2.longitude) - radians(t1.longitude))
+                + sin(radians(t1.latitude))
+                * sin(radians(t2.latitude))
+            )), 2
+        ) as segment_distance
+    FROM bus_tracking t1
+    JOIN bus_tracking t2 ON t2.tracking_id = t1.tracking_id + 1
+    WHERE t1.bus_id = ? 
+    AND DATE(t1.timestamp) = ?
+    AND (
+        HOUR(t1.timestamp) * 60 + MINUTE(t1.timestamp) 
+        BETWEEN ? AND ?
+    )
+    ORDER BY t1.timestamp DESC
+    LIMIT 10
+";
+
+// Initialize variables for current view
+$current_view = isset($_GET['view']) ? $_GET['view'] : 'morning';
+$time_range = $current_view === 'morning' ? 
+    [$morning_start, $morning_end] : 
+    [$evening_start, $evening_end];
+
+$stmt = $pdo->prepare($tracking_points_query);
+$stmt->execute([$childDetails['bus_id'], $selected_date, $time_range[0], $time_range[1]]);
+$tracking_points = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Function to update location in database
 if (isset($_POST['update_location'])) {
@@ -477,9 +546,9 @@ if ($childDetails['bus_id']) {
                     </div>
                     <p class="text-gray-600 mt-1">
                         Bus <?php echo htmlspecialchars($childDetails['bus_number'] ?? 'N/A'); ?>  
-                        <!-- <span id="route-display" class="font-medium">
+                        <span id="route-display" class="font-medium">
                             <?php echo htmlspecialchars($route_text); ?>
-                        </span> -->
+                        </span>
                     </p>
                 </div>
                 
@@ -566,7 +635,7 @@ if ($childDetails['bus_id']) {
                                     <h4 class="font-medium text-gray-800 sm:text-sm"><?php echo htmlspecialchars($childDetails['driver_name'] ?? 'Driver'); ?></h4>
                                     <div class="flex items-center mt-1">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-3 sm:w-3 text-orange-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
                                         <span class="text-sm sm:text-xs text-gray-600">Bus <?php echo htmlspecialchars($childDetails['bus_number'] ?? 'N/A'); ?></span>
                                     </div>
@@ -611,30 +680,8 @@ if ($childDetails['bus_id']) {
                             
                             <!-- Route Details from bus_tracking -->
                             <?php
-                            $stmt = $pdo->prepare("
-                                SELECT 
-                                    t1.latitude as lat1, t1.longitude as lon1,
-                                    t1.timestamp as time1,
-                                    t2.latitude as lat2, t2.longitude as lon2,
-                                    t2.timestamp as time2,
-                                    t1.speed,
-                                    ROUND(
-                                        (6371 * acos(
-                                            cos(radians(t1.latitude)) 
-                                            * cos(radians(t2.latitude))
-                                            * cos(radians(t2.longitude) - radians(t1.longitude))
-                                            + sin(radians(t1.latitude))
-                                            * sin(radians(t2.latitude))
-                                        )), 2
-                                    ) as segment_distance
-                                FROM bus_tracking t1
-                                JOIN bus_tracking t2 ON t2.tracking_id = t1.tracking_id + 1
-                                WHERE t1.bus_id = ? 
-                                AND DATE(t1.timestamp) = ?
-                                ORDER BY t1.timestamp DESC
-                                LIMIT 10
-                            ");
-                            $stmt->execute([$childDetails['bus_id'], $selected_date]);
+                            $stmt = $pdo->prepare($tracking_points_query);
+                            $stmt->execute([$childDetails['bus_id'], $selected_date, $time_range[0], $time_range[1]]);
                             $tracking_points = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                             if (!empty($tracking_points)): 
@@ -681,164 +728,10 @@ if ($childDetails['bus_id']) {
                                 </div>
                             <?php endif; ?>
                         </div>
-
-                        <?php if ($is_current_day && $current_route != 'none'): ?>
-                            <!-- Current Route Status -->
-                            <!-- <div class="p-4 border-b border-gray-100 bg-orange-50">
-                                <div class="flex items-start">
-                                    <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                                        </svg>
-                                    </div>
-                                    <div class="ml-3 flex-1">
-                                        <h4 class="font-medium text-gray-800">Current Route Progress</h4>
-                                        <div class="grid grid-cols-2 gap-4 mt-2">
-                                            <div>
-                                                <div class="text-xs text-gray-500">Completed</div>
-                                                <div class="text-sm font-medium">
-                                                    <?php 
-                                                        $completed = $route_info['completed_points'] ?? 0;
-                                                        $total = $route_info['total_points'] ?? 0;
-                                                        echo $completed . ' / ' . $total . ' stops';
-                                                    ?>
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <div class="text-xs text-gray-500">Estimated Time</div>
-                                                <div class="text-sm font-medium">
-                                                    <?php echo isset($route_info['estimated_duration']) ? $route_info['estimated_duration'] . ' min' : '--'; ?>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <-- Progress Bar --
-                                        <div class="mt-3 w-full bg-gray-200 rounded-full h-2.5">
-                                            <?php $progress = $total > 0 ? ($completed / $total) * 100 : 0; ?>
-                                            <div class="bg-orange-500 h-2.5 rounded-full" style="width: <?php echo $progress; ?>%"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div> -->
-                        <?php endif; ?>
-                        
-                        <!-- Route Timeline -->
-                        <!-- <div class="p-4 overflow-y-auto" style="max-height: 400px;">
-                            <h4 class="text-sm font-medium text-gray-700 mb-4">
-                                <?php echo $is_current_day ? 'Route Timeline' : 'Historical Route Stops'; ?>
-                            </h4>
-                            
-                            <div class="relative">
-                            <div class="timeline-line"></div>
-                                
-                                <-- Route Stops Timeline --
-                                <?php if (!empty($route_points)): ?>
-                                    <div class="space-y-5">
-                                        <?php foreach ($route_points as $index => $point): ?>
-                                            <?php 
-                                                $current = !$point['is_completed'] && ($index === 0 || $route_points[$index-1]['is_completed']);
-                                                $status_class = $point['is_completed'] ? 'timeline-dot-completed' : ($current ? 'timeline-dot-current' : 'timeline-dot-upcoming');
-                                                $item_class = $point['is_completed'] ? 'bg-green-50' : ($current ? 'bg-orange-50' : 'bg-white');
-                                            ?>
-                                            <div class="relative pl-8">
-                                                <span class="timeline-dot <?php echo $status_class; ?>"></span>
-                                                <div class="rounded-lg p-3 <?php echo $item_class; ?> border <?php echo $point['is_completed'] ? 'border-green-100' : ($current ? 'border-orange-100' : 'border-gray-100'); ?>">
-                                                    <div class="flex justify-between items-start">
-                                                        <div>
-                                                            <p class="font-medium text-gray-800"><?php echo htmlspecialchars($point['location']); ?></p>
-                                                            <p class="text-xs text-gray-500 mt-1">Stop #<?php echo $point['sequence_number']; ?></p>
-                                                        </div>
-                                                        <div class="text-right">
-                                                            <?php if ($point['is_completed']): ?>
-                                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                                    Completed
-                                                                </span>
-                                                                <p class="text-xs text-gray-500 mt-1">
-                                                                    <?php echo date('h:i A', strtotime($point['estimated_time'])); ?>
-                                                                </p>
-                                                            <?php else: ?>
-                                                                <?php if ($current && $is_current_day): ?>
-                                                                    <button 
-                                                                        class="mark-complete-btn inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 hover:bg-orange-200 transition-colors" 
-                                                                        data-stop-id="<?php echo $point['stop_id']; ?>">
-                                                                        Mark Complete
-                                                                    </button>
-                                                                    <p class="text-xs text-gray-500 mt-1" id="eta-<?php echo $point['stop_id']; ?>">
-                                                                        ETA: Calculating...
-                                                                    </p>
-                                                                <?php else: ?>
-                                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                                                        Pending
-                                                                    </span>
-                                                                <?php endif; ?>
-                                                            <?php endif; ?>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        <?php endforeach; ?>
-                                    </div>
-                                <?php else: ?>
-                                    <div class="text-center py-8 text-gray-500">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                                        </svg>
-                                        <p>No route stops available for this time period</p>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                        </div> -->
-                        
-                        <!-- Action Buttons (for current day only) -->
-                        <?php if ($is_current_day && $childDetails['bus_id']): ?>
-                            <div class="p-4 border-t border-gray-100 bg-gray-50">
-                                <button id="start-tracking-btn" class="w-full btn-gradient px-4 py-3 rounded-lg font-medium flex items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd" />
-                                    </svg>
-                                    Start Tracking
-                                </button>
-                                <button id="stop-tracking-btn" class="w-full mt-2 bg-white border border-gray-200 hover:bg-gray-50 px-4 py-3 rounded-lg font-medium flex items-center justify-center text-gray-700 hidden">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clip-rule="evenodd" />
-                                    </svg>
-                                    Stop Tracking
-                                </button>
-                            </div>
-                        <?php endif; ?>
                     </div>
                 </div>
             </div>
         </section>
-
-        <!-- Upcoming Stops Section (Only for current day) -->
-        <?php if ($is_current_day && !empty($upcoming_stops)): ?>
-            <section class="glass-container p-6 mb-6">
-                <div class="flex items-center space-x-3 mb-6">
-                    <div class="h-8 w-1 bg-orange-500 rounded-full"></div>
-                    <h2 class="text-2xl font-bold heading-brown">Upcoming Stops</h2>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <?php foreach ($upcoming_stops as $stop): ?>
-                        <div class="bg-white rounded-xl shadow-enhanced p-4 border border-gray-100 flex items-start">
-                            <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center mr-3 flex-shrink-0">
-                                <span class="font-semibold text-orange-500"><?php echo $stop['sequence_number']; ?></span>
-                            </div>
-                            <div>
-                                <h4 class="font-medium text-gray-800"><?php echo htmlspecialchars($stop['location']); ?></h4>
-                                <p class="text-sm text-gray-500 mt-1"><?php echo htmlspecialchars($stop['address']); ?></p>
-                                <div class="mt-2 flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-orange-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    <span class="text-xs text-gray-500" id="eta-upcoming-<?php echo $stop['stop_id']; ?>">ETA: Calculating...</span>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            </section>
-        <?php endif; ?>
     </main>
 
     <footer class="bg-white/80 backdrop-blur-sm text-white py-4 border-t border-gray-200">
@@ -886,32 +779,176 @@ if ($childDetails['bus_id']) {
             var routeMarkers = [];
             
             // Function to draw route path through roads
-            function drawRoutePath(routePoints) {
-                if (routeControl) {
-                    map.removeControl(routeControl);
-                }
+            function drawRoutePath(points, targetMap, options = {}) {
+                const isMainMap = targetMap === map;
+                const routeOptions = {
+                    color: options.color || '#ef4444',
+                    weight: isMainMap ? 3 : 2,
+                    opacity: 0.8
+                };
 
-                if (routePoints.length > 1) {
-                    var waypoints = routePoints.map(function(point) {
-                        return L.latLng(point.latitude, point.longitude);
-                    });
+                const markerSize = isMainMap ? 16 : 12;  // Reduced marker sizes
 
-                    routeControl = L.Routing.control({
+                if (points && points.length > 1) {
+                    const waypoints = points.map(point => 
+                        L.latLng(point.latitude || point.lat1, point.longitude || point.lon1)
+                    );
+
+                    const routingControl = L.Routing.control({
                         waypoints: waypoints,
                         routeWhileDragging: false,
-                        lineOptions: {
-                            styles: [{color: '#9333ea', opacity: 0.8, weight: 5}] // Changed to purple color
-                        },
-                        createMarker: function() { return null; }, // Don't show waypoint markers
-                        addWaypoints: false, // Prevent adding new waypoints
-                        draggableWaypoints: false, // Prevent dragging waypoints
-                        fitSelectedRoutes: false
-                    }).addTo(map);
+                        lineOptions: { styles: [routeOptions] },
+                        show: false,
+                        addWaypoints: false,
+                        createMarker: function(i, wp, nWps) {
+                            if (i === 0 || i === nWps - 1) {
+                                // Start or End marker
+                                const markerLabel = i === 0 ? 'S' : 'E';
+                                const markerColor = i === 0 ? '#10b981' : routeOptions.color;
+                                return L.marker(wp.latLng, {
+                                    icon: L.divIcon({
+                                        className: 'point-icon',
+                                        html: `<div style="background-color: ${markerColor}; color: white; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: ${isMainMap ? '10px' : '8px'}">${markerLabel}</div>`,
+                                        iconSize: [markerSize, markerSize],
+                                        iconAnchor: [markerSize/2, markerSize/2]
+                                    })
+                                });
+                            }
+                            
+                            // Intermediate points as dots
+                            return L.circleMarker(wp.latLng, {
+                                radius: isMainMap ? 4 : 3,
+                                color: routeOptions.color,
+                                fillColor: routeOptions.color,
+                                fillOpacity: 1,
+                                weight: 1
+                            });
+                        }
+                    }).addTo(targetMap);
 
-                    // Hide the routing instructions
-                    routeControl.hide();
+                    routingControl.hide();
+
+                    // Add intermediate points only on main map
+                    if (isMainMap) {
+                        points.slice(1, -1).forEach(point => {
+                            L.circleMarker(
+                                [point.latitude || point.lat1, point.longitude || point.lon1], 
+                                {
+                                    radius: 3,
+                                    color: routeOptions.color,
+                                    fillColor: routeOptions.color,
+                                    fillOpacity: 0.5,
+                                    weight: 1
+                                }
+                            ).addTo(targetMap);
+                        });
+                    }
+
+                    const bounds = L.latLngBounds(waypoints);
+                    targetMap.fitBounds(bounds, { padding: [50, 50] });
+
+                    return routingControl;
                 }
+                return null;
             }
+
+            function showHistoricalRoute(points, routeType) {
+                const routeColor = routeType === 'morning' ? '#3b82f6' : '#ef4444';
+                const timeRange = routeType === 'morning' ? 
+                    { start: <?php echo $morning_start; ?>, end: <?php echo $morning_end; ?> } :
+                    { start: <?php echo $evening_start; ?>, end: <?php echo $evening_end; ?> };
+
+                // Clear existing routes
+                if (routeControl) map.removeControl(routeControl);
+                if (miniRouteControl) miniMap.removeControl(miniRouteControl);
+
+                // Filter points for time period
+                const filteredPoints = points.filter(point => {
+                    const pointTime = new Date(point.timestamp);
+                    const minutes = pointTime.getHours() * 60 + pointTime.getMinutes();
+                    return minutes >= timeRange.start && minutes < timeRange.end;
+                });
+
+                if (filteredPoints.length < 2) {
+                    alert('No route data available for ' + routeType + ' period');
+                    return;
+                }
+
+                // Update route header
+                document.querySelector('.heading-brown').textContent = 
+                    routeType === 'morning' ? 'Morning Route History' : 'Evening Route History';
+
+                // Draw route on main map
+                routeControl = drawRoutePath(filteredPoints, map, { color: routeColor });
+
+                // Update mini map with selected route only
+                miniRouteControl = drawRoutePath(filteredPoints, miniMap, { 
+                    color: routeColor,
+                    selectedOnly: true 
+                });
+
+                // Update route segments
+                updateRouteSegments(routeType);
+            }
+
+            // Update route segments function
+            function updateRouteSegments(routeType) {
+                const timeRange = routeType === 'morning' ? 
+                    { start: <?php echo $morning_start; ?>, end: <?php echo $morning_end; ?> } :
+                    { start: <?php echo $evening_start; ?>, end: <?php echo $evening_end; ?> };
+
+                fetch(`get_route_segments.php?date=<?php echo $selected_date; ?>&type=${routeType}&start=${timeRange.start}&end=${timeRange.end}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const container = document.querySelector('.max-h-48.overflow-y-auto');
+                        if (!container || !data.segments?.length) {
+                            container.innerHTML = `<div class="text-center py-4 text-gray-500">No ${routeType} route data available</div>`;
+                            return;
+                        }
+
+                        let totalDistance = 0;
+                        let totalTime = 0;
+
+                        const html = data.segments.map(segment => {
+                            totalDistance += parseFloat(segment.segment_distance);
+                            totalTime += (new Date(segment.time2) - new Date(segment.time1)) / 1000 / 60;
+                            return `
+                                <div class="bg-gray-50 rounded-lg p-2 text-xs">
+                                    <div class="flex justify-between text-gray-600">
+                                        <span>${new Date(segment.time1).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit', hour12: true})}</span>
+                                        <span class="font-medium">${parseFloat(segment.segment_distance).toFixed(2)} km</span>
+                                    </div>
+                                    <div class="mt-1 text-gray-500">Speed: ${Math.round(segment.speed)} km/h</div>
+                                </div>
+                            `;
+                        }).join('');
+
+                        container.innerHTML = html;
+
+                        // Update summary
+                        document.querySelector('.mt-4.grid.grid-cols-2 .text-sm.font-medium').textContent = 
+                            totalDistance.toFixed(2) + ' km';
+                        document.querySelector('.mt-4.grid.grid-cols-2 div:last-child .text-sm.font-medium').textContent = 
+                            Math.round(totalTime) + ' min';
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+
+            // Initialize mini map with its own route control
+            var miniMap = L.map('mini-map').setView([7.8731, 80.7718], 8);
+            var miniRouteControl = null;
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(miniMap);
+
+            <?php if (!empty($tracking_points)): ?>
+                // Draw initial mini map route
+                miniRouteControl = drawRoutePath(<?php echo json_encode($tracking_points); ?>, miniMap, {
+                    color: '#ef4444',
+                    weight: 2
+                });
+            <?php endif; ?>
 
             <?php if ($is_current_day): ?>
                 // Current location from database (if available)
@@ -943,7 +980,7 @@ if ($childDetails['bus_id']) {
                 // Add current day route if available
                 <?php if ($is_current_day && !empty($today_route)): ?>
                     var currentDayRoute = <?php echo json_encode($today_route); ?>;
-                    drawRoutePath(currentDayRoute);
+                    drawRoutePath(currentDayRoute, map);
                 <?php endif; ?>
 
                 // Map refresh button
@@ -1090,431 +1127,28 @@ if ($childDetails['bus_id']) {
                 }
             }
             
-            // Function to show historical route
-            function showHistoricalRoute(points, routeType) {
-                // Clear existing route if any
-                if (routeControl) {
-                    map.removeControl(routeControl);
-                }
-                
-                if (points && points.length > 1) {
-                    var routeColor = routeType === 'morning' ? '#3b82f6' : '#ef4444'; // Blue for morning, Red for evening
-                    var routeLabel = routeType === 'morning' ? 'Morning Route' : 'Evening Route';
-                    
-                    // Create path points
-                    var waypoints = points.map(function(point) {
-                        return L.latLng(point.latitude, point.longitude);
-                    });
-
-                    routeControl = L.Routing.control({
-                        waypoints: waypoints,
-                        routeWhileDragging: false,
-                        lineOptions: {
-                            styles: [{color: routeColor, opacity: 0.8, weight: 5}]
-                        },
-                        createMarker: function(i, wp, nWps) {
-                            if (i === 0 || i === nWps - 1) {
-                                var time = points[i].timestamp;
-                                var formattedTime = new Date(time).toLocaleTimeString('en-US', 
-                                    {hour: 'numeric', minute: '2-digit', hour12: true}
-                                );
-                                
-                                var markerHtml = '<div style="background-color: ' + routeColor + 
-                                               '; color: white; padding: 5px; border-radius: 3px;">' + 
-                                               (i === 0 ? 'Start: ' : 'End: ') + formattedTime + '</div>';
-                                
-                                var icon = L.divIcon({
-                                    className: 'point-icon',
-                                    html: markerHtml,
-                                    iconSize: [80, 25]
-                                });
-                                
-                                return L.marker(wp.latLng, {icon: icon})
-                                    .bindPopup(routeLabel + ' - ' + (i === 0 ? "Start: " : "End: ") + formattedTime);
-                            }
-                            return null;
-                        },
-                        addWaypoints: false,
-                        draggableWaypoints: false,
-                        fitSelectedRoutes: true,
-                        showAlternatives: false
-                    }).addTo(map);
-
-                    // Hide routing instructions
-                    routeControl.hide();
-
-                    // Fit bounds with padding
-                    var bounds = L.latLngBounds(waypoints);
-                    map.fitBounds(bounds, { padding: [50, 50] });
-                } else {
-                    alert('No route data available for ' + (routeType === 'morning' ? 'morning' : 'evening'));
-                }
-            }
-            
-            // Function to start tracking
-            function startTracking() {
-                if (navigator.geolocation) {
-                    // Clear existing route control if any
-                    if (routeControl) {
-                        map.removeControl(routeControl);
-                    }
-                    routePoints = [];
-                    isTracking = true;
-                    
-                    // Get current location immediately
-                    getCurrentLocation();
-                    
-                    // Set up regular updates
-                    watchId = navigator.geolocation.watchPosition(handleLocation, handleLocationError, {
-                        enableHighAccuracy: true,
-                        maximumAge: 0,
-                        timeout: 5000
-                    });
-                    
-                    // Update UI
-                    document.getElementById('refresh-btn').classList.add('refresh-animation');
-                } else {
-                    alert("Geolocation is not supported by this browser.");
-                }
-            }
-            
-            // Function to stop tracking
-            function stopTracking() {
-                if (watchId !== null) {
-                    navigator.geolocation.clearWatch(watchId);
-                    watchId = null;
-                }
-                isTracking = false;
-                document.getElementById('refresh-btn').classList.remove('refresh-animation');
-            }
-            
-            // Function to get current location
-            function getCurrentLocation() {
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(handleLocation, handleLocationError, {
-                        enableHighAccuracy: true,
-                        maximumAge: 0,
-                        timeout: 5000
-                    });
-                } else {
-                    alert("Geolocation is not supported by this browser.");
-                }
-            }
-            
-            // Function to handle location update
-            function handleLocation(position) {
-                var lat = position.coords.latitude;
-                var lng = position.coords.longitude;
-                var speed = position.coords.speed ? position.coords.speed * 3.6 : 0; // Convert m/s to km/h
-                
-                currentPosition = [lat, lng];
-                showBusOnMap(currentPosition);
-                updateRouteDisplay(lat, lng, speed);
-                
-                // Calculate ETAs to upcoming stops
-                <?php if (!empty($route_points)): ?>
-                    var upcomingStops = routeStops.filter(stop => !stop.completed);
-                    calculateETAs(currentPosition, upcomingStops);
-                <?php endif; ?>
-                
-                // Add point to route history and update path
-                routePoints.push({
-                    latitude: lat,
-                    longitude: lng,
-                    timestamp: new Date().toISOString()
-                });
-                
-                // Redraw route path when we have at least 2 points
-                if (routePoints.length > 1) {
-                    drawRoutePath(routePoints);
-                }
-                
-                // Update last location time
-                document.getElementById('last-updated').textContent = 'Last updated: ' + new Date().toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit', hour12: true});
-            }
-            
-            // Function to handle location errors
-            function handleLocationError(error) {
-                let errorMessage;
-                switch(error.code) {
-                    case error.PERMISSION_DENIED:
-                        errorMessage = "User denied the request for Geolocation.";
-                        break;
-                    case error.POSITION_UNAVAILABLE:
-                        errorMessage = "Location information is unavailable.";
-                        break;
-                    case error.TIMEOUT:
-                        errorMessage = "The request to get user location timed out.";
-                        break;
-                    case error.UNKNOWN_ERROR:
-                        errorMessage = "An unknown error occurred.";
-                        break;
-                }
-                alert("Error getting location: " + errorMessage);
-            }
-            
-            // Function to update route display
-            function updateRouteDisplay(lat, lng, speed) {
-                // Save to database via AJAX
-                var xhr = new XMLHttpRequest();
-                xhr.open('POST', '', true);
-                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-                xhr.onload = function() {
-                    if (xhr.status === 200) {
-                        var response = JSON.parse(xhr.responseText);
-                        if (!response.success) {
-                            console.error('Error updating location: ', response.message);
+            // Function to update route segments
+            function updateRouteSegments(routeType) {
+                fetch('get_route_segments.php?date=' + '<?php echo $selected_date; ?>' + '&type=' + routeType)
+                    .then(response => response.json())
+                    .then(data => {
+                        const segmentsContainer = document.querySelector('.max-h-48.overflow-y-auto');
+                        if (segmentsContainer) {
+                            segmentsContainer.innerHTML = data.segments.map(segment => `
+                                <div class="bg-gray-50 rounded-lg p-2 text-xs">
+                                    <div class="flex justify-between text-gray-600">
+                                        <span>${formatTime(segment.time1)}</span>
+                                        <span class="font-medium">${segment.segment_distance} km</span>
+                                    </div>
+                                    <div class="mt-1 text-gray-500">
+                                        Speed: ${Math.round(segment.speed)} km/h
+                                    </div>
+                                </div>
+                            `).join('');
                         }
-                    }
-                };
-                
-                // Update speed display
-                var roundedSpeed = Math.round(speed);
-                document.getElementById('speed-value').textContent = roundedSpeed;
-                document.getElementById('display-speed').textContent = roundedSpeed + ' km/h';
-                
-                // Send device time to adjust for timezone
-                var deviceTime = new Date().toISOString();
-                xhr.send('update_location=1&latitude=' + lat + '&longitude=' + lng + '&speed=' + speed + '&device_time=' + deviceTime);
-            }
-            
-            // Function to calculate ETAs
-            function calculateETAs(currentPos, stops) {
-                if (stops.length === 0) return;
-                
-                // Calculate straight-line distance and rough ETA
-                stops.forEach(function(stop) {
-                    var distance = calculateDistance(currentPos[0], currentPos[1], stop.location[0], stop.location[1]);
-                    var eta = estimateETA(distance);
-                    
-                    // Update ETA in the UI
-                    var etaElement = document.getElementById('eta-' + stop.id);
-                    if (etaElement) {
-                        etaElement.textContent = 'ETA: ' + eta;
-                    }
-                    
-                    // Update upcoming stops ETA as well
-                    var upcomingEtaElement = document.getElementById('eta-upcoming-' + stop.id);
-                    if (upcomingEtaElement) {
-                        upcomingEtaElement.textContent = 'ETA: ' + eta;
-                    }
-                });
-                
-                // Update next stop ETA in stats section
-                if (stops.length > 0) {
-                    var nextStop = stops[0];
-                    var distance = calculateDistance(currentPos[0], currentPos[1], nextStop.location[0], nextStop.location[1]);
-                    var eta = estimateETA(distance);
-                    document.getElementById('eta-next-stop').textContent = eta;
-                    
-                    // Calculate total distance traveled
-                    if (routePoints.length > 1) {
-                        var totalDistance = 0;
-                        for (var i = 1; i < routePoints.length; i++) {
-                            totalDistance += calculateDistance(
-                                routePoints[i-1].latitude, routePoints[i-1].longitude,
-                                routePoints[i].latitude, routePoints[i].longitude
-                            );
-                        }
-                        document.getElementById('distance-traveled').textContent = (totalDistance).toFixed(1) + ' km';
-                    }
-                }
-            }
-            
-            // Function to calculate distance between coordinates
-            function calculateDistance(lat1, lon1, lat2, lon2) {
-                var R = 6371; // Radius of the earth in km
-                var dLat = deg2rad(lat2 - lat1);
-                var dLon = deg2rad(lon2 - lon1);
-                var a = 
-                    Math.sin(dLat/2) * Math.sin(dLat/2) +
-                    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
-                    Math.sin(dLon/2) * Math.sin(dLon/2)
-                    ; 
-                var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-                var d = R * c; // Distance in km
-                return d;
-            }
-            
-            function deg2rad(deg) {
-                return deg * (Math.PI/180);
-            }
-            
-            // Function to estimate ETA based on distance
-            function estimateETA(distance) {
-                // Assuming average speed of 30 km/h in traffic
-                var timeInHours = distance / 30;
-                var timeInMinutes = Math.round(timeInHours * 60);
-                
-                if (timeInMinutes < 1) {
-                    return 'Less than 1 min';
-                } else if (timeInMinutes >= 60) {
-                    var hours = Math.floor(timeInMinutes / 60);
-                    var mins = timeInMinutes % 60;
-                    return hours + ' hr ' + (mins > 0 ? mins + ' min' : '');
-                } else {
-                    return timeInMinutes + ' min';
-                }
-            }
-            
-            // Function to mark a stop as completed
-            function markStopComplete(stopId) {
-                var xhr = new XMLHttpRequest();
-                xhr.open('POST', '', true);
-                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-                xhr.onload = function() {
-                    if (xhr.status === 200) {
-                        var response = JSON.parse(xhr.responseText);
-                        if (response.success) {
-                            // Update UI to show the stop as completed
-                            var buttonElement = document.querySelector('[data-stop-id="' + stopId + '"]');
-                            if (buttonElement) {
-                                var parentElement = buttonElement.parentElement;
-                                parentElement.innerHTML = '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Completed</span>' +
-                                                        '<p class="text-xs text-gray-500 mt-1">' + 
-                                                        new Date().toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit', hour12: true}) + 
-                                                        '</p>';
-                            }
-                            
-                            // Update the map marker icon to completed
-                            routeStops.forEach(function(stop) {
-                                if (stop.id == stopId) {
-                                    stop.completed = true;
-                                    
-                                    // Find and update the marker
-                                    routeMarkers.forEach(function(marker, index) {
-                                        if (marker._latlng.lat === stop.location[0] && marker._latlng.lng === stop.location[1]) {
-                                            map.removeLayer(marker);
-                                            routeMarkers[index] = L.marker(stop.location, {
-                                                icon: createPointIcon(stop.sequence, true)
-                                            }).addTo(map);
-                                            routeMarkers[index].bindPopup("<b>Stop #" + stop.sequence + "</b><br>" + stop.name);
-                                        }
-                                    });
-                                    
-                                    // Update timeline dot
-                                    var timelineDots = document.querySelectorAll('.timeline-dot');
-                                    if (timelineDots[stop.sequence - 1]) {
-                                        timelineDots[stop.sequence - 1].classList.remove('timeline-dot-current', 'timeline-dot-upcoming');
-                                        timelineDots[stop.sequence - 1].classList.add('timeline-dot-completed');
-                                        
-                                        // Update the parent div background
-                                        var parentDiv = timelineDots[stop.sequence - 1].closest('.relative').querySelector('.rounded-lg');
-                                        if (parentDiv) {
-                                            parentDiv.classList.remove('bg-orange-50', 'bg-white');
-                                            parentDiv.classList.add('bg-green-50');
-                                            parentDiv.classList.remove('border-orange-100', 'border-gray-100');
-                                            parentDiv.classList.add('border-green-100');
-                                        }
-                                    }
-                                    
-                                    // Set the next stop to current if it exists
-                                    var nextStop = routeStops.find(s => s.sequence === stop.sequence + 1 && !s.completed);
-                                    if (nextStop) {
-                                        var nextTimelineDot = document.querySelectorAll('.timeline-dot')[nextStop.sequence - 1];
-                                        if (nextTimelineDot) {
-                                            nextTimelineDot.classList.remove('timeline-dot-upcoming');
-                                            nextTimelineDot.classList.add('timeline-dot-current');
-                                            
-                                            // Update the parent div background
-                                            var nextParentDiv = nextTimelineDot.closest('.relative').querySelector('.rounded-lg');
-                                            if (nextParentDiv) {
-                                                nextParentDiv.classList.remove('bg-white');
-                                                nextParentDiv.classList.add('bg-orange-50');
-                                                nextParentDiv.classList.remove('border-gray-100');
-                                                nextParentDiv.classList.add('border-orange-100');
-                                            }
-                                        }
-                                    }
-                                    
-                                    // Update progress display
-                                    var completedPoints = document.querySelectorAll('.timeline-dot-completed').length;
-                                    var totalPoints = document.querySelectorAll('.timeline-dot').length;
-                                    var progressBar = document.querySelector('.bg-orange-500');
-                                    if (progressBar) {
-                                        var progress = (completedPoints / totalPoints) * 100;
-                                        progressBar.style.width = progress + '%';
-                                    }
-                                }
-                            });
-                                
-                            // Recalculate ETAs with the updated stops
-                            var upcomingStops = routeStops.filter(stop => !stop.completed);
-                            if (currentPosition) {
-                                calculateETAs(currentPosition, upcomingStops);
-                            }
-                        } else {
-                            console.error('Error marking stop as completed: ', response.message);
-                            alert('Could not mark stop as completed. Please try again.');
-                        }
-                    }
-                };
-                xhr.send('mark_completed=1&stop_id=' + stopId);
-            }
-
-            // Mini map initialization
-            var miniMap = L.map('mini-map').setView([7.8731, 80.7718], 8);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap contributors'
-            }).addTo(miniMap);
-
-            <?php if (!empty($tracking_points)): ?>
-                var endPoint = [<?php echo $tracking_points[0]['lat1']; ?>, <?php echo $tracking_points[0]['lon1']; ?>];
-                var startPoint = [<?php echo end($tracking_points)['lat2']; ?>, <?php echo end($tracking_points)['lon2']; ?>];
-                
-                // Create route path through roads
-                var miniRouteControl = L.Routing.control({
-                    waypoints: [
-                        L.latLng(startPoint[0], startPoint[1]),
-                        L.latLng(endPoint[0], endPoint[1])
-                    ],
-                    routeWhileDragging: false,
-                    lineOptions: {
-                        styles: [{color: '#ef4444', opacity: 0.8, weight: 3}]
-                    },
-                    createMarker: function() { return null; },
-                    addWaypoints: false,
-                    draggableWaypoints: false,
-                    fitSelectedRoutes: true,
-                    showAlternatives: false
-                }).addTo(miniMap);
-                
-                // Hide routing instructions
-                miniRouteControl.hide();
-
-                // Add start marker (Green S) first
-                L.marker(startPoint, {
-                    icon: L.divIcon({
-                        className: 'point-icon',
-                        html: '<div style="background-color: #10b981; color: white; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold;">S</div>',
-                        iconSize: [24, 24],
-                        iconAnchor: [12, 12]
                     })
-                }).addTo(miniMap);
-                
-                // Add end marker (Red E) second
-                L.marker(endPoint, {
-                    icon: L.divIcon({
-                        className: 'point-icon',
-                        html: '<div style="background-color: #ef4444; color: white; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold;">E</div>',
-                        iconSize: [24, 24],
-                        iconAnchor: [12, 12]
-                    })
-                }).addTo(miniMap);
-
-                // Add intermediate points as small dots
-                <?php foreach ($tracking_points as $point): ?>
-                    L.circleMarker([<?php echo $point['lat1']; ?>, <?php echo $point['lon1']; ?>], {
-                        radius: 3,
-                        color: '#ef4444',
-                        fillColor: '#ef4444',
-                        fillOpacity: 0.5
-                    }).addTo(miniMap);
-                <?php endforeach; ?>
-
-                // Fit map to route bounds with padding
-                miniMap.fitBounds([startPoint, endPoint], { padding: [20, 20] });
-            <?php endif; ?>
+                    .catch(error => console.error('Error:', error));
+            }
         });
     </script>
 </body>

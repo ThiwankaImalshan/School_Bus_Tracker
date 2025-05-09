@@ -63,6 +63,24 @@ try {
         $stmt->execute([$childId, $busSeatId, $today, $actualStatus]);
     }
     
+    // Handle notifications if status is picked or drop
+    if ($actualStatus === 'picked' || $actualStatus === 'drop') {
+        require_once 'attendance_notification_handler.php';
+        $notificationHandler = new AttendanceNotificationHandler($pdo);
+        $notification = $notificationHandler->handleAttendanceChange($childId, $actualStatus);
+        
+        if ($notification) {
+            // Send Server-Sent Event
+            $eventData = json_encode([
+                'type' => 'attendance_update',
+                'data' => $notification
+            ]);
+            
+            file_put_contents('php://output', "data: " . $eventData . "\n\n");
+            flush();
+        }
+    }
+    
     // Log success
     error_log('Attendance updated successfully for child ' . $childId);
     

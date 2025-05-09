@@ -33,10 +33,46 @@ $current_hour = (int)date('H', $current_time);
 $current_minute = (int)date('i', $current_time);
 $time_in_minutes = ($current_hour * 60) + $current_minute;
 
-$morning_start = (5 * 60); // 5:00 AM
-$morning_end = (19 * 60); // 9:00 AM
-$evening_start = (12 * 60); // 12:00 PM
-$evening_end = (19 * 60); // 5:00 PM
+// Get route time settings from database for current date 
+$stmt = $pdo->prepare("
+    SELECT 
+        m.start_time as morning_start,
+        m.end_time as morning_end,
+        e.start_time as evening_start,
+        e.end_time as evening_end
+    FROM route_times m
+    LEFT JOIN route_times e ON e.bus_id = m.bus_id 
+        AND e.route_type = 'evening'
+        AND DATE(e.created_at) = CURDATE()
+    WHERE m.bus_id = ?
+        AND m.route_type = 'morning'
+        AND DATE(m.created_at) = CURDATE()
+    LIMIT 1
+");
+
+$stmt->execute([$driver['bus_id']]);
+$route_settings = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// Set default times if no custom times are set
+if (!$route_settings || !$route_settings['morning_start']) {
+    $route_settings = [
+        'morning_start' => '05:00:00',
+        'morning_end' => '12:00:00', 
+        'evening_start' => '12:00:00',
+        'evening_end' => '17:00:00'
+    ];
+}
+
+// Convert times to minutes for comparison
+function timeToMinutes($time) {
+    list($hours, $minutes) = explode(':', $time);
+    return ($hours * 60) + $minutes;
+}
+
+$morning_start = timeToMinutes($route_settings['morning_start']);
+$morning_end = timeToMinutes($route_settings['morning_end']);
+$evening_start = timeToMinutes($route_settings['evening_start']); 
+$evening_end = timeToMinutes($route_settings['evening_end']);
 
 if ($time_in_minutes >= $morning_start && $time_in_minutes < $morning_end) {
     $current_route = "morning";

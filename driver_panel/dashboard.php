@@ -1123,6 +1123,75 @@ try {
                             </div>
                         </div>
                     </div>
+
+                    <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden mb-6">
+                        <div class="p-4 border-b border-gray-100">
+                            <h3 class="text-lg font-semibold heading-brown">Route Time Settings</h3>
+                        </div>
+                        
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Morning Route Times -->
+                                <div>
+                                    <h4 class="text-md font-medium mb-3">Morning Route</h4>
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label class="block text-sm text-gray-700 mb-1">Start Time</label>
+                                            <div class="p-2 bg-gray-50 rounded-lg text-sm">
+                                                <?php 
+                                                $morning_start = "05:00 AM"; // Get this from database
+                                                echo $morning_start;
+                                                ?>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm text-gray-700 mb-1">End Time</label>
+                                            <div class="p-2 bg-gray-50 rounded-lg text-sm">
+                                                <?php 
+                                                $morning_end = "12:00 PM"; // Get this from database
+                                                echo $morning_end;
+                                                ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Evening Route Times -->
+                                <div>
+                                    <h4 class="text-md font-medium mb-3">Evening Route</h4>
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label class="block text-sm text-gray-700 mb-1">Start Time</label>
+                                            <div class="p-2 bg-gray-50 rounded-lg text-sm">
+                                                <?php 
+                                                $evening_start = "12:00 PM"; // Get this from database
+                                                echo $evening_start;
+                                                ?>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm text-gray-700 mb-1">End Time</label>
+                                            <div class="p-2 bg-gray-50 rounded-lg text-sm">
+                                                <?php 
+                                                $evening_end = "05:00 PM"; // Get this from database
+                                                echo $evening_end;
+                                                ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 bg-yellow-50 rounded-lg p-4">
+                                <p class="text-sm text-yellow-800">
+                                    <svg class="inline w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                    </svg>
+                                    Route times are set by the administrator. Please contact support if adjustments are needed.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </section>
 
                 <!-- Edit Information Modal -->
