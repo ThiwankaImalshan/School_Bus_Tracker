@@ -227,13 +227,13 @@ function canAccessMenu($menuItem, $userRole, $permissions) {
                     Newsletter
                 </a>
                 <?php endif; ?>
-                <button onclick="showSection('settings')" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
-                    <i class="fas fa-cog h-5 w-5 mr-3"></i>
-                    Settings
-                </button>
                 <button onclick="showSection('route-times')" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
                     <i class="fas fa-clock h-5 w-5 mr-3"></i>
                     Route Times
+                </button>
+                <button onclick="showSection('settings')" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
+                    <i class="fas fa-cog h-5 w-5 mr-3"></i>
+                    Settings
                 </button>
             </nav>
         </div>
@@ -262,13 +262,13 @@ function canAccessMenu($menuItem, $userRole, $permissions) {
                 <span>Newsletter</span>
             </a>
             <?php endif; ?>
+            <button onclick="showSection('route-times')" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
+                <i class="fas fa-clock h-6 w-6"></i>
+                <span>Routes</span>
+            </button>
             <button onclick="showSection('settings')" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
                 <i class="fas fa-cog h-6 w-6"></i>
                 <span>Settings</span>
-            </button>
-            <button onclick="showSection('route-times')" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
-                <i class="fas fa-clock h-6 w-6"></i>
-                <span>Route Times</span>
             </button>
         </div>
     </div>
