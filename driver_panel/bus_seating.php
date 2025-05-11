@@ -585,7 +585,10 @@ if (isset($driver['bus_id'])) {
                                     echo '<div class="col-span-full text-center text-gray-500 py-12">No students picked up yet.</div>';
                                 } else {
                                     foreach ($pickedStudents as $student) {
-                                        $photoUrl = !empty($student['photo_url']) ? $student['photo_url'] : '../img/child.jpg';
+                                        // Update photo URL handling
+                                        $photoUrl = !empty($student['photo_url']) ? 
+                                            "../img/child/" . $student['photo_url'] : 
+                                            "../img/default-avatar.png";
                                         $cardGradient = $current_route === 'morning' 
                                             ? 'background: linear-gradient(135deg, rgba(255, 154, 0, 0.9) 0%, rgba(255, 106, 0, 0.9) 100%);' 
                                             : 'background: linear-gradient(135deg, rgba(99, 102, 241, 0.9) 0%, rgba(79, 70, 229, 0.9) 100%);';
@@ -602,12 +605,13 @@ if (isset($driver['bus_id'])) {
                                                 
                                                 <!-- Content -->
                                                 <div class="relative z-10 p-4 h-full flex flex-col">
-                                                    <!-- Student Image -->
+                                                    <!-- Student Image with error handling -->
                                                     <div class="flex justify-center student-image">
                                                         <div class="rounded-full border-4 <?php echo $borderColor; ?> bg-white p-1">
-                                                            <img src="<?php echo $photoUrl; ?>" 
+                                                            <img src="<?php echo htmlspecialchars($photoUrl); ?>" 
                                                                  alt="Student Photo" 
-                                                                 class="rounded-full w-40 h-40 object-cover"/>
+                                                                 class="rounded-full w-40 h-40 object-cover"
+                                                                 onerror="this.src='../img/default-avatar.png'"/>
                                                         </div>
                                                     </div>
 
@@ -682,7 +686,10 @@ if (isset($driver['bus_id'])) {
                                     echo '<div class="col-span-full text-center text-gray-500 py-12">No students to be dropped off.</div>';
                                 } else {
                                     foreach ($toDropStudents as $student) {
-                                        $photoUrl = !empty($student['photo_url']) ? $student['photo_url'] : '../img/child.jpg';
+                                        // Update photo URL handling
+                                        $photoUrl = !empty($student['photo_url']) ? 
+                                            "../img/child/" . $student['photo_url'] : 
+                                            "../img/default-avatar.png";
                                         ?>
                                         
                                         <div class="bg-white rounded-lg overflow-hidden shadow-lg mb-4 student-card" id="drop-card-<?php echo $student['child_id']; ?>">
@@ -695,12 +702,13 @@ if (isset($driver['bus_id'])) {
                                                 
                                                 <!-- Content -->
                                                 <div class="relative z-10 p-4 h-full flex flex-col">
-                                                    <!-- Student Image -->
+                                                    <!-- Student Image with error handling -->
                                                     <div class="flex justify-center student-image">
                                                         <div class="rounded-full border-4 border-yellow-600 bg-white p-1">
-                                                            <img src="<?php echo $photoUrl; ?>" 
+                                                            <img src="<?php echo htmlspecialchars($photoUrl); ?>" 
                                                                  alt="Student Photo" 
-                                                                 class="rounded-full w-40 h-40 object-cover"/>
+                                                                 class="rounded-full w-40 h-40 object-cover"
+                                                                 onerror="this.src='../img/default-avatar.png'"/>
                                                         </div>
                                                     </div>
 

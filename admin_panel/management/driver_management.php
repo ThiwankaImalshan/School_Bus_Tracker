@@ -1,7 +1,43 @@
 <?php
-// Process form submissions for driver management
+// Initialize variables
 $success_message = '';
 $error_message = '';
+$edit_driver = null;
+
+// Get driver for editing first
+if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
+    $driver_id = (int)$_GET['edit'];
+    try {
+        $stmt = $pdo->prepare("SELECT * FROM driver WHERE driver_id = ?");
+        $stmt->execute([$driver_id]);
+        $edit_driver = $stmt->fetch();
+    } catch (PDOException $e) {
+        $error_message = "Error fetching driver details: " . $e->getMessage();
+    }
+}
+
+// Now fetch all active buses that don't have drivers assigned
+try {
+    $bus_query = "SELECT b.bus_id, b.bus_number 
+                  FROM bus b 
+                  LEFT JOIN driver d ON b.bus_id = d.bus_id 
+                  WHERE b.is_active = 1 
+                  AND (d.driver_id IS NULL";
+    
+    // If editing, include the current driver's bus in options
+    if ($edit_driver) {
+        $bus_query .= " OR b.bus_id = " . (int)$edit_driver['bus_id'];
+    }
+    
+    $bus_query .= ") ORDER BY b.bus_number";
+    
+    $stmt = $pdo->prepare($bus_query);
+    $stmt->execute();
+    $buses = $stmt->fetchAll();
+} catch (PDOException $e) {
+    $error_message = "Error fetching buses: " . $e->getMessage();
+    $buses = [];
+}
 
 // Hash the password
 function hashPassword($password) {
@@ -21,18 +57,33 @@ if (isset($_POST['add_driver'])) {
     $bus_id = !empty($_POST['bus_id']) ? (int)$_POST['bus_id'] : null;
     $joined_date = date('Y-m-d');
     
-    // Hash the password
-    $password_hash = hashPassword($password);
+    // Add validation before insert
+    if ($bus_id) {
+        // Check if bus is already assigned to another driver
+        $check_stmt = $pdo->prepare("SELECT driver_id FROM driver WHERE bus_id = ? AND driver_id != ?");
+        $current_driver_id = 0; // No current driver for add operation
+        $check_stmt->execute([$bus_id, $current_driver_id]);
+        
+        if ($check_stmt->rowCount() > 0) {
+            $error_message = "This bus is already assigned to another driver.";
+            unset($_POST['add_driver']); // Stop the insert process
+        }
+    }
     
-    try {
-        $stmt = $pdo->prepare("INSERT INTO driver (full_name, email, password_hash, phone, license_number, 
-                              license_expiry_date, experience_years, age, bus_id, joined_date) 
-                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$full_name, $email, $password_hash, $phone, $license_number, 
-                       $license_expiry_date, $experience_years, $age, $bus_id, $joined_date]);
-        $success_message = "Driver added successfully!";
-    } catch (PDOException $e) {
-        $error_message = "Error adding driver: " . $e->getMessage();
+    if (isset($_POST['add_driver'])) {
+        // Hash the password
+        $password_hash = hashPassword($password);
+        
+        try {
+            $stmt = $pdo->prepare("INSERT INTO driver (full_name, email, password_hash, phone, license_number, 
+                                  license_expiry_date, experience_years, age, bus_id, joined_date) 
+                                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$full_name, $email, $password_hash, $phone, $license_number, 
+                           $license_expiry_date, $experience_years, $age, $bus_id, $joined_date]);
+            $success_message = "Driver added successfully!";
+        } catch (PDOException $e) {
+            $error_message = "Error adding driver: " . $e->getMessage();
+        }
     }
 }
 
@@ -48,25 +99,39 @@ if (isset($_POST['update_driver'])) {
     $age = (int)$_POST['age'];
     $bus_id = !empty($_POST['bus_id']) ? (int)$_POST['bus_id'] : null;
     
-    try {
-        // Check if password is being updated
-        if (!empty($_POST['password'])) {
-            $password_hash = hashPassword($_POST['password']);
-            $stmt = $pdo->prepare("UPDATE driver SET full_name = ?, email = ?, password_hash = ?, 
-                                  phone = ?, license_number = ?, license_expiry_date = ?, 
-                                  experience_years = ?, age = ?, bus_id = ? WHERE driver_id = ?");
-            $stmt->execute([$full_name, $email, $password_hash, $phone, $license_number, 
-                           $license_expiry_date, $experience_years, $age, $bus_id, $driver_id]);
-        } else {
-            $stmt = $pdo->prepare("UPDATE driver SET full_name = ?, email = ?, phone = ?, 
-                                  license_number = ?, license_expiry_date = ?, experience_years = ?, 
-                                  age = ?, bus_id = ? WHERE driver_id = ?");
-            $stmt->execute([$full_name, $email, $phone, $license_number, $license_expiry_date, 
-                           $experience_years, $age, $bus_id, $driver_id]);
+    // Add validation before update
+    if ($bus_id) {
+        // Check if bus is already assigned to another driver
+        $check_stmt = $pdo->prepare("SELECT driver_id FROM driver WHERE bus_id = ? AND driver_id != ?");
+        $check_stmt->execute([$bus_id, $driver_id]);
+        
+        if ($check_stmt->rowCount() > 0) {
+            $error_message = "This bus is already assigned to another driver.";
+            unset($_POST['update_driver']); // Stop the update process
         }
-        $success_message = "Driver updated successfully!";
-    } catch (PDOException $e) {
-        $error_message = "Error updating driver: " . $e->getMessage();
+    }
+    
+    if (isset($_POST['update_driver'])) {
+        try {
+            // Check if password is being updated
+            if (!empty($_POST['password'])) {
+                $password_hash = hashPassword($_POST['password']);
+                $stmt = $pdo->prepare("UPDATE driver SET full_name = ?, email = ?, password_hash = ?, 
+                                      phone = ?, license_number = ?, license_expiry_date = ?, 
+                                      experience_years = ?, age = ?, bus_id = ? WHERE driver_id = ?");
+                $stmt->execute([$full_name, $email, $password_hash, $phone, $license_number, 
+                               $license_expiry_date, $experience_years, $age, $bus_id, $driver_id]);
+            } else {
+                $stmt = $pdo->prepare("UPDATE driver SET full_name = ?, email = ?, phone = ?, 
+                                      license_number = ?, license_expiry_date = ?, experience_years = ?, 
+                                      age = ?, bus_id = ? WHERE driver_id = ?");
+                $stmt->execute([$full_name, $email, $phone, $license_number, $license_expiry_date, 
+                               $experience_years, $age, $bus_id, $driver_id]);
+            }
+            $success_message = "Driver updated successfully!";
+        } catch (PDOException $e) {
+            $error_message = "Error updating driver: " . $e->getMessage();
+        }
     }
 }
 
@@ -83,20 +148,6 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     }
 }
 
-// Get driver for editing
-$edit_driver = null;
-if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
-    $driver_id = (int)$_GET['edit'];
-    
-    try {
-        $stmt = $pdo->prepare("SELECT * FROM driver WHERE driver_id = ?");
-        $stmt->execute([$driver_id]);
-        $edit_driver = $stmt->fetch();
-    } catch (PDOException $e) {
-        $error_message = "Error fetching driver details: " . $e->getMessage();
-    }
-}
-
 // Fetch all drivers with bus information
 try {
     $stmt = $pdo->prepare("SELECT d.*, b.bus_number 
@@ -108,16 +159,6 @@ try {
 } catch (PDOException $e) {
     $error_message = "Error fetching drivers: " . $e->getMessage();
     $drivers = [];
-}
-
-// Fetch all active buses for dropdown
-try {
-    $stmt = $pdo->prepare("SELECT bus_id, bus_number FROM bus WHERE is_active = 1 ORDER BY bus_number");
-    $stmt->execute();
-    $buses = $stmt->fetchAll();
-} catch (PDOException $e) {
-    $error_message = "Error fetching buses: " . $e->getMessage();
-    $buses = [];
 }
 ?>
 
@@ -301,7 +342,27 @@ document.addEventListener('DOMContentLoaded', function() {
     const driverForm = document.getElementById('driverForm');
     
     addDriverBtn.addEventListener('click', function() {
-        driverForm.classList.toggle('hidden');
+        // Clear all form fields
+        const form = driverForm.querySelector('form');
+        form.reset();
+        
+        // Remove any previous driver_id hidden input
+        const oldDriverId = form.querySelector('input[name="driver_id"]');
+        if (oldDriverId) {
+            oldDriverId.remove();
+        }
+        
+        // Update form title to "Add New Driver"
+        driverForm.querySelector('h3').textContent = 'Add New Driver';
+        
+        // Show the form
+        driverForm.classList.remove('hidden');
+        
+        // Make password field required
+        document.getElementById('password').required = true;
+        
+        // Reset bus selection
+        document.getElementById('bus_id').selectedIndex = 0;
     });
     
     // JavaScript for delete confirmation
@@ -311,4 +372,4 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 });
-</script> 
+</script>

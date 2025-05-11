@@ -227,6 +227,10 @@ function canAccessMenu($menuItem, $userRole, $permissions) {
                     Newsletter
                 </a>
                 <?php endif; ?>
+                <a href="card_generator/select_card.php" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
+                    <i class="fas fa-id-card h-5 w-5 mr-3"></i>
+                    Print Cards
+                </a>
                 <button onclick="showSection('route-times')" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
                     <i class="fas fa-clock h-5 w-5 mr-3"></i>
                     Route Times
@@ -248,20 +252,24 @@ function canAccessMenu($menuItem, $userRole, $permissions) {
             </button>
             <a href="management" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
                 <i class="fas fa-tasks h-6 w-6"></i>
-                <span>Management</span>
+                <span>Manage</span>
             </a>
             <?php if (canAccessMenu('payments', $admin_role, $menu_permissions)): ?>
             <a href="payment_monitor.php" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
                 <i class="fas fa-dollar-sign h-6 w-6"></i>
-                <span>Payments</span>
+                <span>Pay</span>
             </a>
             <?php endif; ?>
             <?php if (canAccessMenu('newsletter', $admin_role, $menu_permissions)): ?>
             <a href="newsletter_sender.php" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
                 <i class="fas fa-envelope h-6 w-6"></i>
-                <span>Newsletter</span>
+                <span>News</span>
             </a>
             <?php endif; ?>
+            <a href="card_generator/select_card.php" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
+                <i class="fas fa-id-card h-6 w-6"></i>
+                <span>Cards</span>
+            </a>
             <button onclick="showSection('route-times')" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
                 <i class="fas fa-clock h-6 w-6"></i>
                 <span>Routes</span>

@@ -28,14 +28,39 @@ try {
     // Start transaction
     $pdo->beginTransaction();
     
+    $photo_filename = null;
+
+    // Handle photo upload
+    if (isset($_FILES['child_photo']) && $_FILES['child_photo']['error'] === UPLOAD_ERR_OK) {
+        $file = $_FILES['child_photo'];
+        $allowed_types = ['image/jpeg', 'image/png'];
+        
+        if (!in_array($file['type'], $allowed_types)) {
+            die(json_encode(['success' => false, 'message' => 'Invalid file type. Only JPG and PNG are allowed.']));
+        }
+        
+        if ($file['size'] > 2 * 1024 * 1024) {
+            die(json_encode(['success' => false, 'message' => 'File size must be less than 2MB']));
+        }
+        
+        // Generate unique filename
+        $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+        $photo_filename = uniqid('child_') . '.' . $ext;
+        $upload_path = "../img/child/" . $photo_filename;
+        
+        if (!move_uploaded_file($file['tmp_name'], $upload_path)) {
+            die(json_encode(['success' => false, 'message' => 'Failed to upload photo']));
+        }
+    }
+    
     // Insert child information
     $stmt = $pdo->prepare("
         INSERT INTO child (
             parent_id, school_id, bus_id, first_name, last_name,
-            grade, pickup_location, medical_notes, emergency_contact
+            grade, pickup_location, photo_url, medical_notes, emergency_contact
         ) VALUES (
             :parent_id, :school_id, :bus_id, :first_name, :last_name,
-            :grade, :pickup_location, :medical_notes, :emergency_contact
+            :grade, :pickup_location, :photo_url, :medical_notes, :emergency_contact
         )
     ");
     
@@ -47,6 +72,7 @@ try {
         'last_name' => $_POST['child_last_name'],
         'grade' => $_POST['grade'],
         'pickup_location' => $_POST['pickup_location'],
+        'photo_url' => $photo_filename,
         'medical_notes' => $_POST['medical_notes'] ?? '',
         'emergency_contact' => $_POST['emergency_contact']
     ]);

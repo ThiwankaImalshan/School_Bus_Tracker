@@ -51,6 +51,12 @@ try {
     $cityStmt->execute();
     $cities = $cityStmt->fetchAll(PDO::FETCH_ASSOC);
     
+    // Create child photos directory if it doesn't exist
+    $upload_dir = "../img/child";
+    if (!file_exists($upload_dir)) {
+        mkdir($upload_dir, 0777, true);
+    }
+    
 } catch (PDOException $e) {
     die("Database connection failed: " . $e->getMessage());
 }
@@ -175,7 +181,7 @@ try {
                     </div>
                 </div>
                 
-                <form id="addChildForm" action="add_child_process.php" method="POST" class="space-y-6 relative">
+                <form id="addChildForm" action="add_child_process.php" method="POST" class="space-y-6 relative" enctype="multipart/form-data">
                     <!-- Hidden input for parent_id from session -->
                     <input type="hidden" name="parent_id" value="<?php echo $_SESSION['parent_id']; ?>">
                     <input type="hidden" name="pickup_location" id="pickup_location">
@@ -188,6 +194,30 @@ try {
                         <div class="group">
                             <label for="child_last_name" class="block text-sm font-medium text-gray-700 mb-1 group-hover:text-orange-600 transition">Last Name</label>
                             <input type="text" id="child_last_name" name="child_last_name" required class="w-full px-4 py-3 rounded-xl border border-orange-200 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition input-focus-effect">
+                        </div>
+                    </div>
+                    
+                    <!-- Add photo upload section after the name fields -->
+                    <div class="group">
+                        <label for="child_photo" class="block text-sm font-medium text-gray-700 mb-1 group-hover:text-orange-600 transition">
+                            Child Photo (Optional)
+                        </label>
+                        <div class="flex items-center space-x-4">
+                            <div class="w-24 h-24 border-2 border-dashed border-orange-200 rounded-lg flex items-center justify-center bg-orange-50">
+                                <img id="photo_preview" src="#" alt="Preview" class="hidden max-w-full max-h-full rounded-lg">
+                                <div id="upload_placeholder" class="text-center">
+                                    <svg class="mx-auto h-8 w-8 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <input type="file" id="child_photo" name="child_photo" accept="image/*" class="hidden" onchange="previewImage(this)">
+                                <label for="child_photo" class="cursor-pointer btn-gradient px-4 py-2 rounded-lg inline-block text-white">
+                                    Choose Photo
+                                </label>
+                                <p class="text-xs text-gray-500 mt-1">Max file size: 2MB. Accepted formats: JPG, PNG</p>
+                            </div>
                         </div>
                     </div>
                     
@@ -300,39 +330,6 @@ try {
                         <textarea id="medical_notes" name="medical_notes" class="w-full px-4 py-3 rounded-xl border border-orange-200 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition input-focus-effect" rows="3" placeholder="Allergies, medications, or other important medical information"></textarea>
                     </div>
                     
-                    <!-- <div class="bg-orange-50 rounded-xl p-4 border border-orange-100">
-                        <label class="block text-sm font-medium text-gray-700 mb-3">Tracking Preferences</label>
-                        <div class="space-y-3">
-                            <div class="flex items-center hover:bg-orange-100 p-2 rounded-lg transition-colors">
-                                <input type="checkbox" id="notify_pickup" name="notify_pickup" class="h-5 w-5 text-orange-500 rounded focus:ring-orange-400">
-                                <label for="notify_pickup" class="ml-3 text-gray-700 flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
-                                    </svg>
-                                    Notify me when child is picked up
-                                </label>
-                            </div>
-                            <div class="flex items-center hover:bg-orange-100 p-2 rounded-lg transition-colors">
-                                <input type="checkbox" id="notify_dropoff" name="notify_dropoff" class="h-5 w-5 text-orange-500 rounded focus:ring-orange-400">
-                                <label for="notify_dropoff" class="ml-3 text-gray-700 flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                    Notify me when child is dropped off
-                                </label>
-                            </div>
-                            <div class="flex items-center hover:bg-orange-100 p-2 rounded-lg transition-colors">
-                                <input type="checkbox" id="notify_delays" name="notify_delays" class="h-5 w-5 text-orange-500 rounded focus:ring-orange-400">
-                                <label for="notify_delays" class="ml-3 text-gray-700 flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    Notify me about delays
-                                </label>
-                            </div>
-                        </div>
-                    </div> -->
-                    
                     <div class="pt-6">
                         <!-- Updated submit button with gradient and improved hover effects -->
                         <button type="submit" class="w-full py-4 px-6 rounded-xl font-medium shadow-lg transition duration-300 ease-in-out transform hover:-translate-y-1 relative overflow-hidden group">
@@ -354,6 +351,32 @@ try {
     </main>
 
     <script>
+        // Add this before the existing scripts
+        function previewImage(input) {
+            const preview = document.getElementById('photo_preview');
+            const placeholder = document.getElementById('upload_placeholder');
+            
+            if (input.files && input.files[0]) {
+                // Check file size
+                if (input.files[0].size > 2 * 1024 * 1024) {
+                    alert('File size must be less than 2MB');
+                    input.value = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.classList.remove('hidden');
+                    placeholder.classList.add('hidden');
+                }
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+            }
+        }
+
         // Initialize map
         const map = L.map('map').setView([6.9271, 79.8612], 13);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {

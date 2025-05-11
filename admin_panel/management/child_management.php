@@ -131,9 +131,14 @@ try {
     $schools = [];
 }
 
-// Fetch all active buses for dropdown
+// Fetch all active buses with their school assignments
 try {
-    $stmt = $pdo->prepare("SELECT bus_id, bus_number FROM bus WHERE is_active = 1 ORDER BY bus_number");
+    $stmt = $pdo->prepare("SELECT b.bus_id, b.bus_number, GROUP_CONCAT(bs.school_id) as school_ids 
+                          FROM bus b
+                          LEFT JOIN bus_school bs ON b.bus_id = bs.bus_id
+                          WHERE b.is_active = 1 
+                          GROUP BY b.bus_id 
+                          ORDER BY b.bus_number");
     $stmt->execute();
     $buses = $stmt->fetchAll();
 } catch (PDOException $e) {
@@ -247,15 +252,9 @@ try {
                 
                 <div>
                     <label for="bus_id" class="block text-gray-700 mb-2">Assigned Bus</label>
-                    <select id="bus_id" name="bus_id"
+                    <select id="bus_id" name="bus_id" disabled
                             class="w-full rounded-lg border-gray-300 border p-3 focus:border-yellow-500 focus:ring focus:ring-yellow-200">
-                        <option value="">-- Select Bus --</option>
-                        <?php foreach ($buses as $bus): ?>
-                        <option value="<?php echo $bus['bus_id']; ?>" 
-                                <?php echo ($edit_child && $edit_child['bus_id'] == $bus['bus_id']) ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($bus['bus_number']); ?>
-                        </option>
-                        <?php endforeach; ?>
+                        <option value="">-- Select School First --</option>
                     </select>
                 </div>
                 
@@ -292,6 +291,70 @@ try {
                 </a>
             </div>
         </form>
+
+        <script>
+        // Store buses and their school assignments
+        const busData = <?php echo json_encode($buses); ?>;
+        const busSchoolMap = {};
+
+        // Create mapping of schools to buses
+        busData.forEach(bus => {
+            const schoolIds = bus.school_ids ? bus.school_ids.split(',') : [];
+            schoolIds.forEach(schoolId => {
+                if (!busSchoolMap[schoolId]) {
+                    busSchoolMap[schoolId] = [];
+                }
+                busSchoolMap[schoolId].push({
+                    id: bus.bus_id,
+                    number: bus.bus_number
+                });
+            });
+        });
+
+        // Handle school selection change
+        document.getElementById('school_id').addEventListener('change', function() {
+            const busSelect = document.getElementById('bus_id');
+            const selectedSchool = this.value;
+            
+            // Clear and disable bus select if no school selected
+            if (!selectedSchool) {
+                busSelect.innerHTML = '<option value="">-- Select School First --</option>';
+                busSelect.disabled = true;
+                return;
+            }
+            
+            // Get buses for selected school
+            const availableBuses = busSchoolMap[selectedSchool] || [];
+            
+            // Update bus select options
+            busSelect.innerHTML = '<option value="">-- Select Bus --</option>';
+            availableBuses.forEach(bus => {
+                const option = document.createElement('option');
+                option.value = bus.id;
+                option.textContent = bus.number;
+                
+                // If editing, select the current bus
+                if (<?php echo $edit_child ? $edit_child['bus_id'] : 'false'; ?> == bus.id) {
+                    option.selected = true;
+                }
+                
+                busSelect.appendChild(option);
+            });
+            
+            // Enable bus select if buses are available
+            busSelect.disabled = availableBuses.length === 0;
+            
+            // Add message if no buses available
+            if (availableBuses.length === 0) {
+                busSelect.innerHTML = '<option value="">No buses available for this school</option>';
+            }
+        });
+
+        // Trigger school change event on page load if editing
+        if (<?php echo $edit_child ? 'true' : 'false'; ?>) {
+            document.getElementById('school_id').dispatchEvent(new Event('change'));
+        }
+        </script>
     </div>
 
     <!-- Children List -->
@@ -362,10 +425,65 @@ try {
 document.addEventListener('DOMContentLoaded', function() {
     const addChildBtn = document.getElementById('addChildBtn');
     const childForm = document.getElementById('childForm');
+    let map = null;
+    
+    function initializeMap() {
+        if (map) return; // Don't initialize if already exists
+        
+        // Initialize the map
+        map = L.map('map').setView([6.9271, 79.8612], 13); // Default center on Colombo
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        let marker;
+        const pickupLocationInput = document.getElementById('pickup_location');
+
+        // If editing and coordinates exist, show marker
+        if (pickupLocationInput.value) {
+            const coords = pickupLocationInput.value.split(',');
+            if (coords.length === 2) {
+                const lat = parseFloat(coords[0]);
+                const lng = parseFloat(coords[1]);
+                marker = L.marker([lat, lng]).addTo(map);
+                map.setView([lat, lng], 15);
+            }
+        }
+
+        map.on('click', function(e) {
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+            
+            // Update or create marker
+            if (marker) {
+                marker.setLatLng(e.latlng);
+            } else {
+                marker = L.marker(e.latlng).addTo(map);
+            }
+            
+            // Update input with coordinates
+            pickupLocationInput.value = `${lat},${lng}`;
+        });
+
+        // Force map to update its size
+        setTimeout(() => {
+            map.invalidateSize();
+        }, 100);
+    }
     
     addChildBtn.addEventListener('click', function() {
         childForm.classList.toggle('hidden');
+        if (!childForm.classList.contains('hidden')) {
+            // Initialize map when form becomes visible
+            setTimeout(initializeMap, 100);
+        }
     });
+    
+    // Initialize map if form is visible on page load (edit mode)
+    if (!childForm.classList.contains('hidden')) {
+        setTimeout(initializeMap, 100);
+    }
     
     // JavaScript for delete confirmation
     window.confirmDelete = function(childId) {
@@ -373,41 +491,5 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = '?tab=child&delete=' + childId;
         }
     };
-
-    // Initialize the map
-    let map = L.map('map').setView([6.9271, 79.8612], 13); // Default center on Colombo
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-
-    let marker;
-    const pickupLocationInput = document.getElementById('pickup_location');
-
-    // If editing and coordinates exist, show marker
-    if (pickupLocationInput.value) {
-        const coords = pickupLocationInput.value.split(',');
-        if (coords.length === 2) {
-            const lat = parseFloat(coords[0]);
-            const lng = parseFloat(coords[1]);
-            marker = L.marker([lat, lng]).addTo(map);
-            map.setView([lat, lng], 15);
-        }
-    }
-
-    map.on('click', function(e) {
-        const lat = e.latlng.lat;
-        const lng = e.latlng.lng;
-        
-        // Update or create marker
-        if (marker) {
-            marker.setLatLng(e.latlng);
-        } else {
-            marker = L.marker(e.latlng).addTo(map);
-        }
-        
-        // Update input with coordinates
-        pickupLocationInput.value = `${lat},${lng}`;
-    });
 });
 </script>

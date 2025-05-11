@@ -1,13 +1,24 @@
 <?php
 // Start session
-// session_start();
+session_start();
 
-// Check if admin is logged in (you might want to adjust this based on your authentication system)
-// if (!isset($_SESSION['admin_id']) || !$_SESSION['logged_in']) {
-    // Redirect to login page if not logged in
-//     header('Location: login.html');
-//     exit;
-// }
+// Check if admin is logged in
+if (!isset($_SESSION['admin_id'])) {
+    header('Location: ../admin_panel/log_in.html');
+    exit;
+}
+
+// Check if session has expired (30 minutes)
+if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > 1800)) {
+    // Last activity was more than 30 minutes ago
+    session_unset();     // Unset all session variables
+    session_destroy();   // Destroy session data
+    header('Location: ../admin_panel/log_in.html?msg=session_expired');
+    exit;
+}
+
+// Update last activity time stamp
+$_SESSION['last_activity'] = time();
 
 // Database connection
 $host = 'localhost';

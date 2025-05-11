@@ -441,7 +441,6 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                 <button onclick="showSection('settings')" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c-.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                     Settings
                 </button>
@@ -607,9 +606,14 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                         <!-- Current Active Child Display -->
                         <?php if ($selectedChild): ?>
                         <div id="currentChildProfile" class="flex items-center space-x-4">
-                            <img src="<?php echo !empty($selectedChild['photo_url']) ? $selectedChild['photo_url'] : 'assets\img\student1.jpg'; ?>" 
-                                alt="<?php echo $selectedChild['first_name'] . ' ' . $selectedChild['last_name']; ?>" 
-                                class="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover border-4 border-orange-200"/>
+                            <?php 
+                            // Check photo_url and construct full path if exists
+                            $photoPath = !empty($selectedChild['photo_url']) ? '../img/child/' . $selectedChild['photo_url'] : '../img/default-avatar.png';
+                            ?>
+                            <img src="<?php echo htmlspecialchars($photoPath); ?>" 
+                                alt="Child Photo" 
+                                class="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover border-4 border-orange-200"
+                                onerror="this.src='../img/default-avatar.png'">
                             <div>
                                 <h4 class="text-lg md:text-xl sm:text-base xs:text-sm font-medium text-gray-800"><?php echo $selectedChild['first_name'] . ' ' . $selectedChild['last_name']; ?></h4>
                                 <!-- <p class="text-gray-500">Grade <?php echo $selectedChild['grade']; ?> • Bus #<?php echo $selectedChild['bus_id']; ?></p> -->
@@ -638,8 +642,14 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                     <div class="flex flex-col items-center mb-6">
                                         <!-- Student Image -->
                                         <div class="w-24 h-24 rounded-full overflow-hidden mb-3">
-                                            <img src="<?php echo !empty($selectedChild['photo_url']) ? $selectedChild['photo_url'] : 'assets\img\student1.jpg'; ?>" 
-                                                alt="Student Photo" class="w-full h-full object-cover" />
+                                            <?php 
+                                            // Check photo_url and construct full path if exists
+                                            $photoPath = !empty($selectedChild['photo_url']) ? '../img/child/' . $selectedChild['photo_url'] : '../img/default-avatar.png';
+                                            ?>
+                                            <img src="<?php echo htmlspecialchars($photoPath); ?>" 
+                                                alt="Student Photo" 
+                                                class="w-full h-full object-cover"
+                                                onerror="this.src='../img/default-avatar.png'">
                                         </div>
                                         <!-- Student Name -->
                                         <h4 class="text-lg font-medium text-gray-800"><?php echo $selectedChild['first_name'] . ' ' . $selectedChild['last_name']; ?></h4>
@@ -1649,11 +1659,14 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                     <div class="bg-white rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl border border-gray-100">
                                         <div class="p-4">
                                             <div class="flex items-center space-x-4">
-                                                <?php if (!empty($child['photo_url'])): ?>
-                                                    <img src="<?php echo htmlspecialchars($child['photo_url']); ?>" alt="Child Photo" class="w-16 h-16 rounded-full object-cover ring-2 ring-yellow-500 ring-offset-2">
-                                                <?php else: ?>
-                                                    <img src="assets\img\student1.jpg" alt="Default Child Photo" class="w-16 h-16 rounded-full object-cover ring-2 ring-yellow-500 ring-offset-2">
-                                                <?php endif; ?>
+                                                <?php 
+                                                // Check photo_url and construct full path if exists
+                                                $photoPath = !empty($child['photo_url']) ? '../img/child/' . $child['photo_url'] : '../img/default-avatar.png';
+                                                ?>
+                                                <img src="<?php echo htmlspecialchars($photoPath); ?>" 
+                                                     alt="Child Photo" 
+                                                     class="w-16 h-16 rounded-full object-cover ring-2 ring-yellow-500 ring-offset-2"
+                                                     onerror="this.src='../img/default-avatar.png'">
                                                 
                                                 <div>
                                                     <h4 class="text-lg font-semibold text-gray-800 leading-tight">
@@ -2112,7 +2125,14 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                                                     <div class="relative group">
                                                                         <p class="text-sm text-gray-500 mb-2">Current photo:</p>
                                                                         <div class="relative rounded-lg overflow-hidden shadow-md group-hover:shadow-lg transition-all duration-300">
-                                                                            <img src="<?php echo htmlspecialchars($child['photo_url']); ?>" alt="Current Photo" class="h-20 w-20 object-cover">
+                                                                            <?php 
+                                                                            // Check photo_url and construct full path if exists
+                                                                            $photoPath = !empty($child['photo_url']) ? '../img/child/' . $child['photo_url'] : '../img/default-avatar.png';
+                                                                            ?>
+                                                                            <img src="<?php echo htmlspecialchars($photoPath); ?>" 
+                                                                                 alt="Current Photo" 
+                                                                                 class="h-20 w-20 object-cover"
+                                                                                 onerror="this.src='../img/default-avatar.png'">
                                                                             <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                                                                                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
