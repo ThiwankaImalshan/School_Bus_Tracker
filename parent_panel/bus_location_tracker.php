@@ -59,38 +59,59 @@ if ($childDetails['bus_id']) {
 // Set timezone for Sri Lanka
 date_default_timezone_set('Asia/Colombo');
 
-// Get route times from database
+// Get route times from database with date validation
 $route_times = [];
 if ($childDetails['bus_id']) {
     $stmt = $pdo->prepare("
-        SELECT route_type, start_time, end_time
+        SELECT route_type, start_time, end_time, DATE(updated_at) as last_updated
         FROM route_times 
         WHERE bus_id = ?
+        AND DATE(created_at) = CURDATE()
+        AND DATE(updated_at) = CURDATE()
     ");
     $stmt->execute([$childDetails['bus_id']]);
     $route_times = $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
 
-// Set default times in case no route times are found
-$morning_start = (5 * 60); // Default 5:00 AM
-$morning_end = (12 * 60); // Default 12:00 PM
-$evening_start = (12 * 60); // Default 12:00 PM
-$evening_end = (17 * 60); // Default 5:00 PM
+    // If no current date records found, get default times from route_settings
+    if (empty($route_times)) {
+        $stmt = $pdo->prepare("
+            SELECT 
+                morning_start, morning_end, 
+                evening_start, evening_end
+            FROM route_settings 
+            WHERE bus_id = ?
+        ");
+        $stmt->execute([$childDetails['bus_id']]);
+        $default_settings = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Update times if found in database
-foreach ($route_times as $rt) {
-    if ($rt['route_type'] === 'morning') {
-        $morning_time = strtotime($rt['start_time']);
-        $morning_start = (int)date('H', $morning_time) * 60 + (int)date('i', $morning_time);
-        
-        $morning_end_time = strtotime($rt['end_time']);
-        $morning_end = (int)date('H', $morning_end_time) * 60 + (int)date('i', $morning_end_time);
-    } else if ($rt['route_type'] === 'evening') {
-        $evening_time = strtotime($rt['start_time']);
-        $evening_start = (int)date('H', $evening_time) * 60 + (int)date('i', $evening_time);
-        
-        $evening_end_time = strtotime($rt['end_time']);
-        $evening_end = (int)date('H', $evening_end_time) * 60 + (int)date('i', $evening_end_time);
+        if ($default_settings) {
+            $morning_start = $default_settings['morning_start'];
+            $morning_end = $default_settings['morning_end'];
+            $evening_start = $default_settings['evening_start'];
+            $evening_end = $default_settings['evening_end'];
+        } else {
+            // Fallback to system defaults if no settings found
+            $morning_start = (5 * 60); // 5:00 AM
+            $morning_end = (12 * 60); // 12:00 PM
+            $evening_start = (12 * 60); // 12:00 PM
+            $evening_end = (17 * 60); // 5:00 PM
+        }
+    } else {
+        foreach ($route_times as $rt) {
+            if ($rt['route_type'] === 'morning') {
+                $morning_time = strtotime($rt['start_time']);
+                $morning_start = (int)date('H', $morning_time) * 60 + (int)date('i', $morning_time);
+                
+                $morning_end_time = strtotime($rt['end_time']);
+                $morning_end = (int)date('H', $morning_end_time) * 60 + (int)date('i', $morning_end_time);
+            } else if ($rt['route_type'] === 'evening') {
+                $evening_time = strtotime($rt['start_time']);
+                $evening_start = (int)date('H', $evening_time) * 60 + (int)date('i', $evening_time);
+                
+                $evening_end_time = strtotime($rt['end_time']);
+                $evening_end = (int)date('H', $evening_end_time) * 60 + (int)date('i', $evening_end_time);
+            }
+        }
     }
 }
 
@@ -780,6 +801,11 @@ if ($childDetails['bus_id']) {
             
             // Function to draw route path through roads
             function drawRoutePath(points, targetMap, options = {}) {
+                // Clear any existing routes on the target map
+                if (targetMap.routeControl) {
+                    targetMap.removeControl(targetMap.routeControl);
+                }
+                
                 const isMainMap = targetMap === map;
                 const routeOptions = {
                     color: options.color || '#ef4444',
@@ -787,10 +813,22 @@ if ($childDetails['bus_id']) {
                     opacity: 0.8
                 };
 
+                // Validate and filter points
+                const validPoints = points.filter(point => {
+                    const lat = parseFloat(point.latitude || point.lat1);
+                    const lng = parseFloat(point.longitude || point.lon1);
+                    return !isNaN(lat) && !isNaN(lng);
+                });
+
+                if (validPoints.length < 2) {
+                    console.warn('Not enough valid points to draw route');
+                    return null;
+                }
+
                 const markerSize = isMainMap ? 16 : 12;  // Reduced marker sizes
 
-                if (points && points.length > 1) {
-                    const waypoints = points.map(point => 
+                if (validPoints && validPoints.length > 1) {
+                    const waypoints = validPoints.map(point => 
                         L.latLng(point.latitude || point.lat1, point.longitude || point.lon1)
                     );
 
@@ -830,7 +868,7 @@ if ($childDetails['bus_id']) {
 
                     // Add intermediate points only on main map
                     if (isMainMap) {
-                        points.slice(1, -1).forEach(point => {
+                        validPoints.slice(1, -1).forEach(point => {
                             L.circleMarker(
                                 [point.latitude || point.lat1, point.longitude || point.lon1], 
                                 {
@@ -933,6 +971,99 @@ if ($childDetails['bus_id']) {
                     })
                     .catch(error => console.error('Error:', error));
             }
+
+            // Add this new function to handle date changes
+            function loadHistoricalData(date) {
+                fetch(`get_historical_route.php?date=${date}&bus_id=<?php echo $childDetails['bus_id']; ?>`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.morning && data.morning.length > 0) {
+                            morningData = data.morning;
+                            showHistoricalRoute(morningData, 'morning');
+                        } else if (data.evening && data.evening.length > 0) {
+                            eveningData = data.evening;
+                            showHistoricalRoute(eveningData, 'evening');
+                        } else {
+                            // Clear maps if no data
+                            if (routeControl) map.removeControl(routeControl);
+                            if (miniRouteControl) miniMap.removeControl(miniRouteControl);
+                            document.querySelector('.max-h-48.overflow-y-auto').innerHTML = 
+                                '<div class="text-center py-4 text-gray-500">No route data available for selected date</div>';
+                        }
+                    })
+                    .catch(error => console.error('Error loading historical data:', error));
+            }
+
+            // Modify the date selector event listener
+            document.getElementById('date-select').addEventListener('change', function() {
+                if (this.value) {
+                    const childId = <?php echo $child_id; ?>;
+                    fetch(`get_route_history.php?date=${this.value}&child_id=${childId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.error) {
+                                alert(data.error);
+                                return;
+                            }
+
+                            // Clear existing routes
+                            if (routeControl) map.removeControl(routeControl);
+                            if (miniRouteControl) miniMap.removeControl(miniRouteControl);
+
+                            // Draw route on both maps
+                            if (data.routes.length > 0) {
+                                routeControl = drawRoutePath(data.routes, map);
+                                miniRouteControl = drawRoutePath(data.routes, miniMap);
+                            }
+
+                            // Update route segments
+                            updateRouteSegmentsDisplay(data.segments);
+                        })
+                        .catch(error => console.error('Error:', error));
+                }
+            });
+
+            // Add new function to update route segments display
+            function updateRouteSegmentsDisplay(segments) {
+                const container = document.querySelector('.max-h-48.overflow-y-auto');
+                if (!container || !segments?.length) {
+                    container.innerHTML = '<div class="text-center py-4 text-gray-500">No route data available</div>';
+                    return;
+                }
+
+                let totalDistance = 0;
+                let totalTime = 0;
+
+                const html = segments.map(segment => {
+                    totalDistance += parseFloat(segment.segment_distance);
+                    totalTime += (new Date(segment.time2) - new Date(segment.time1)) / 1000 / 60;
+                    
+                    return `
+                        <div class="bg-gray-50 rounded-lg p-2 text-xs">
+                            <div class="flex justify-between text-gray-600">
+                                <span>${new Date(segment.time1).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit', hour12: true})}</span>
+                                <span class="font-medium">${parseFloat(segment.segment_distance).toFixed(2)} km</span>
+                            </div>
+                            <div class="mt-1 text-gray-500">
+                                Speed: ${Math.round(segment.speed)} km/h
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                container.innerHTML = html;
+
+                // Update summary
+                document.querySelector('.mt-4.grid.grid-cols-2 .text-sm.font-medium').textContent = 
+                    totalDistance.toFixed(2) + ' km';
+                document.querySelector('.mt-4.grid.grid-cols-2 div:last-child .text-sm.font-medium').textContent = 
+                    Math.round(totalTime) + ' min';
+            }
+
+            // Initial load for historical data
+            <?php if (!$is_current_day): ?>
+                loadHistoricalData('<?php echo $selected_date; ?>');
+            <?php endif; ?>
 
             // Initialize mini map with its own route control
             var miniMap = L.map('mini-map').setView([7.8731, 80.7718], 8);

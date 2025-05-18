@@ -205,7 +205,7 @@ try {
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12V5a3 3 0 013-3h8a3 3 0 013 3v7m-2 0V5a1 1 0 00-1-1H8a1 1 0 00-1 1v7m-2 2h14a2 2 0 012 2v3a1 1 0 01-1 1h-2a1 1 0 01-1-1v-2H8v2a1 1 0 01-1 1H5a1 1 0 01-1-1v-3a2 2 0 012-2z" />
                     </svg>
-                    Seating
+                    Attendance
                 </button>
                 <button onclick="showSection('settings')" class="nav-item w-full flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-all duration-200">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -243,7 +243,7 @@ try {
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12V5a3 3 0 013-3h8a3 3 0 013 3v7m-2 0V5a1 1 0 00-1-1H8a1 1 0 00-1 1v7m-2 2h14a2 2 0 012 2v3a1 1 0 01-1 1h-2a1 1 0 01-1-1v-2H8v2a1 1 0 01-1 1H5a1 1 0 01-1-1v-3a2 2 0 012-2z" />
                 </svg>
-                <span>Seating</span>
+                <span>Attendance</span>
             </button>
             <button onclick="showSection('settings')" class="mobile-nav-item flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium text-gray-700">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

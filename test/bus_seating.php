@@ -24,7 +24,7 @@ $driver = $stmt->fetch(PDO::FETCH_ASSOC);
 
 // If driver has no assigned bus, show error
 if (!$driver['bus_id']) {
-    $error = "You don't have anassigned bus. Please contact the administrator.";
+    $error = "You don't have an assigned bus. Please contact the administrator.";
 }
 
 // Determine current route based on time
@@ -760,177 +760,244 @@ if (isset($driver['bus_id'])) {
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const currentRoute = '<?php echo $current_route; ?>';
-            let lastUpdate = Date.now();
-            const POLL_INTERVAL = 2000;
-            let shownStudentIds = new Set();
-
-            async function pollForChanges() {
-                try {
-                    const response = await fetch('check_student_status.php', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: `lastUpdate=${lastUpdate}&route=${currentRoute}`
-                    });
-
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    const data = await response.json();
-
-                    if (data.success) {
-                        // Update counters
-                        if (data.counts) {
-                            document.getElementById('present-count').textContent = data.counts.present;
-                            document.getElementById('absent-count').textContent = data.counts.absent;
-                            document.getElementById('total-count').textContent = data.counts.total;
-                        }
-
-                        // Handle new pickups/dropoffs
-                        if (data.students) {
-                            updateStudentDisplay(data.students);
-                        }
-
-                        lastUpdate = data.timestamp || Date.now();
-                    }
-                } catch (error) {
-                    console.error('Polling error:', error);
-                }
+            // Get device time in Sri Lanka timezone
+            function getLocalTime() {
+                const now = new Date();
+                // Convert to Sri Lanka time
+                const sriLankaTime = now.toLocaleString('en-US', { 
+                    timeZone: 'Asia/Colombo',
+                    hour12: true,
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                return sriLankaTime;
             }
 
-            function updateStudentDisplay(students) {
-                const container = document.querySelector('.student-grid');
-                if (!container) return;
-
-                if (currentRoute === 'morning') {
-                    // Add newly picked up students
-                    students.forEach(student => {
-                        if (student.status === 'picked' && !shownStudentIds.has(student.child_id)) {
-                            const card = createStudentCard(student);
-                            addCardWithAnimation(container, card);
-                            shownStudentIds.add(student.child_id);
-                        }
-                    });
-                } else if (currentRoute === 'evening') {
-                    students.forEach(student => {
-                        const cardId = `drop-card-${student.child_id}`;
-                        const existingCard = document.getElementById(cardId);
-
-                        if (student.status === 'picked' && !existingCard) {
-                            const card = createStudentCard(student);
-                            addCardWithAnimation(container, card);
-                            shownStudentIds.add(student.child_id);
-                        } else if (student.status === 'drop' && existingCard) {
-                            removeCardWithAnimation(existingCard);
-                            shownStudentIds.delete(student.child_id);
-                        }
-                    });
-                }
+            // Get device time and update server
+            function updateServerTime() {
+                const deviceTime = new Date().toLocaleString('en-US', {timeZone: 'Asia/Colombo'});
+                fetch('bus_seating.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'device_time=' + encodeURIComponent(deviceTime)
+                })
+                .then(response => response.text())
+                .then(() => {
+                    // Refresh page to update route status
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('Error updating server time:', error);
+                });
             }
-
-            function createStudentCard(student) {
-                const card = document.createElement('div');
-                card.className = 'bg-white rounded-lg overflow-hidden shadow-lg mb-4 student-card';
-                card.id = `student-${student.child_id}`;
-
-                const photoUrl = student.photo_url ? 
-                    `../img/child/${student.photo_url}` : 
-                    '../img/default-avatar.png';
-
-                card.innerHTML = `
-                    <div class="card-front text-white relative" 
-                         style="background-image: url('../img/front1.jpg'); 
-                                background-size: cover; 
-                                background-position: center;">
-                        <div class="relative z-10 p-4 h-full flex flex-col">
-                            <div class="flex justify-center student-image">
-                                <div class="rounded-full border-4 border-yellow-600 bg-white p-1">
-                                    <img src="${photoUrl}" 
-                                         alt="Student Photo" 
-                                         class="rounded-full w-40 h-40 object-cover"
-                                         onerror="this.src='../img/default-avatar.png'"/>
-                                </div>
-                            </div>
-                            <div class="text-center mb-2">
-                                <h2 class="text-3xl font-bold">${student.first_name} ${student.last_name}</h2>
-                                <p class="text-xl">Grade ${student.grade}</p>
-                            </div>
-                            <div class="grid grid-cols-3 gap-1 text-sm pb-4">
-                                <div class="font-bold">ID:</div>
-                                <div class="col-span-2">${student.child_id}</div>
-                                <div class="font-bold">School:</div>
-                                <div class="col-span-2">${student.school_name}</div>
-                                <div class="font-bold">Parent:</div>
-                                <div class="col-span-2">${student.parent_name}</div>
-                                <div class="font-bold">Phone:</div>
-                                <div class="col-span-2">${student.emergency_contact}</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                return card;
-            }
-
-            function addCardWithAnimation(container, card) {
-                if (container.querySelector('.text-gray-500')) {
-                    container.innerHTML = '';
-                }
-                
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(20px)';
-                container.appendChild(card);
-                
-                // Force reflow
-                card.offsetHeight;
-                
-                card.style.opacity = '1';
-                card.style.transform = 'translateY(0)';
-            }
-
-            function removeCardWithAnimation(card) {
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(-20px)';
-                
-                setTimeout(() => {
-                    card.remove();
-                    checkEmptyContainer();
-                }, 300);
-            }
-
-            function checkEmptyContainer() {
-                const container = document.querySelector('.student-grid');
-                if (container && !container.querySelector('.student-card')) {
-                    container.innerHTML = '<div class="col-span-full text-center text-gray-500 py-12">No students to be dropped off.</div>';
-                }
-            }
-
-            // Start polling
-            pollForChanges();
-            let pollInterval = setInterval(pollForChanges, POLL_INTERVAL);
-
-            // Handle page visibility
-            document.addEventListener('visibilitychange', () => {
-                if (document.hidden) {
-                    clearInterval(pollInterval);
-                } else {
-                    pollForChanges();
-                    pollInterval = setInterval(pollForChanges, POLL_INTERVAL);
-                }
-            });
-
-            // Event listeners
-            document.getElementById('refresh-btn').addEventListener('click', initialLoad);
             
-            // Drop-off button handler
+            // Update time every minute
+            setInterval(updateServerTime, 60000);
+
+            const refreshBtn = document.getElementById('refresh-btn');
+            const markAllDroppedBtn = document.getElementById('mark-all-dropped');
+            const lastUpdated = document.getElementById('last-updated');
+            
+            function refreshData() {
+                const refreshIcon = refreshBtn.querySelector('svg');
+                refreshIcon.classList.add('refresh-animation');
+                
+                fetch('update_attendance.php')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            document.getElementById('present-count').textContent = data.present_count;
+                            document.getElementById('absent-count').textContent = data.absent_count;
+                            document.getElementById('total-count').textContent = data.total_assigned;
+                            
+                            lastUpdated.textContent = new Date().toLocaleTimeString('en-US', {
+                                hour: 'numeric',
+                                minute: '2-digit',
+                                hour12: true
+                            });
+                            
+                            data.seats.forEach(seat => {
+                                const seatElement = document.getElementById(`seat-${seat.seat_id}`);
+                                if (seatElement) {
+                                    seatElement.classList.remove('seat-empty', 'seat-reserved', 'seat-present', 'seat-absent', 'seat-pending');
+                                    
+                                    if (seat.is_reserved == 0) {
+                                        seatElement.classList.add('seat-empty');
+                                        seatElement.querySelector('.name-display').textContent = 'Empty';
+                                    } else {
+                                        if (seat.status === 'present') {
+                                            seatElement.classList.add('seat-present');
+                                        } else if (seat.status === 'absent') {
+                                            seatElement.classList.add('seat-absent');
+                                        } else {
+                                            seatElement.classList.add('seat-pending');
+                                        }
+                                        
+                                        if (seat.short_name) {
+                                            seatElement.querySelector('.name-display').textContent = seat.short_name;
+                                        }
+                                    }
+                                    
+                                    const tooltip = seatElement.querySelector('.seat-tooltip');
+                                    if (tooltip && seat.child_name) {
+                                        let tooltipContent = `<strong>${seat.child_name}</strong>`;
+                                        if (seat.status) {
+                                            tooltipContent += `<br>Status: ${seat.status.charAt(0).toUpperCase() + seat.status.slice(1)}`;
+                                        }
+                                        if (seat.pickup_time) {
+                                            tooltipContent += `<br>Pickup: ${formatTime(seat.pickup_time)}`;
+                                        }
+                                        if (seat.drop_time) {
+                                            tooltipContent += `<br>Drop: ${formatTime(seat.drop_time)}`;
+                                        }
+                                        tooltip.innerHTML = tooltipContent;
+                                    }
+                                }
+                            });
+                        } else {
+                            console.error('Error refreshing data:', data.message);
+                        }
+                        
+                        refreshIcon.classList.remove('refresh-animation');
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        refreshIcon.classList.remove('refresh-animation');
+                    });
+            }
+            
+            function formatTime(timeString) {
+                if (!timeString) return '';
+                const date = new Date(`2000-01-01T${timeString}`);
+                return date.toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                });
+            }
+            
+            window.toggleAttendanceStatus = function(seatId, childId, currentStatus) {
+                const currentRoute = "<?php echo $current_route; ?>";
+                if (currentRoute === 'none') {
+                    alert('No active route at this time.');
+                    return;
+                }
+                
+                const newStatus = currentStatus === 'present' ? 'absent' : 'present';
+                
+                const formData = new FormData();
+                formData.append('seat_id', seatId);
+                formData.append('child_id', childId);
+                formData.append('status', newStatus);
+                
+                fetch('submit_attendance.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        refreshData();
+                    } else {
+                        console.error('Error updating status:', data.message);
+                        alert('Error updating status: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error updating status. Please try again.');
+                });
+            };
+            
+            if (markAllDroppedBtn) {
+                markAllDroppedBtn.addEventListener('click', function() {
+                    if (confirm('Are you sure you want to mark all students as dropped off?')) {
+                        fetch('mark_all_dropped.php', {
+                            method: 'POST'
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert('All students marked as dropped off.');
+                                refreshData();
+                            } else {
+                                alert('Error: ' + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('An error occurred. Please try again.');
+                        });
+                    }
+                });
+            }
+            
+            refreshBtn.addEventListener('click', refreshData);
+            
+            // Auto-refresh every 30 seconds
+            setInterval(refreshData, 30000);
+
+            // Function to refresh student cards
+            function refreshStudentCards() {
+                fetch('refresh_student_cards.php')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Refresh the cards if needed
+                            if (data.html.picked) {
+                                document.getElementById('picked-students').innerHTML = data.html.picked;
+                            }
+                            if (data.html.toDrop) {
+                                document.getElementById('to-drop-students').innerHTML = data.html.toDrop;
+                            }
+                        }
+                    })
+                    .catch(error => console.error('Error refreshing student cards:', error));
+            }
+            
+            // Add event listeners for drop off buttons
             document.addEventListener('click', function(e) {
                 if (e.target.closest('.drop-student-btn')) {
                     const btn = e.target.closest('.drop-student-btn');
                     const childId = btn.getAttribute('data-child-id');
                     
                     if (confirm('Are you sure you want to mark this student as dropped off?')) {
-                        handleDropOff(childId);
+                        // Update attendance status
+                        fetch('update_drop_status.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: 'child_id=' + childId
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Remove the card
+                                const card = document.getElementById('drop-card-' + childId);
+                                if (card) {
+                                    card.classList.add('animate__animated', 'animate__fadeOut');
+                                    setTimeout(() => {
+                                        card.remove();
+                                    }, 500);
+                                }
+                            } else {
+                                alert('Error: ' + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('An error occurred. Please try again.');
+                        });
                     }
                 }
             });
+            
+            // Refresh student cards every minute
+            setInterval(refreshStudentCards, 60000);
         });
     </script>
 </body>
