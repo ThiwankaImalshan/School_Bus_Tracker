@@ -384,6 +384,16 @@ if ($childDetails['bus_id']) {
         $tracking_stats['total_distance'] = round($distance_result['total_distance'] ?? 0, 1);
     }
 }
+
+// Add this after getting childDetails
+$stmt = $pdo->prepare("
+    SELECT a.status, a.pickup_time, a.drop_time, c.pickup_location
+    FROM attendance a
+    JOIN child c ON a.child_id = c.child_id
+    WHERE a.child_id = ? AND DATE(a.last_updated) = ?
+");
+$stmt->execute([$child_id, $selected_date]);
+$attendance_status = $stmt->fetch(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -673,10 +683,8 @@ if ($childDetails['bus_id']) {
                         <div class="relative">
                             <div id="map"></div>
                             <div class="driver-info-card sm:w-14rem sm:p-2 sm:top-2 sm:right-2">
-                                <div class="w-12 h-12 sm:w-10 sm:h-10 rounded-full overflow-hidden mr-3 sm:mr-2 flex-shrink-0 border-2 border-orange-300 bg-orange-100 flex items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 sm:h-5 sm:w-5 text-orange-500" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-                                    </svg>
+                                <div class="w-12 h-12 sm:w-10 sm:h-10 rounded-full overflow-hidden mr-3 sm:mr-2 flex-shrink-0 border-2 border-orange-300">
+                                    <img src="../img/busdriver1.jpg" alt="Driver" class="w-full h-full object-cover">
                                 </div>
                                 <div class="flex-1">
                                     <h4 class="font-medium text-gray-800 sm:text-sm"><?php echo htmlspecialchars($childDetails['driver_name'] ?? 'Driver'); ?></h4>
@@ -700,9 +708,17 @@ if ($childDetails['bus_id']) {
                                     </div>
                                 </div>
                                 <div class="bg-white rounded-lg p-3 shadow-sm flex-1 min-w-max">
-                                    <div class="text-xs text-gray-500">ETA to Next Stop</div>
-                                    <div class="text-lg font-medium" id="eta-next-stop">
-                                        <?php echo $tracking_stats['eta_next']; ?>
+                                    <div class="text-xs text-gray-500">Child Status</div>
+                                    <div class="text-lg font-medium <?php echo $attendance_status['status'] === 'picked' ? 'text-green-600' : ($attendance_status['status'] === 'drop' ? 'text-red-600' : 'text-gray-600'); ?>">
+                                        <?php 
+                                            if ($attendance_status['status'] === 'picked') {
+                                                echo 'Picked at ' . ($attendance_status['pickup_time'] ? date('h:i A', strtotime($attendance_status['pickup_time'])) : 'N/A');
+                                            } elseif ($attendance_status['status'] === 'drop') {
+                                                echo 'Dropped at ' . ($attendance_status['drop_time'] ? date('h:i A', strtotime($attendance_status['drop_time'])) : 'N/A');
+                                            } else {
+                                                echo 'Not Picked';
+                                            }
+                                        ?>
                                     </div>
                                 </div>
                                 <div class="bg-white rounded-lg p-3 shadow-sm flex-1 min-w-max">
@@ -809,7 +825,16 @@ if ($childDetails['bus_id']) {
                                             </div>
                                             <div class="mt-1 text-gray-500">
                                                 Speed: <?php echo round($point['speed'] ?? 0); ?> km/h
-                                                <span class="ml-2">Duration: <?php echo round($segment_time / 60); ?> min</span>
+                                                <span class="ml-2">Duration: <?php 
+                                                    $minutes = round($segment_time / 60);
+                                                    if ($minutes >= 60) {
+                                                        $hours = floor($minutes / 60);
+                                                        $remaining_minutes = $minutes % 60;
+                                                        echo $hours . 'h ' . $remaining_minutes . 'min';
+                                                    } else {
+                                                        echo $minutes . 'min';
+                                                    }
+                                                ?></span>
                                             </div>
                                         </div>
                                     <?php 
@@ -827,7 +852,16 @@ if ($childDetails['bus_id']) {
                                     <div>
                                         <div class="text-xs text-gray-500">Total Time</div>
                                         <div class="text-sm font-medium text-gray-800">
-                                            <?php echo floor($total_time / 60); ?> min
+                                            <?php 
+                                                $total_minutes = floor($total_time / 60);
+                                                if ($total_minutes >= 60) {
+                                                    $hours = floor($total_minutes / 60);
+                                                    $remaining_minutes = $total_minutes % 60;
+                                                    echo $hours . 'h ' . $remaining_minutes . 'min';
+                                                } else {
+                                                    echo $total_minutes . 'min';
+                                                }
+                                            ?>
                                         </div>
                                     </div>
                                 </div>
@@ -875,9 +909,36 @@ if ($childDetails['bus_id']) {
 
             var busIcon = L.divIcon({
                 className: 'bus-icon',
-                html: '<div style="background-color: #FF8C00; color: white; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; border-radius: 50%; overflow: hidden;">B</div>',
+                html: '<div style="background-color: #FF8C00; color: white; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; border-radius: 50%; overflow: hidden;">🚌</div>',
                 iconSize: [30, 30],
                 iconAnchor: [15, 15]
+            });
+
+            // Custom icons definition for pickup/drop
+            const pickupIcon = L.divIcon({
+                className: 'status-marker',
+                html: `<div style="display: flex; flex-direction: column; align-items: center;">
+                        <div style="background-color: #10b981; border-radius: 50%; width: 30px; height: 30px; 
+                             display: flex; align-items: center; justify-content: center; padding: 5px;">
+                            <img src="../img/jump.gif" alt="Person" style="width: 20px; height: 20px;">
+                        </div>
+                        <div style="color: #10b981; font-weight: bold; font-size: 10px; margin-top: 2px;">Picked</div>
+                    </div>`,
+                iconSize: [40, 45],
+                iconAnchor: [20, 45]
+            });
+
+            const dropIcon = L.divIcon({
+                className: 'status-marker',
+                html: `<div style="display: flex; flex-direction: column; align-items: center;">
+                        <div style="background-color: #ef4444; border-radius: 50%; width: 30px; height: 30px; 
+                             display: flex; align-items: center; justify-content: center; padding: 5px;">
+                            <img src="../img/jump.gif" alt="Person" style="width: 20px; height: 20px;">
+                        </div>
+                        <div style="color: #ef4444; font-weight: bold; font-size: 10px; margin-top: 2px;">Dropped</div>
+                    </div>`,
+                iconSize: [40, 45],
+                iconAnchor: [20, 45]
             });
 
             const ROUTE_COLORS = {
@@ -893,6 +954,55 @@ if ($childDetails['bus_id']) {
                     }
                 });
                 
+                // Add pickup/drop markers if attendance data exists
+                <?php if ($attendance_status && $attendance_status['pickup_location']): ?>
+                    const pickupCoords = '<?php echo $attendance_status['pickup_location']; ?>'.split(',');
+                    
+                    // Add pickup marker
+                    const pickupIcon = L.divIcon({
+                        className: 'status-marker',
+                        html: `<div style="display: flex; flex-direction: column; align-items: center;">
+                                <div style=" border-radius: 50%; width: 30px; height: 30px; 
+                                     display: flex; align-items: center; justify-content: center; padding: 5px;">
+                                    <img src="../img/jump.gif" alt="Person" style="width: 50px; height:auto;">
+                                </div>
+                                <div style="color:rgb(2, 107, 46); font-weight: bold; font-size: 10px; margin-top: 5px;">Picked</div>
+                            </div>`,
+                        iconSize: [40, 45],
+                        iconAnchor: [20, 45]
+                    });
+
+                    // Add drop marker
+                    const dropIcon = L.divIcon({
+                        className: 'status-marker',
+                        html: `<div style="display: flex; flex-direction: column; align-items: center;">
+                                <div style=" border-radius: 50%; width: 30px; height: 30px; 
+                                     display: flex; align-items: center; justify-content: center; padding: 5px;">
+                                    <img src="../img/jump.gif" alt="Person" style="width: 50px; height: auto;">
+                                </div>
+                                <div style="color: #ef4444; font-weight: bold; font-size: 10px; margin-top: 5px;">Dropped</div>
+                            </div>`,
+                        iconSize: [40, 45],
+                        iconAnchor: [20, 45]
+                    });
+
+                    if ('<?php echo $attendance_status['status']; ?>' === 'picked') {
+                        L.marker([parseFloat(pickupCoords[0]), parseFloat(pickupCoords[1])], {
+                            icon: pickupIcon
+                        }).addTo(targetMap).bindPopup(
+                            'Picked at <?php echo $attendance_status['pickup_time'] ? date("h:i A", strtotime($attendance_status['pickup_time'])) : "N/A"; ?>'
+                        );
+                    }
+
+                    if ('<?php echo $attendance_status['status']; ?>' === 'drop') {
+                        L.marker([parseFloat(pickupCoords[0]), parseFloat(pickupCoords[1])], {
+                            icon: dropIcon
+                        }).addTo(targetMap).bindPopup(
+                            'Dropped at <?php echo $attendance_status['drop_time'] ? date("h:i A", strtotime($attendance_status['drop_time'])) : "N/A"; ?>'
+                        );
+                    }
+                <?php endif; ?>
+
                 if (points && points.length > 0) {
                     const latlngs = points.map(point => [
                         parseFloat(point.latitude || point.lat1),
