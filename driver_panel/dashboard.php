@@ -172,7 +172,7 @@ try {
     <div class="hidden md:flex md:fixed md:inset-y-0 md:left-0 md:w-64 nav-bg-purple md:shadow-lg-enhanced md:flex-col md:z-20">
         <div class="p-6 border-b border-gray-100">
             <div class="flex items-center">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-yellow-500 flex items-center justify-center shadow-md">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500 to-yellow-500 flex items-center justify-center shadow-md">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -370,13 +370,13 @@ try {
                     ?>
 
                     <!-- Driver Profile -->
-                    <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 p-6 mb-8">
+                    <div class="bg-white rounded-2xl shadow-enhanced border border-yellow-100 p-6 mb-8">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-lg font-semibold heading-brown">Driver Profile</h3>
                         </div>
                         <!-- Driver Display -->
                         <div class="flex items-center space-x-4">
-                            <img src="../img/busdriver1.jpg" alt="<?php echo $driver_name; ?>" class="w-20 h-20 rounded-full object-cover border-4 border-orange-200"/>
+                            <img src="../img/busdriver1.jpg" alt="<?php echo $driver_name; ?>" class="w-20 h-20 rounded-full object-cover border-4 border-yellow-200"/>
                             <div>
                                 <h4 class="text-xl font-medium text-gray-800"><?php echo $driver_name; ?></h4>
                                 <p class="text-gray-500"><?php echo $driver_license; ?></p>
@@ -813,7 +813,7 @@ try {
                             <span class="text-xs">Picked Up</span>
                         </div>
                         <div class="flex items-center">
-                            <div class="w-2 h-2 md:w-3 md:h-3 bg-orange-500 rounded-full mr-1 md:mr-2"></div>
+                            <div class="w-2 h-2 md:w-3 md:h-3 bg-yellow-500 rounded-full mr-1 md:mr-2"></div>
                             <span class="text-xs">Waiting</span>
                         </div>
                         <div class="flex items-center">
@@ -829,15 +829,15 @@ try {
                     <h4 class="text-sm md:text-md font-semibold text-gray-800 mb-2 md:mb-3">Next Stops</h4>
                     <div class="space-y-2 md:space-y-3">
                         <!-- Next Stop 1 -->
-                        <div class="bg-orange-50 rounded-lg p-2 md:p-3 flex items-center justify-between">
+                        <div class="bg-yellow-50 rounded-lg p-2 md:p-3 flex items-center justify-between">
                             <div class="flex items-center">
-                                <div class="bg-orange-100 p-1 md:p-2 rounded-lg mr-2 md:mr-3 flex-shrink-0">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 md:h-5 md:w-5 text-orange-600" viewBox="0 0 20 20" fill="currentColor">
+                                <div class="bg-yellow-100 p-1 md:p-2 rounded-lg mr-2 md:mr-3 flex-shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 md:h-5 md:w-5 text-yellow-600" viewBox="0 0 20 20" fill="currentColor">
                                         <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
                                     </svg>
                                 </div>
                                 <div class="min-w-0">
-                                    <p class="text-xs md:text-sm font-medium truncate">Pickup: <span class="text-orange-600">S117 - Jack N.</span></p>
+                                    <p class="text-xs md:text-sm font-medium truncate">Pickup: <span class="text-yellow-600">S117 - Jack N.</span></p>
                                     <p class="text-xs text-gray-500 truncate hidden sm:block">456 Maple Dr, Springfield</p>
                                 </div>
                             </div>
@@ -903,9 +903,9 @@ try {
                             <option>Update every 5m</option>
                         </select>
                     </div>
-                    <button class="bg-orange-500 hover:bg-orange-600 text-white py-1 md:py-2 px-3 md:px-4 text-xs md:text-sm rounded-lg font-medium transition-colors w-full sm:w-auto">
+                    <!-- <button class="bg-yellow-500 hover:bg-yellow-600 text-white py-1 md:py-2 px-3 md:px-4 text-xs md:text-sm rounded-lg font-medium transition-colors w-full sm:w-auto">
                         Navigate in Maps
-                    </button>
+                    </button> -->
                 </div>
 
                 <!-- JavaScript for location refresh functionality -->

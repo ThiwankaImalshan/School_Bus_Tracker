@@ -154,19 +154,16 @@ if (!$is_current_day) {
     $stmt->execute([$childDetails['bus_id'], $selected_date, $morning_start, $morning_end]);
     $morning_route = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Get evening route data
+    // Get evening route data with adjusted time range
     $stmt = $pdo->prepare("
         SELECT bt.latitude, bt.longitude, bt.timestamp, 'evening' as route_type
         FROM bus_tracking bt 
         WHERE bt.bus_id = ? 
         AND DATE(bt.timestamp) = ?
-        AND (
-            HOUR(bt.timestamp) * 60 + MINUTE(bt.timestamp) 
-            BETWEEN ? AND ?
-        )
+        AND TIME(bt.timestamp) BETWEEN '12:00:00' AND '17:00:00'
         ORDER BY bt.timestamp ASC
     ");
-    $stmt->execute([$childDetails['bus_id'], $selected_date, $evening_start, $evening_end]);
+    $stmt->execute([$childDetails['bus_id'], $selected_date]);
     $evening_route = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
@@ -565,9 +562,43 @@ $attendance_status = $stmt->fetch(PDO::FETCH_ASSOC);
         .hidden {
             display: none !important;
         }
+
+        /* Add fade transition styles */
+        .fade-out {
+            opacity: 0;
+            transition: opacity 0.5s ease-out;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out;
+        }
+        
+        .loading-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
     </style>
 </head>
 <body class="min-h-screen">
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="bg-white p-4 rounded-lg shadow-lg flex items-center space-x-3">
+            <div class="animate-spin rounded-full h-8 w-8 border-4 border-yellow-500 border-t-transparent"></div>
+            <span class="text-gray-700 font-medium">Refreshing map...</span>
+        </div>
+    </div>
+
     <nav class="bg-white/90 backdrop-blur-sm text-gray-800 shadow-lg">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-4">
@@ -624,7 +655,7 @@ $attendance_status = $stmt->fetch(PDO::FETCH_ASSOC);
                 <form action="" method="get" class="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-4">
                     <div class="w-full sm:w-auto">
                         <label for="date-select" class="block text-sm font-medium text-gray-700 mb-1">Select Date</label>
-                        <select id="date-select" name="date" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring focus:ring-orange-200 focus:ring-opacity-50">
+                        <select id="date-select" name="date" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-yellow-500 focus:ring focus:ring-yellow-200 focus:ring-opacity-50">
                             <option value="<?php echo date('Y-m-d'); ?>" <?php echo $selected_date == date('Y-m-d') ? 'selected' : ''; ?>>Today</option>
                             <?php foreach ($available_dates as $date): ?>
                                 <?php if ($date['route_date'] != date('Y-m-d')): ?>
@@ -636,9 +667,9 @@ $attendance_status = $stmt->fetch(PDO::FETCH_ASSOC);
                         </select>
                     </div>
                     <div class="w-full sm:w-auto flex space-x-2">
-                        <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg transition-colors">
+                        <!-- <button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg transition-colors">
                             View Route
-                        </button>
+                        </button> -->
                         <?php if ($selected_date != date('Y-m-d')): ?>
                             <!-- <a href="?date=<?php echo date('Y-m-d'); ?>" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
                                 Back to Today
@@ -652,13 +683,13 @@ $attendance_status = $stmt->fetch(PDO::FETCH_ASSOC);
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Map Section (2/3 width on large screens) -->
                 <div class="lg:col-span-2">
-                    <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden h-full">
+                    <div class="bg-white rounded-2xl shadow-enhanced border border-yellow-100 overflow-hidden h-full">
                         <div class="p-4 border-b border-gray-100 flex justify-between items-center">
                             <h3 class="text-lg font-semibold heading-brown">
                                 <?php echo $is_current_day ? 'Live Location' : 'Route History'; ?>
                             </h3>
                             <?php if ($is_current_day): ?>
-                                <button id="map-refresh-btn" class="btn-primary text-sm px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white transition-colors">
+                                <button id="map-refresh-btn" class="btn-primary text-sm px-4 py-2 rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white transition-colors">
                                     Refresh
                                 </button>
                             <?php else: ?>
@@ -671,10 +702,10 @@ $attendance_status = $stmt->fetch(PDO::FETCH_ASSOC);
                                         Morning Route
                                     </button>
                                     <button id="show-evening-route" 
-                                            class="text-sm px-3 py-1 rounded-lg bg-orange-100 text-orange-700 border border-orange-200 
-                                                   hover:bg-orange-200 hover:shadow-md active:bg-orange-300 active:transform active:scale-95 
+                                            class="text-sm px-3 py-1 rounded-lg bg-yellow-100 text-yellow-700 border border-yellow-200 
+                                                   hover:bg-yellow-200 hover:shadow-md active:bg-yellow-300 active:transform active:scale-95 
                                                    transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 
-                                                   focus:ring-orange-400 focus:ring-opacity-50">
+                                                   focus:ring-yellow-400 focus:ring-opacity-50">
                                         Evening Route
                                     </button>
                                 </div>
@@ -683,13 +714,13 @@ $attendance_status = $stmt->fetch(PDO::FETCH_ASSOC);
                         <div class="relative">
                             <div id="map"></div>
                             <div class="driver-info-card sm:w-14rem sm:p-2 sm:top-2 sm:right-2">
-                                <div class="w-12 h-12 sm:w-10 sm:h-10 rounded-full overflow-hidden mr-3 sm:mr-2 flex-shrink-0 border-2 border-orange-300">
+                                <div class="w-12 h-12 sm:w-10 sm:h-10 rounded-full overflow-hidden mr-3 sm:mr-2 flex-shrink-0 border-2 border-yellow-300">
                                     <img src="../img/busdriver1.jpg" alt="Driver" class="w-full h-full object-cover">
                                 </div>
                                 <div class="flex-1">
                                     <h4 class="font-medium text-gray-800 sm:text-sm"><?php echo htmlspecialchars($childDetails['driver_name'] ?? 'Driver'); ?></h4>
                                     <div class="flex items-center mt-1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-3 sm:w-3 text-orange-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-3 sm:w-3 text-yellow-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <circle cx="12" cy="12" r="10" stroke-width="2"/>
                                             <circle cx="12" cy="12" r="4" fill="currentColor"/>
                                         </svg>
@@ -734,7 +765,7 @@ $attendance_status = $stmt->fetch(PDO::FETCH_ASSOC);
 
                 <!-- Details Section (1/3 width on large screens) -->
                 <div class="lg:col-span-1">
-                    <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden h-full">
+                    <div class="bg-white rounded-2xl shadow-enhanced border border-yellow-100 overflow-hidden h-full">
                         <div class="p-4 border-b border-gray-100">
                             <h3 class="text-lg font-semibold heading-brown">Route Details</h3>
                         </div>
@@ -842,7 +873,7 @@ $attendance_status = $stmt->fetch(PDO::FETCH_ASSOC);
                                     endforeach; 
                                     ?>
                                 </div>
-                                <div class="mt-4 grid grid-cols-2 gap-4 bg-orange-50 rounded-lg p-3">
+                                <div class="mt-4 grid grid-cols-2 gap-4 bg-yellow-50 rounded-lg p-3">
                                     <div>
                                         <div class="text-xs text-gray-500">Total Distance</div>
                                         <div class="text-sm font-medium text-gray-800">
@@ -1011,9 +1042,9 @@ $attendance_status = $stmt->fetch(PDO::FETCH_ASSOC);
 
                     // Draw route line using routing machine
                     const routeColor = options.color || 
-                        (new Date(points[0].timestamp).getHours() >= 5 && 
-                         new Date(points[0].timestamp).getHours() < 12 ? 
-                         ROUTE_COLORS.morning : ROUTE_COLORS.evening);
+                        (new Date(points[0].timestamp).getHours() >= 12 && 
+                         new Date(points[0].timestamp).getHours() < 17 ? 
+                         ROUTE_COLORS.evening : ROUTE_COLORS.morning);
 
                     // Create waypoints for routing
                     const waypoints = latlngs.map(point => L.latLng(point[0], point[1]));
@@ -1074,30 +1105,75 @@ $attendance_status = $stmt->fetch(PDO::FETCH_ASSOC);
                 drawRoutePath(todayData, map);
                 drawRoutePath(todayData, miniMap);
             <?php else: ?>
-                <?php if (!empty($morning_route)): ?>
-                    var morningData = <?php echo json_encode($morning_route); ?>;
+                var morningData = <?php echo !empty($morning_route) ? json_encode($morning_route) : 'null'; ?>;
+                var eveningData = <?php echo !empty($evening_route) ? json_encode($evening_route) : 'null'; ?>;
+                
+                // Draw morning route by default if available
+                if (morningData) {
                     drawRoutePath(morningData, map, { color: ROUTE_COLORS.morning });
                     drawRoutePath(morningData, miniMap, { color: ROUTE_COLORS.morning });
-                <?php endif; ?>
+                }
 
-                <?php if (!empty($evening_route)): ?>
-                    var eveningData = <?php echo json_encode($evening_route); ?>;
-                    document.getElementById('show-morning-route')?.addEventListener('click', function() {
+                // Add click handlers for route toggle buttons
+                document.getElementById('show-morning-route')?.addEventListener('click', function() {
+                    if (morningData) {
                         drawRoutePath(morningData, map, { color: ROUTE_COLORS.morning });
                         drawRoutePath(morningData, miniMap, { color: ROUTE_COLORS.morning });
-                    });
+                        // Update active state
+                        this.classList.add('bg-blue-200');
+                        document.getElementById('show-evening-route').classList.remove('bg-yellow-200');
+                    } else {
+                        alert('No morning route data available for this date');
+                    }
+                });
 
-                    document.getElementById('show-evening-route')?.addEventListener('click', function() {
+                document.getElementById('show-evening-route')?.addEventListener('click', function() {
+                    if (eveningData) {
                         drawRoutePath(eveningData, map, { color: ROUTE_COLORS.evening });
                         drawRoutePath(eveningData, miniMap, { color: ROUTE_COLORS.evening });
-                    });
-                <?php endif; ?>
+                        // Update active state
+                        this.classList.add('bg-yellow-200');
+                        document.getElementById('show-morning-route').classList.remove('bg-blue-200');
+                    } else {
+                        alert('No evening route data available for this date');
+                    }
+                });
             <?php endif; ?>
 
             // Remove auto-polling and refresh functionality for historical data
             <?php if ($is_current_day): ?>
                 // ...existing polling code...
             <?php endif; ?>
+
+            // Add refresh button functionality
+            document.getElementById('map-refresh-btn').addEventListener('click', function() {
+                // Show loading state
+                this.innerHTML = '<span class="inline-block animate-spin">↻</span> Refreshing...';
+                this.disabled = true;
+                
+                // Show loading overlay
+                document.getElementById('loadingOverlay').classList.add('show');
+                
+                // Add fade out effect to main content
+                document.querySelector('main').classList.add('fade-out');
+
+                // Fetch new location data
+                setTimeout(() => {
+                    fetch(`bus_location_tracker.php?child_id=<?php echo $child_id; ?>&date=<?php echo $selected_date; ?>`)
+                        .then(response => response.text())
+                        .then(html => {
+                            // Smoothly reload the page
+                            window.location.reload();
+                        })
+                        .catch(error => {
+                            console.error('Error refreshing map:', error);
+                            this.innerHTML = 'Refresh';
+                            this.disabled = false;
+                            document.getElementById('loadingOverlay').classList.remove('show');
+                            document.querySelector('main').classList.remove('fade-out');
+                        });
+                }, 300); // Small delay for smooth transition
+            });
         });
     </script>
 </body>

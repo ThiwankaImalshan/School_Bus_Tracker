@@ -388,7 +388,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
     <div class="hidden md:flex md:fixed md:inset-y-0 md:left-0 md:w-64 nav-bg-purple md:shadow-lg-enhanced md:flex-col md:z-20">
         <div class="p-6 border-b border-gray-100">
             <div class="flex items-center">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-yellow-500 flex items-center justify-center shadow-md">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500 to-yellow-500 flex items-center justify-center shadow-md">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -540,7 +540,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                 <div class="flex flex-col items-center">
                     <!-- Warning Icon -->
                     <div class="mb-4">
-                        <svg class="h-12 w-12 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="h-12 w-12 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                         </svg>
                     </div>
@@ -585,14 +585,14 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                     </div>
 
                     <!-- Child Profile Switcher -->
-                    <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 p-6 mb-8">
+                    <div class="bg-white rounded-2xl shadow-enhanced border border-yellow-100 p-6 mb-8">
                         <div class="flex flex-col md:flex-row items-center md:items-center justify-between mb-4">
                             <h3 class="text-lg md:text-lg sm:text-base xs:text-sm font-semibold heading-brown">Current Child Profile</h3>
                             
                             <!-- Simple Select Dropdown -->
                             <div class="relative mt-3 md:mt-0 self-center md:self-auto">
                                 <form action="" method="get" id="childSelectForm">
-                                    <select name="child_id" id="childSelect" class="bg-orange-50 px-4 py-2 text-sm md:text-base rounded-lg border border-orange-200 focus:outline-none focus:ring-2 focus:ring-orange-300" onchange="this.form.submit()">
+                                    <select name="child_id" id="childSelect" class="bg-yellow-50 px-4 py-2 text-sm md:text-base rounded-lg border border-yellow-200 focus:outline-none focus:ring-2 focus:ring-yellow-300" onchange="this.form.submit()">
                                         <?php foreach ($children as $child): ?>
                                             <option value="<?php echo $child['child_id']; ?>" <?php echo ($child['child_id'] == $selectedChildId) ? 'selected' : ''; ?>>
                                                 <?php echo $child['first_name'] . ' ' . $child['last_name']; ?>
@@ -612,7 +612,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                             ?>
                             <img src="<?php echo htmlspecialchars($photoPath); ?>" 
                                 alt="Child Photo" 
-                                class="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover border-4 border-orange-200"
+                                class="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover border-4 border-yellow-200"
                                 onerror="this.src='../img/default-avatar.png'">
                             <div>
                                 <h4 class="text-lg md:text-xl sm:text-base xs:text-sm font-medium text-gray-800"><?php echo $selectedChild['first_name'] . ' ' . $selectedChild['last_name']; ?></h4>
@@ -634,7 +634,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                         <div>
                             <!-- Student Profile Details -->
                             <?php if ($selectedChild): ?>
-                            <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden mb-6">
+                            <div class="bg-white rounded-2xl shadow-enhanced border border-yellow-100 overflow-hidden mb-6">
                                 <div class="p-6 border-b border-gray-100">
                                     <h3 class="text-lg font-semibold heading-brown">Student Profile</h3>
                                 </div>
@@ -709,7 +709,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                         </div>
 
                             <!-- Attendance and Fee Status -->
-                            <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden mb-6">
+                            <div class="bg-white rounded-2xl shadow-enhanced border border-yellow-100 overflow-hidden mb-6">
                                 <div class="p-6 border-b border-gray-100">
                                     <h3 class="text-lg font-semibold heading-brown">Attendance & Fee Status</h3>
                                 </div>

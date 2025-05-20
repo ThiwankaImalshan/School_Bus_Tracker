@@ -198,10 +198,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     </style>
 </head>
-<body class="bg-gradient-to-b from-yellow-50 to-orange-50 min-h-screen p-4">
+<body class="bg-gradient-to-b from-yellow-50 to-yellow-50 min-h-screen p-4">
     <div class="fixed -z-10 top-0 left-0 w-full h-full opacity-50">
         <div class="absolute top-10 left-10 w-32 h-32 rounded-full bg-blue-100 blur-3xl"></div>
-        <div class="absolute bottom-10 right-10 w-40 h-40 rounded-full bg-orange-100 blur-3xl"></div>
+        <div class="absolute bottom-10 right-10 w-40 h-40 rounded-full bg-yellow-100 blur-3xl"></div>
         <div class="absolute top-1/3 right-1/4 w-24 h-24 rounded-full bg-green-100 blur-3xl"></div>
     </div>
 
@@ -209,13 +209,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="max-w-md mx-auto">
             <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
                 <div class="flex items-center space-x-3">
-                    <div class="h-10 w-1 bg-orange-500 rounded-full"></div>
-                    <h2 class="text-3xl font-bold text-orange-800">QR Attendance</h2>
+                    <div class="h-10 w-1 bg-yellow-500 rounded-full"></div>
+                    <h2 class="text-3xl font-bold text-yellow-800">QR Attendance</h2>
                 </div>
             </div>
 
-            <div class="bg-white rounded-3xl shadow-xl p-6 md:p-8 border border-orange-100 relative overflow-hidden mb-6">
-                <div class="absolute -right-20 -top-20 w-40 h-40 bg-orange-50 rounded-full"></div>
+            <div class="bg-white rounded-3xl shadow-xl p-6 md:p-8 border border-yellow-100 relative overflow-hidden mb-6">
+                <div class="absolute -right-20 -top-20 w-40 h-40 bg-yellow-50 rounded-full"></div>
                 <div class="absolute -left-12 -bottom-12 w-24 h-24 bg-blue-50 rounded-full"></div>
                 
                 <div class="flex justify-between items-center mb-6 relative">
@@ -262,7 +262,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <!-- Student Info Card -->
-            <div id="studentCard" class="bg-white rounded-3xl shadow-xl p-6 md:p-6 border border-orange-100 relative overflow-hidden hidden">
+            <div id="studentCard" class="bg-white rounded-3xl shadow-xl p-6 md:p-6 border border-yellow-100 relative overflow-hidden hidden">
                 <div class="absolute -right-12 -bottom-12 w-24 h-24 bg-green-50 rounded-full"></div>
                 
                 <div class="flex items-start space-x-4 relative">

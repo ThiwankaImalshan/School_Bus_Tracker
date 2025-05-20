@@ -490,7 +490,7 @@ $lastAttendanceUpdate = $stmt->fetch(PDO::FETCH_ASSOC)['last_attendance_update']
                     </h4>
                     <p class="text-xs text-gray-600">Destinations</p>
                 </div>
-                <div class="bg-orange-50 rounded-lg p-4 text-center">
+                <div class="bg-yellow-50 rounded-lg p-4 text-center">
                     <h4 class="text-lg font-medium text-gray-800" id="completion-stats">
                         <?php 
                             if ($current_route == 'morning') {
@@ -508,16 +508,16 @@ $lastAttendanceUpdate = $stmt->fetch(PDO::FETCH_ASSOC)['last_attendance_update']
                 </div>
             </div>
             <!-- Map Container -->
-            <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden mb-6 relative">
+            <div class="bg-white rounded-2xl shadow-enhanced border border-yellow-100 overflow-hidden mb-6 relative">
                 <div id="map"></div>
                 <div id="speed-display" class="fixed lg:bottom-4 lg:right-4 bottom-32 right-4 bg-white/90 backdrop-filter backdrop-blur-sm rounded-lg shadow-lg p-2 z-[9999] border border-gray-200 hover:bg-white transition-colors duration-200">
                     <div class="flex items-center gap-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-orange-500" viewBox="0 0 20 20" fill="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-500" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4.535l-3.928 2.62a1 1 0 101.11 1.66l4.5-3a1 1 0 00.318-1.334V6z" clip-rule="evenodd"/>
                         </svg>
                         <div class="flex items-baseline gap-1">
-                            <span id="speed-value" class="text-lg font-bold text-orange-500">0</span>
-                            <span class="text-xs text-orange-500">km/h</span>
+                            <span id="speed-value" class="text-lg font-bold text-yellow-500">0</span>
+                            <span class="text-xs text-yellow-500">km/h</span>
                         </div>
                     </div>
                 </div>
@@ -570,20 +570,20 @@ $lastAttendanceUpdate = $stmt->fetch(PDO::FETCH_ASSOC)['last_attendance_update']
                         </div>
                     <?php else: ?>
                         <?php foreach ($upcoming_stops as $index => $stop): ?>
-                            <div class="bg-orange-50 rounded-lg p-3 flex items-center justify-between" 
+                            <div class="bg-yellow-50 rounded-lg p-3 flex items-center justify-between" 
                                  id="stop-<?php echo htmlspecialchars($stop['id']); ?>"
                                  data-location="<?php echo htmlspecialchars(implode(',', $stop['location'])); ?>"
                                  data-type="<?php echo htmlspecialchars($stop['type']); ?>"
                                  data-index="<?php echo $index + 1; ?>">
                                 <div class="flex items-center">
-                                    <div class="bg-orange-100 p-2 rounded-lg mr-3 flex-shrink-0">
-                                        <span class="font-bold text-orange-600"><?php echo $index + 1; ?></span>
+                                    <div class="bg-yellow-100 p-2 rounded-lg mr-3 flex-shrink-0">
+                                        <span class="font-bold text-yellow-600"><?php echo $index + 1; ?></span>
                                     </div>
                                     <div class="min-w-0">
                                         <p class="text-sm font-medium truncate">
                                             <?php echo $stop['type'] === 'school' ? 'School: ' : 
                                                   ($current_route === 'morning' ? 'Pickup: ' : 'Drop-off: '); ?>
-                                            <span class="text-orange-600"><?php echo htmlspecialchars($stop['name']); ?></span>
+                                            <span class="text-yellow-600"><?php echo htmlspecialchars($stop['name']); ?></span>
                                         </p>
                                         <?php if (isset($stop['arrival_time'])): ?>
                                             <p class="text-xs text-gray-500">
@@ -633,9 +633,9 @@ $lastAttendanceUpdate = $stmt->fetch(PDO::FETCH_ASSOC)['last_attendance_update']
                         <option value="300000">Update every 5m</option>
                     </select>
                 </div>
-                <button id="navigate-btn" class="bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 text-sm rounded-lg font-medium transition-colors w-full sm:w-auto">
+                <!-- <button id="navigate-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 text-sm rounded-lg font-medium transition-colors w-full sm:w-auto">
                     Navigate in Google Maps
-                </button>
+                </button> -->
             </div>
         </section>
     </main>
@@ -906,7 +906,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             detailsElement.innerHTML = `
                                 <p class="text-sm font-medium">${duration} min</p>
                                 <p class="text-xs text-gray-500">${distance} km</p>
-                                <p class="text-xs text-orange-600">ETA: ${eta.toLocaleTimeString()}</p>
+                                <p class="text-xs text-yellow-600">ETA: ${eta.toLocaleTimeString()}</p>
                             `;
                         }
 
@@ -1003,9 +1003,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                         Updating route information
                                     </p>
                                     <div class="flex items-center gap-1 mt-1.5">
-                                        <span class="inline-block w-16 h-0.5 rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 animate-shimmer"></span>
-                                        <span class="inline-block w-12 h-0.5 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 animate-shimmer [animation-delay:150ms]"></span>
-                                        <span class="inline-block w-8 h-0.5 rounded-full bg-gradient-to-r from-yellow-300 to-orange-300 animate-shimmer [animation-delay:300ms]"></span>
+                                        <span class="inline-block w-16 h-0.5 rounded-full bg-gradient-to-r from-yellow-500 to-yellow-500 animate-shimmer"></span>
+                                        <span class="inline-block w-12 h-0.5 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-400 animate-shimmer [animation-delay:150ms]"></span>
+                                        <span class="inline-block w-8 h-0.5 rounded-full bg-gradient-to-r from-yellow-300 to-yellow-300 animate-shimmer [animation-delay:300ms]"></span>
                                     </div>
                                 </div>
                             </div>
