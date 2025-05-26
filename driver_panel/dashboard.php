@@ -1136,14 +1136,14 @@ try {
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden mb-6">
+                    <!-- <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden mb-6">
                         <div class="p-4 border-b border-gray-100">
                             <h3 class="text-lg font-semibold heading-brown">Route Time Settings</h3>
                         </div>
                         
                         <div class="p-6">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <!-- Morning Route Times -->
+                                -- Morning Route Times --
                                 <div>
                                     <h4 class="text-md font-medium mb-3">Morning Route</h4>
                                     <div class="space-y-4">
@@ -1168,7 +1168,7 @@ try {
                                     </div>
                                 </div>
                                 
-                                <!-- Evening Route Times -->
+                                -- Evening Route Times --
                                 <div>
                                     <h4 class="text-md font-medium mb-3">Evening Route</h4>
                                     <div class="space-y-4">
@@ -1203,7 +1203,7 @@ try {
                                 </p>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
                 </section>
 
                 <!-- Edit Information Modal -->
@@ -1508,5 +1508,14 @@ try {
         `;
     }
 </script>
+
+    <!-- Floating Chat Button -->
+    <a href="chat.php" class="fixed bottom-20 right-6 md:bottom-8 md:right-8 bg-yellow-500 hover:bg-yellow-600 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-110 z-50">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+        </svg>
+        <!-- <span class="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-yellow-400 opacity-75"></span> -->
+    </a>
+
 </body>
 </html>

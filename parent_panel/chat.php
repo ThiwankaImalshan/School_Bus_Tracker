@@ -29,6 +29,9 @@ $buses = $stmt->fetchAll();
     <title>Chat with Driver</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <link rel="icon" type="image/png" href="../img/favicon/favicon-96x96.png" sizes="96x96" />
+    <link rel="shortcut icon" href="../img/favicon/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="../img/favicon/favicon.svg" />
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -175,7 +178,7 @@ $buses = $stmt->fetchAll();
         </div>
     </main>
 
-    <footer class="bg-white/80 backdrop-blur-sm text-gray-800 py-4 border-t border-gray-200">
+    <footer class="bg-white/80 backdrop-blur-sm text-white py-4 border-t border-gray-200">
         <div class="container mx-auto px-4 text-center">
             <p>&copy; <?php echo date('Y'); ?> School Bus Tracking System - Sri Lanka</p>
         </div>

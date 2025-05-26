@@ -48,6 +48,9 @@ $parents = $stmt->fetchAll();
     <title>Driver Chat</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <link rel="icon" type="image/png" href="../img/favicon/favicon-96x96.png" sizes="96x96" />
+    <link rel="shortcut icon" href="../img/favicon/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="../img/favicon/favicon.svg" />
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -114,96 +117,96 @@ $parents = $stmt->fetchAll();
     </nav>
 
     <main class="container mx-auto px-4 py-8">
-        <div class="flex gap-4">
+        <div class="flex flex-col md:flex-row gap-4">
             <!-- Parents List -->
-            <div class="w-1/4 glass-container shadow-enhanced chat-container">
-                <div class="p-4 border-b border-gray-200">
-                    <h2 class="text-xl font-semibold heading-brown">Children</h2>
-                    <div class="mt-2 relative">
-                        <input type="text" 
-                               id="parent-search"
-                               placeholder="Search child or parent..."
-                               class="w-full px-3 py-2 rounded-lg border-gray-200 focus:border-yellow-500 focus:ring focus:ring-yellow-200 focus:ring-opacity-50">
+            <div class="w-full md:w-1/4 glass-container shadow-enhanced chat-container mb-4 md:mb-0">
+            <div class="p-4 border-b border-gray-200">
+                <h2 class="text-xl font-semibold heading-brown">Children</h2>
+                <div class="mt-2 relative">
+                <input type="text" 
+                       id="parent-search"
+                       placeholder="Search child or parent..."
+                       class="w-full px-3 py-2 rounded-lg border-gray-200 focus:border-yellow-500 focus:ring focus:ring-yellow-200 focus:ring-opacity-50">
+                </div>
+            </div>
+            <div id="parents-list" class="overflow-y-auto h-[calc(100%-6rem)]">
+                <?php foreach($parents as $parent): ?>
+                <button onclick="selectParent(<?php echo $parent['parent_id']; ?>, '<?php echo htmlspecialchars($parent['full_name']); ?>')"
+                    data-parent-id="<?php echo $parent['parent_id']; ?>"
+                    data-parent-name="<?php echo htmlspecialchars($parent['full_name']); ?>"
+                    data-children-count="<?php echo $parent['child_count']; ?>"
+                    class="parent-item w-full p-4 text-left hover:bg-gray-50 border-b border-gray-100 transition-colors">
+                <div class="flex items-center space-x-3">
+                    <div class="flex-shrink-0 w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                    <span class="text-yellow-800 font-medium"><?php echo substr($parent['full_name'], 0, 2); ?></span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between">
+                        <div class="font-medium text-gray-800 truncate">
+                        <?php echo htmlspecialchars($parent['full_name']); ?>
+                        </div>
+                        <div class="unread-count-badge"></div>
+                    </div>
+                    <div class="text-sm text-gray-500">
+                        <?php echo $parent['child_count']; ?> 
+                        <?php echo $parent['child_count'] > 1 ? 'Children' : 'Child'; ?>
+                    </div>
                     </div>
                 </div>
-                <div id="parents-list" class="overflow-y-auto h-[calc(100%-6rem)]">
-                    <?php foreach($parents as $parent): ?>
-                    <button onclick="selectParent(<?php echo $parent['parent_id']; ?>, '<?php echo htmlspecialchars($parent['full_name']); ?>')"
-                            data-parent-id="<?php echo $parent['parent_id']; ?>"
-                            data-parent-name="<?php echo htmlspecialchars($parent['full_name']); ?>"
-                            data-children-count="<?php echo $parent['child_count']; ?>"
-                            class="parent-item w-full p-4 text-left hover:bg-gray-50 border-b border-gray-100 transition-colors">
-                        <div class="flex items-center space-x-3">
-                            <div class="flex-shrink-0 w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
-                                <span class="text-yellow-800 font-medium"><?php echo substr($parent['full_name'], 0, 2); ?></span>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <div class="flex items-center justify-between">
-                                    <div class="font-medium text-gray-800 truncate">
-                                        <?php echo htmlspecialchars($parent['full_name']); ?>
-                                    </div>
-                                    <div class="unread-count-badge"></div>
-                                </div>
-                                <div class="text-sm text-gray-500">
-                                    <?php echo $parent['child_count']; ?> 
-                                    <?php echo $parent['child_count'] > 1 ? 'Children' : 'Child'; ?>
-                                </div>
-                            </div>
-                        </div>
-                    </button>
-                    <?php endforeach; ?>
-                </div>
+                </button>
+                <?php endforeach; ?>
+            </div>
             </div>
 
             <!-- Chat Area -->
-            <div class="flex-1 glass-container shadow-enhanced chat-container flex flex-col">
-                <div class="p-4 border-b border-gray-200 flex items-center justify-between">
-                    <div class="flex items-center space-x-4">
-                        <div id="selected-parent-avatar" class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
-                            <span class="text-yellow-800">?</span>
-                        </div>
-                        <div>
-                            <h2 class="text-xl font-semibold heading-brown" id="chat-title">Select a parent to start chatting</h2>
-                            <p class="text-sm text-gray-500" id="chat-subtitle"></p>
-                        </div>
-                    </div>
-                    <button id="clear-chat" 
-                            onclick="clearChat()"
-                            class="px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors hidden">
-                        Clear Chat
-                    </button>
+            <div class="w-full md:flex-1 glass-container shadow-enhanced chat-container flex flex-col">
+            <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                <div id="selected-parent-avatar" class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                    <span class="text-yellow-800">?</span>
                 </div>
-                
-                <div id="chat-messages" class="chat-messages overflow-y-auto p-4 space-y-2">
-                    <div class="flex justify-center">
-                        <span class="text-sm text-gray-500">Select a parent from the list to start chatting</span>
-                    </div>
+                <div>
+                    <h2 class="text-xl font-semibold heading-brown" id="chat-title">Select a parent to start chatting</h2>
+                    <p class="text-sm text-gray-500" id="chat-subtitle"></p>
                 </div>
+                </div>
+                <button id="clear-chat" 
+                    onclick="clearChat()"
+                    class="px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors hidden">
+                Clear Chat
+                </button>
+            </div>
+            
+            <div id="chat-messages" class="chat-messages overflow-y-auto p-4 space-y-2">
+                <div class="flex justify-center">
+                <span class="text-sm text-gray-500">Select a parent from the list to start chatting</span>
+                </div>
+            </div>
 
-                <div class="p-4 border-t border-gray-200">
-                    <form id="chat-form" onsubmit="return false;" class="flex items-end gap-2">
-                        <div class="flex-1">
-                            <textarea id="message-input"
-                                   class="w-full rounded-lg border-gray-300 focus:border-yellow-500 focus:ring focus:ring-yellow-200 focus:ring-opacity-50 resize-none"
-                                   placeholder="Type your message..."
-                                   rows="2"
-                                   disabled></textarea>
-                        </div>
-                        <button id="send-message"
-                                class="px-6 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                                disabled>
-                            <span>Send</span>
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
-                            </svg>
-                        </button>
-                    </form>
+            <div class="p-4 border-t border-gray-200">
+                <form id="chat-form" onsubmit="return false;" class="flex items-end gap-2">
+                <div class="flex-1">
+                    <textarea id="message-input"
+                       class="w-full rounded-lg border-gray-300 focus:border-yellow-500 focus:ring focus:ring-yellow-200 focus:ring-opacity-50 resize-none"
+                       placeholder="Type your message..."
+                       rows="2"
+                       disabled></textarea>
                 </div>
+                <button id="send-message"
+                    class="px-6 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    disabled>
+                    <span>Send</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                    </svg>
+                </button>
+                </form>
+            </div>
             </div>
         </div>
     </main>
 
-    <footer class="bg-white/80 backdrop-blur-sm text-gray-800 py-4 border-t border-gray-200">
+    <footer class="bg-white/80 backdrop-blur-sm text-white py-4 border-t border-gray-200">
         <div class="container mx-auto px-4 text-center">
             <p>&copy; <?php echo date('Y'); ?> School Bus Tracking System - Sri Lanka</p>
         </div>

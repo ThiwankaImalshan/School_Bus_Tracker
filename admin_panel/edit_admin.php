@@ -102,52 +102,52 @@ if (!$admin) {
 </head>
 <body class="min-h-screen">
     <div class="min-h-screen py-6 flex flex-col justify-center sm:py-12">
-        <div class="relative py-3 sm:max-w-xl sm:mx-auto">
-            <div class="relative px-4 py-10 bg-white shadow-lg sm:rounded-3xl sm:p-20 animate-fade-in border-2 border-orange-200">
+        <div class="relative px-4 sm:px-0 sm:max-w-xl sm:mx-auto w-full">
+            <div class="relative px-4 py-8 sm:px-10 sm:py-10 bg-white shadow-lg rounded-3xl sm:rounded-3xl animate-fade-in border-2 border-orange-200">
                 <div class="max-w-md mx-auto">
                     <div class="divide-y divide-gray-200">
-                        <div class="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
-                            <div class="flex items-center mb-8">
-                                <div class="h-16 w-16 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full flex flex-shrink-0 justify-center items-center text-white text-2xl font-mono shadow-lg">
+                        <div class="py-4 sm:py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
+                            <div class="flex flex-col sm:flex-row items-center mb-6 sm:mb-8">
+                                <div class="h-12 w-12 sm:h-16 sm:w-16 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full flex flex-shrink-0 justify-center items-center text-white text-xl sm:text-2xl font-mono shadow-lg mb-3 sm:mb-0">
                                     <?php echo strtoupper(substr($admin['full_name'], 0, 2)); ?>
                                 </div>
-                                <div class="ml-6">
-                                    <h2 class="text-3xl font-bold text-gray-800">Edit Administrator</h2>
-                                    <p class="text-gray-500 text-sm mt-1">Update administrator information</p>
+                                <div class="sm:ml-6 text-center sm:text-left">
+                                    <h2 class="text-2xl sm:text-3xl font-bold text-gray-800">Edit Administrator</h2>
+                                    <p class="text-gray-500 text-xs sm:text-sm mt-1">Update administrator information</p>
                                 </div>
                             </div>
 
                             <?php if ($success_message): ?>
-                                <div class="mb-4 p-4 bg-green-50 border-l-4 border-green-500 text-green-700 animate-fade-in">
+                                <div class="mb-4 p-3 sm:p-4 bg-green-50 border-l-4 border-green-500 text-green-700 animate-fade-in text-sm sm:text-base">
                                     <p class="font-medium"><?php echo htmlspecialchars($success_message); ?></p>
                                 </div>
                             <?php endif; ?>
 
                             <?php if ($error_message): ?>
-                                <div class="mb-4 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 animate-fade-in">
+                                <div class="mb-4 p-3 sm:p-4 bg-red-50 border-l-4 border-red-500 text-red-700 animate-fade-in text-sm sm:text-base">
                                     <p class="font-medium"><?php echo htmlspecialchars($error_message); ?></p>
                                 </div>
                             <?php endif; ?>
 
-                            <form method="POST" class="space-y-6">
+                            <form method="POST" class="space-y-4 sm:space-y-6">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Full Name</label>
                                     <input type="text" name="full_name" value="<?php echo htmlspecialchars($admin['full_name']); ?>" 
-                                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-400 transition-all duration-200 input-focus-effect" 
+                                           class="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-400 transition-all duration-200 input-focus-effect" 
                                            required>
                                 </div>
 
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Email Address</label>
                                     <input type="email" name="email" value="<?php echo htmlspecialchars($admin['email']); ?>" 
-                                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-400 transition-all duration-200 input-focus-effect" 
+                                           class="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-400 transition-all duration-200 input-focus-effect" 
                                            required>
                                 </div>
 
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Role</label>
                                     <select name="role" 
-                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-400 transition-all duration-200 input-focus-effect">
+                                            class="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-orange-400 transition-all duration-200 input-focus-effect">
                                         <option value="admin" <?php echo $admin['role'] === 'admin' ? 'selected' : ''; ?>>Admin</option>
                                         <option value="transportation_manager" <?php echo $admin['role'] === 'transportation_manager' ? 'selected' : ''; ?>>Transportation Manager</option>
                                         <option value="school_admin" <?php echo $admin['role'] === 'school_admin' ? 'selected' : ''; ?>>School Admin</option>
@@ -156,19 +156,19 @@ if (!$admin) {
                                 </div>
 
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">New Password (Optional)</label>
+                                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">New Password (Optional)</label>
                                     <input type="password" name="new_password" 
-                                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-300 focus:border-yellow-400 transition-all duration-200 input-focus-effect"
+                                           class="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-300 focus:border-yellow-400 transition-all duration-200 input-focus-effect"
                                            placeholder="Leave blank to keep current password">
                                 </div>
 
-                                <div class="pt-6 flex items-center space-x-4">
+                                <div class="pt-4 sm:pt-6 flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-4">
                                     <a href="dashboard.php" 
-                                       class="flex-1 px-4 py-2 bg-gray-50 text-gray-800 rounded-lg hover:bg-gray-100 transition duration-200 text-center border border-gray-200">
+                                       class="w-full sm:flex-1 px-4 py-2 bg-gray-50 text-gray-800 rounded-lg hover:bg-gray-100 transition duration-200 text-center border border-gray-200 text-sm sm:text-base">
                                         Cancel
                                     </a>
                                     <button type="submit" 
-                                            class="flex-1 px-4 py-2 bg-gradient-to-r from-yellow-500 to-yellow-500 text-white rounded-lg hover:from-yellow-600 hover:to-yellow-600 transition duration-200">
+                                            class="w-full sm:flex-1 px-4 py-2 bg-gradient-to-r from-yellow-500 to-yellow-500 text-white rounded-lg hover:from-yellow-600 hover:to-yellow-600 transition duration-200 text-sm sm:text-base">
                                         Update Admin
                                     </button>
                                 </div>

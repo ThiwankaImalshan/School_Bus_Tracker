@@ -111,21 +111,23 @@ try {
 
             <!-- Add search form -->
             <div class="mb-6">
-                <form action="" method="GET" class="flex gap-4">
+                <form action="" method="GET" class="flex flex-col sm:flex-row gap-4">
                     <input type="text" 
                            name="search" 
                            value="<?php echo htmlspecialchars($search); ?>"
                            placeholder="Search by name, school, or bus number..."
-                           class="flex-1 px-4 py-2 rounded-lg border border-orange-200 focus:outline-none focus:ring-2 focus:ring-orange-300">
-                    <button type="submit" 
-                            class="bg-yellow-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors">
-                        Search
-                    </button>
-                    <?php if (!empty($search)): ?>
-                        <a href="?" class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors">
-                            Clear
-                        </a>
-                    <?php endif; ?>
+                           class="w-full px-4 py-2 rounded-lg border border-orange-200 focus:outline-none focus:ring-2 focus:ring-orange-300">
+                    <div class="flex gap-2">
+                        <button type="submit" 
+                                class="flex-1 sm:flex-none bg-yellow-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors">
+                            Search
+                        </button>
+                        <?php if (!empty($search)): ?>
+                            <a href="?" class="flex-1 sm:flex-none text-center bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+                                Clear
+                            </a>
+                        <?php endif; ?>
+                    </div>
                 </form>
             </div>
 

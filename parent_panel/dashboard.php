@@ -101,6 +101,10 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
 ?>
 
 
+
+<?php require_once 'auto_attendance.php'; ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1684,8 +1688,8 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                         <?php if ($result->num_rows > 0): ?>
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 <?php while ($child = $result->fetch_assoc()): ?>
-                                    <div class="bg-white rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl border border-gray-100">
-                                        <div class="p-4">
+                                    <div class="bg-white rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl border border-gray-100 flex flex-col h-full">
+                                        <div class="p-4 flex-grow">
                                             <div class="flex items-center space-x-4">
                                                 <?php 
                                                 // Check photo_url and construct full path if exists
@@ -1706,7 +1710,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                                 </div>
                                             </div>
                                             
-                                            <div class="mt-4 flex flex-col space-y-2 text-sm"> <!-- Changed to flex-col and space-y-2 -->
+                                            <div class="mt-4 flex flex-col space-y-2 text-sm">
                                                 <div class="flex items-center space-x-2">
                                                     <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -1741,7 +1745,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                             </div>
                                         </div>
                                         
-                                        <div class="px-4 py-3 bg-gray-50 border-t border-gray-100 flex justify-end space-x-2">
+                                        <div class="px-4 py-3 bg-gray-50 border-t border-gray-100 flex justify-end space-x-2 mt-auto">
                                             <button onclick="openEditModal(<?php echo $child['child_id']; ?>)" 
                                                     class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors duration-200">
                                                 <svg class="w-3.5 h-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -3300,5 +3304,13 @@ document.getElementById('locationForm').addEventListener('submit', async functio
                     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
                 }
                 </style>
+
+        <!-- Floating Chat Button -->
+        <a href="chat.php" class="fixed bottom-20 right-6 md:bottom-8 md:right-8 bg-yellow-500 hover:bg-yellow-600 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-110 z-50">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+            <!-- <span class="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-yellow-400 opacity-75"></span> -->
+        </a>
     </body>
 </html>
