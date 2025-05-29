@@ -121,9 +121,19 @@ $stmt->execute([$driver['bus_id'], $current_time_sql, $current_route, $current_t
 $route_info = $stmt->fetch(PDO::FETCH_ASSOC);
 
 // Get student pickup locations
-$stmt = $pdo->prepare("SELECT c.child_id, c.first_name, c.last_name, c.pickup_location 
-                      FROM child c 
-                      WHERE c.bus_id = ?");
+$stmt = $pdo->prepare("SELECT 
+    c.child_id, 
+    c.first_name, 
+    c.last_name,
+    CASE 
+        WHEN (a.notes IS NOT NULL AND pl.location IS NOT NULL AND a.notes = pl.name) 
+        THEN pl.location 
+        ELSE c.pickup_location 
+    END as pickup_location
+    FROM child c 
+    LEFT JOIN attendance a ON c.child_id = a.child_id AND DATE(a.attendance_date) = CURDATE()
+    LEFT JOIN pickup_locations pl ON c.child_id = pl.child_id AND a.notes = pl.name
+    WHERE c.bus_id = ?");
 $stmt->execute([$driver['bus_id']]);
 $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -202,40 +212,40 @@ if ($current_route == "morning") {
 // Add attendance status check for evening route
 if ($current_route == "evening") {
     // Get today's dropoff status and attendance status
-    $stmt = $pdo->prepare("SELECT child_id, status FROM attendance 
-                          WHERE attendance_date = CURDATE()");
-    $stmt->execute();
-    $dropoff_status = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+    $stmt = $pdo->prepare("SELECT 
+        c.child_id, 
+        c.first_name, 
+        c.last_name, 
+        CASE 
+            WHEN (a.notes IS NOT NULL AND pl.location IS NOT NULL AND a.notes = pl.name) 
+            THEN pl.location 
+            ELSE c.pickup_location 
+        END as dropoff_location,
+        a.status,
+        a.notes
+        FROM child c 
+        LEFT JOIN attendance a ON c.child_id = a.child_id AND DATE(a.attendance_date) = CURDATE()
+        LEFT JOIN pickup_locations pl ON c.child_id = pl.child_id AND a.notes = pl.name
+        WHERE c.bus_id = ?");
+    $stmt->execute([$driver['bus_id']]);
+    $evening_students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // For evening route - student dropoff locations are destinations (exclude absent students)
-    foreach ($students as $student) {
-        if (!empty($student['pickup_location'])) {
-            // Skip if student is marked as absent
-            if (isset($dropoff_status[$student['child_id']]) && 
-                $dropoff_status[$student['child_id']] === 'absent') {
-                continue;
-            }
-            $coordinates = explode(',', $student['pickup_location']);
-            $status = $dropoff_status[$student['child_id']] ?? '';
-            $destinations[] = array(
+    // Filter and process students for evening route
+    $destinations = [];
+    foreach ($evening_students as $student) {
+        if ($student['status'] !== 'absent' && 
+            $student['notes'] !== 'Not returning' && 
+            !empty($student['dropoff_location'])) {
+                
+            $destinations[] = [
                 'name' => $student['first_name'] . ' ' . $student['last_name'],
-                'location' => $coordinates,
+                'location' => explode(',', $student['dropoff_location']),
                 'type' => 'dropoff',
                 'child_id' => $student['child_id'],
-                'is_dropped' => ($status === 'drop'),
+                'is_dropped' => ($student['status'] === 'drop'),
                 'distance' => 0
-            );
+            ];
         }
-    }
-
-    // Sort destinations - dropped students go to end of list
-    if (!empty($destinations)) {
-        usort($destinations, function($a, $b) {
-            if ($a['is_dropped'] === $b['is_dropped']) {
-                return 0;
-            }
-            return $a['is_dropped'] ? 1 : -1;
-        });
     }
 }
 
@@ -510,6 +520,19 @@ $lastAttendanceUpdate = $stmt->fetch(PDO::FETCH_ASSOC)['last_attendance_update']
             <!-- Map Container -->
             <div class="bg-white rounded-2xl shadow-enhanced border border-yellow-100 overflow-hidden mb-6 relative">
                 <div id="map"></div>
+                <!-- Add live location status -->
+                <div class="absolute top-4 left-4 bg-white/90 backdrop-filter backdrop-blur-sm rounded-lg shadow-lg p-3 z-[9999] border border-gray-200" style="visibility: hidden">
+                    <div class="flex flex-col gap-1">
+                        <div class="flex items-center gap-2">
+                            <div class="flex-shrink-0 w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                            <span class="text-xs font-medium text-gray-700">Live Location</span>
+                        </div>
+                        <div class="text-[10px] text-gray-500" id="live-coordinates">Waiting for location...</div>
+                        <div class="text-[10px] text-yellow-600" id="last-update-time"></div>
+                    </div>
+                </div>
+
+                <!-- Existing speed display -->
                 <div id="speed-display" class="fixed lg:bottom-4 lg:right-4 bottom-32 right-4 bg-white/90 backdrop-filter backdrop-blur-sm rounded-lg shadow-lg p-2 z-[9999] border border-gray-200 hover:bg-white transition-colors duration-200">
                     <div class="flex items-center gap-1">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-500" viewBox="0 0 20 20" fill="currentColor">
@@ -523,9 +546,9 @@ $lastAttendanceUpdate = $stmt->fetch(PDO::FETCH_ASSOC)['last_attendance_update']
                 </div>
             </div>
             <!-- Next Stops Preview -->
-            <div class="mt-6 mb-6 sm:mt-20">
-                <h4 class="text-md font-semibold text-gray-800 mb-3">Next Stops</h4>
-                <div class="space-y-3" id="stops-container">
+            <div class="mt-4 sm:mt-6 md:mt-8 lg:mt-20 mb-4 sm:mb-6">
+                <h4 class="text-md font-semibold text-gray-800 mb-2 sm:mb-3">Next Stops</h4>
+                <div class="space-y-2 sm:space-y-3" id="stops-container">
                     <?php if ($current_route === 'morning'): ?>
                         <?php
                         $upcoming_stops = array_merge(
@@ -570,20 +593,23 @@ $lastAttendanceUpdate = $stmt->fetch(PDO::FETCH_ASSOC)['last_attendance_update']
                         </div>
                     <?php else: ?>
                         <?php foreach ($upcoming_stops as $index => $stop): ?>
-                            <div class="bg-yellow-50 rounded-lg p-3 flex items-center justify-between" 
+                            <div class="bg-yellow-50 rounded-lg p-3 flex justify-between items-center" 
                                  id="stop-<?php echo htmlspecialchars($stop['id']); ?>"
                                  data-location="<?php echo htmlspecialchars(implode(',', $stop['location'])); ?>"
                                  data-type="<?php echo htmlspecialchars($stop['type']); ?>"
                                  data-index="<?php echo $index + 1; ?>">
                                 <div class="flex items-center">
                                     <div class="bg-yellow-100 p-2 rounded-lg mr-3 flex-shrink-0">
-                                        <span class="font-bold text-yellow-600"><?php echo $index + 1; ?></span>
+                                        <span class="font-bold text-yellow-600 text-sm sm:text-base"><?php echo $index + 1; ?></span>
                                     </div>
                                     <div class="min-w-0">
-                                        <p class="text-sm font-medium truncate">
+                                        <p class="text-xs sm:text-sm font-medium">
                                             <?php echo $stop['type'] === 'school' ? 'School: ' : 
                                                   ($current_route === 'morning' ? 'Pickup: ' : 'Drop-off: '); ?>
-                                            <span class="text-yellow-600"><?php echo htmlspecialchars($stop['name']); ?></span>
+                                            <br class="block sm:hidden" />
+                                            <span class="text-yellow-600 block sm:inline text-xs sm:text-sm">
+                                                <?php echo htmlspecialchars($stop['name']); ?>
+                                            </span>
                                         </p>
                                         <?php if (isset($stop['arrival_time'])): ?>
                                             <p class="text-xs text-gray-500">
@@ -592,20 +618,21 @@ $lastAttendanceUpdate = $stmt->fetch(PDO::FETCH_ASSOC)['last_attendance_update']
                                         <?php endif; ?>
                                     </div>
                                 </div>
-                                <div class="flex items-center space-x-2">
-                                    <div class="text-right flex-shrink-0" id="route-details-<?php echo htmlspecialchars($stop['id']); ?>">
+                                <div class="flex items-center justify-end space-x-4">
+                                    <div class="text-right" id="route-details-<?php echo htmlspecialchars($stop['id']); ?>">
                                         <p class="text-sm font-medium">--</p>
                                         <p class="text-xs text-gray-500">--</p>
+                                        <p class="text-xs text-yellow-600">--</p>
                                     </div>
-                                    <button class="bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg mark-completed-btn" 
+                                    <button class="bg-green-500 hover:bg-green-600 text-white p-1.5 sm:p-2 rounded-lg mark-completed-btn" 
                                             data-stop-id="<?php echo htmlspecialchars($stop['id']); ?>"
                                             <?php echo $stop['is_completed'] ? 'disabled' : ''; ?>>
                                         <?php if ($stop['is_completed']): ?>
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 20 20" fill="currentColor">
                                                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                                             </svg>
                                         <?php else: ?>
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                             </svg>
                                         <?php endif; ?>
@@ -654,8 +681,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }).addTo(map);
 
     // Initialize variables
-    const destinations = <?php echo $destinationsJson; ?>;
-    const waypoints = <?php echo $waypointsJson; ?>;
+    const destinations = Array.isArray(<?php echo $destinationsJson; ?>) ? <?php echo $destinationsJson; ?> : [];
+    const waypoints = Array.isArray(<?php echo $waypointsJson; ?>) ? <?php echo $waypointsJson; ?> : [];
     let busMarker = null;
     let routingControl = null;
     let routePath = null;
@@ -807,7 +834,29 @@ document.addEventListener('DOMContentLoaded', function() {
             const position = await getCurrentPosition();
             const currentPos = [position.coords.latitude, position.coords.longitude];
             
-            // Calculate rotation if we have a previous position
+            // Update live location display
+            document.getElementById('live-coordinates').textContent = 
+                `${currentPos[0].toFixed(6)}°N, ${currentPos[1].toFixed(6)}°E`;
+            document.getElementById('last-update-time').textContent = 
+                `Updated: ${new Date().toLocaleTimeString()}`;
+
+            // Update bus marker position
+            if (!busMarker) {
+                busMarker = L.marker(currentPos, { icon: busIcon })
+                    .bindPopup('Current Location')
+                    .addTo(map);
+                map.setView(currentPos, 15);
+            } else {
+                busMarker.setLatLng(currentPos);
+                // Smoothly pan map to new position
+                map.panTo(currentPos, {
+                    animate: true,
+                    duration: 1.5,
+                    easeLinearity: 0.25
+                });
+            }
+            
+            // Calculate and update rotation
             if (lastPos) {
                 const dx = currentPos[1] - lastPos[1];
                 const dy = currentPos[0] - lastPos[0];
@@ -818,16 +867,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         busImage.style.transform = `rotate(${angle}deg)`;
                     }
                 }
-            }
-            
-            // Update bus marker position
-            if (!busMarker) {
-                busMarker = L.marker(currentPos, { icon: busIcon })
-                    .bindPopup('Current Location')
-                    .addTo(map);
-                map.setView(currentPos, 15);
-            } else {
-                busMarker.setLatLng(currentPos);
             }
             
             lastPos = currentPos;
@@ -906,7 +945,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             detailsElement.innerHTML = `
                                 <p class="text-sm font-medium">${duration} min</p>
                                 <p class="text-xs text-gray-500">${distance} km</p>
-                                <p class="text-xs text-yellow-600">ETA: ${eta.toLocaleTimeString()}</p>
+                                <p class="text-xs text-yellow-600">${eta.toLocaleTimeString()}</p>
                             `;
                         }
 
@@ -1121,7 +1160,7 @@ document.addEventListener('DOMContentLoaded', function() {
     updateBusLocation(); // Initial update
 
     // Start real-time updates
-    setInterval(updateBusLocation, 20000); // Update every 10 seconds
+    setInterval(updateBusLocation, 20000); // Update every 5 seconds instead of 20
     setInterval(checkAttendanceChanges, 50000); // Check attendance changes every 30 seconds
 
     // Handle refresh button clicks

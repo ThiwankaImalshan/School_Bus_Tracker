@@ -121,9 +121,19 @@ $stmt->execute([$driver['bus_id'], $current_time_sql, $current_route, $current_t
 $route_info = $stmt->fetch(PDO::FETCH_ASSOC);
 
 // Get student pickup locations
-$stmt = $pdo->prepare("SELECT c.child_id, c.first_name, c.last_name, c.pickup_location 
-                      FROM child c 
-                      WHERE c.bus_id = ?");
+$stmt = $pdo->prepare("SELECT 
+    c.child_id, 
+    c.first_name, 
+    c.last_name,
+    CASE 
+        WHEN (a.notes IS NOT NULL AND pl.location IS NOT NULL AND a.notes = pl.name) 
+        THEN pl.location 
+        ELSE c.pickup_location 
+    END as pickup_location
+    FROM child c 
+    LEFT JOIN attendance a ON c.child_id = a.child_id AND DATE(a.attendance_date) = CURDATE()
+    LEFT JOIN pickup_locations pl ON c.child_id = pl.child_id AND a.notes = pl.name
+    WHERE c.bus_id = ?");
 $stmt->execute([$driver['bus_id']]);
 $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -202,41 +212,37 @@ if ($current_route == "morning") {
 // Add attendance status check for evening route
 if ($current_route == "evening") {
     // Get today's dropoff status and attendance status
-    $stmt = $pdo->prepare("SELECT child_id, status FROM attendance 
-                          WHERE attendance_date = CURDATE()");
-    $stmt->execute();
-    $dropoff_status = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+    $stmt = $pdo->prepare("SELECT 
+        c.child_id, 
+        c.first_name, 
+        c.last_name, 
+        CASE 
+            WHEN (a.notes IS NOT NULL AND pl.location IS NOT NULL AND a.notes = pl.name) 
+            THEN pl.location 
+            ELSE c.pickup_location 
+        END as dropoff_location,
+        a.status,
+        a.notes
+        FROM child c 
+        LEFT JOIN attendance a ON c.child_id = a.child_id AND DATE(a.attendance_date) = CURDATE()
+        LEFT JOIN pickup_locations pl ON c.child_id = pl.child_id AND a.notes = pl.name
+        WHERE c.bus_id = ?");
+    $stmt->execute([$driver['bus_id']]);
+    $evening_students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // For evening route - student dropoff locations are destinations (exclude absent students)
-    foreach ($students as $student) {
-        if (!empty($student['pickup_location'])) {
-            // Skip if student is marked as absent
-            if (isset($dropoff_status[$student['child_id']]) && 
-                $dropoff_status[$student['child_id']] === 'absent') {
-                continue;
-            }
-            $coordinates = explode(',', $student['pickup_location']);
-            $status = $dropoff_status[$student['child_id']] ?? '';
-            $destinations[] = array(
-                'name' => $student['first_name'] . ' ' . $student['last_name'],
-                'location' => $coordinates,
-                'type' => 'dropoff',
-                'child_id' => $student['child_id'],
-                'is_dropped' => ($status === 'drop'),
-                'distance' => 0
-            );
-        }
-    }
-
-    // Sort destinations - dropped students go to end of list
-    if (!empty($destinations)) {
-        usort($destinations, function($a, $b) {
-            if ($a['is_dropped'] === $b['is_dropped']) {
-                return 0;
-            }
-            return $a['is_dropped'] ? 1 : -1;
-        });
-    }
+    // Process students for evening route
+    $destinations = array_map(function($student) {
+        return [
+            'name' => $student['first_name'] . ' ' . $student['last_name'],
+            'location' => explode(',', $student['dropoff_location']),
+            'type' => 'dropoff',
+            'child_id' => $student['child_id'],
+            'is_dropped' => ($student['status'] === 'drop'),
+            'distance' => 0
+        ];
+    }, array_filter($evening_students, function($student) {
+        return $student['status'] !== 'absent';
+    }));
 }
 
 // Function to update location in database
@@ -322,15 +328,17 @@ function calculateDistance($lat1, $lon1, $lat2, $lon2) {
 // Convert destinations and waypoints to JSON for JavaScript
 $destinationsJson = json_encode($destinations);
 $waypointsJson = json_encode($waypoints);
+
+// Check last attendance update time
+$stmt = $pdo->prepare("SELECT MAX(last_updated) as last_attendance_update FROM attendance WHERE DATE(attendance_date) = CURDATE()");
+$stmt->execute();
+$lastAttendanceUpdate = $stmt->fetch(PDO::FETCH_ASSOC)['last_attendance_update'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <?php if ($current_route == 'morning' || $current_route == 'evening'): ?>
-    <meta http-equiv="refresh" content="30">
-    <?php endif; ?>
     <title>Bus Location Tracker</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
@@ -378,31 +386,42 @@ $waypointsJson = json_encode($waypoints);
             block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer
         }
         .bus-icon {
+            background: #ea580c;
+            border: 2px solid white;
             border-radius: 50%;
-            text-align: center;
-            background-color: #FF8C00;
-            color: white;
-            width: 30px;
-            height: 30px;
-            line-height: 30px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 1.5s infinite;
         }
-        .point-icon {
-            border-radius: 50%;
-            text-align: center;
-            width: 24px;
-            height: 24px;
-            line-height: 24px;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-            font-weight: bold;
+        
+        .bus-icon-inner {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
         }
-        .refresh-animation {
-            animation: spin 1s linear infinite;
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
         }
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        /* Route path animation */
+        .route-path {
+            stroke-dasharray: 8000;
+            stroke-dashoffset: 8000;
+            animation: drawPath 40s ease forwards;
+            transition: opacity 0.5s ease;
+        }
+
+        @keyframes drawPath {
+            to {
+                stroke-dashoffset: 0;
+            }
         }
         /* Responsive adjustments */
         @media (max-width: 768px) {
@@ -477,7 +496,7 @@ $waypointsJson = json_encode($waypoints);
                     </h4>
                     <p class="text-xs text-gray-600">Destinations</p>
                 </div>
-                <div class="bg-orange-50 rounded-lg p-4 text-center">
+                <div class="bg-yellow-50 rounded-lg p-4 text-center">
                     <h4 class="text-lg font-medium text-gray-800" id="completion-stats">
                         <?php 
                             if ($current_route == 'morning') {
@@ -495,16 +514,16 @@ $waypointsJson = json_encode($waypoints);
                 </div>
             </div>
             <!-- Map Container -->
-            <div class="bg-white rounded-2xl shadow-enhanced border border-orange-100 overflow-hidden mb-6 relative">
+            <div class="bg-white rounded-2xl shadow-enhanced border border-yellow-100 overflow-hidden mb-6 relative">
                 <div id="map"></div>
                 <div id="speed-display" class="fixed lg:bottom-4 lg:right-4 bottom-32 right-4 bg-white/90 backdrop-filter backdrop-blur-sm rounded-lg shadow-lg p-2 z-[9999] border border-gray-200 hover:bg-white transition-colors duration-200">
                     <div class="flex items-center gap-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-orange-500" viewBox="0 0 20 20" fill="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-500" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4.535l-3.928 2.62a1 1 0 101.11 1.66l4.5-3a1 1 0 00.318-1.334V6z" clip-rule="evenodd"/>
                         </svg>
                         <div class="flex items-baseline gap-1">
-                            <span id="speed-value" class="text-lg font-bold text-orange-500">0</span>
-                            <span class="text-xs text-orange-500">km/h</span>
+                            <span id="speed-value" class="text-lg font-bold text-yellow-500">0</span>
+                            <span class="text-xs text-yellow-500">km/h</span>
                         </div>
                     </div>
                 </div>
@@ -557,20 +576,20 @@ $waypointsJson = json_encode($waypoints);
                         </div>
                     <?php else: ?>
                         <?php foreach ($upcoming_stops as $index => $stop): ?>
-                            <div class="bg-orange-50 rounded-lg p-3 flex items-center justify-between" 
+                            <div class="bg-yellow-50 rounded-lg p-3 flex items-center justify-between" 
                                  id="stop-<?php echo htmlspecialchars($stop['id']); ?>"
                                  data-location="<?php echo htmlspecialchars(implode(',', $stop['location'])); ?>"
                                  data-type="<?php echo htmlspecialchars($stop['type']); ?>"
                                  data-index="<?php echo $index + 1; ?>">
                                 <div class="flex items-center">
-                                    <div class="bg-orange-100 p-2 rounded-lg mr-3 flex-shrink-0">
-                                        <span class="font-bold text-orange-600"><?php echo $index + 1; ?></span>
+                                    <div class="bg-yellow-100 p-2 rounded-lg mr-3 flex-shrink-0">
+                                        <span class="font-bold text-yellow-600"><?php echo $index + 1; ?></span>
                                     </div>
                                     <div class="min-w-0">
                                         <p class="text-sm font-medium truncate">
                                             <?php echo $stop['type'] === 'school' ? 'School: ' : 
                                                   ($current_route === 'morning' ? 'Pickup: ' : 'Drop-off: '); ?>
-                                            <span class="text-orange-600"><?php echo htmlspecialchars($stop['name']); ?></span>
+                                            <span class="text-yellow-600"><?php echo htmlspecialchars($stop['name']); ?></span>
                                         </p>
                                         <?php if (isset($stop['arrival_time'])): ?>
                                             <p class="text-xs text-gray-500">
@@ -620,527 +639,499 @@ $waypointsJson = json_encode($waypoints);
                         <option value="300000">Update every 5m</option>
                     </select>
                 </div>
-                <button id="navigate-btn" class="bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 text-sm rounded-lg font-medium transition-colors w-full sm:w-auto">
+                <!-- <button id="navigate-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 text-sm rounded-lg font-medium transition-colors w-full sm:w-auto">
                     Navigate in Google Maps
-                </button>
+                </button> -->
             </div>
         </section>
     </main>
     <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize map
-    const map = L.map('map').setView([6.9271, 79.8612], 12);
+    const map = L.map('map', {
+        center: [6.9271, 79.8612],
+        zoom: 12,
+        minZoom: 10,
+        maxZoom: 18
+    });
+
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
-    // Get route data from PHP
+
+    // Initialize variables
     const destinations = <?php echo $destinationsJson; ?>;
     const waypoints = <?php echo $waypointsJson; ?>;
     let busMarker = null;
     let routingControl = null;
-    let completedPath = null;
-    let pendingPath = null;
-    const currentRoute = '<?php echo $current_route; ?>';
-    // Create bus icon
+    let routePath = null;
+    let currentRoute = '<?php echo $current_route; ?>';
+    let isTracking = true;
+    let lastPos = null; // Add this line for rotation tracking
+
+    // Create bus icon with top view image
     const busIcon = L.divIcon({
-        className: 'bus-icon',
-        html: '<span>🚌</span>'
+        className: 'bus-marker',
+        html: `
+            <img src="../img/bus-top.png" 
+                 style="width: 25px; height: auto; transform-origin: center; transition: transform 0.3s ease;"
+                 class="bus-image"
+            />
+        `,
+        iconSize: [10, 10],
+        iconAnchor: [5, 5]
     });
-    // Add geofence circles for schools
-    destinations.forEach(dest => {
-        if (dest.type === 'school') {
-            // Create 500m radius circle around school
-            const circle = L.circle(dest.location, {
-                color: dest.is_arrived ? '#10B981' : '#EF4444', // Green if arrived, red if not
-                fillColor: dest.is_arrived ? '#D1FAE5' : '#FEE2E2',
-                fillOpacity: 0.3,
-                radius: 500 // 500 meters
-            }).addTo(map);
 
-            // Add school marker
-            const marker = L.marker(dest.location, {
-                icon: L.divIcon({
-                    className: `bg-${dest.is_arrived ? 'green' : 'red'}-600 rounded-full border-2 border-white w-6 h-6`,
-                    iconSize: [24, 24],
-                    iconAnchor: [12, 12]
-                })
-            }).addTo(map);
+    // Add markers for stops with improved styling
+    function addStopMarkers() {
+        let studentMarkers = new Map(); // Store markers for later removal
 
-            // Enhanced popup content
-            let popupContent = `
-                <div class="p-2">
-                    <h3 class="font-bold">${dest.name}</h3>
-                    <p class="text-sm">Geofence radius: 500m</p>
-                    ${dest.arrival_time ? `<p class="text-sm">Target arrival: ${dest.arrival_time}</p>` : ''}
-                    <p class="text-sm ${dest.is_arrived ? 'text-green-600' : 'text-red-600'}">
-                        Status: ${dest.is_arrived ? 'Arrived' : 'Not arrived'}
-                    </p>
-                </div>`;
-            
-            marker.bindPopup(popupContent);
-            circle.bindPopup(popupContent);
-        }
-    });
-    // Add markers for destinations
-    destinations.forEach(dest => {
-        const marker = L.marker(dest.location, {
-            icon: L.divIcon({
-                className: 'bg-red-600 rounded-full border-2 border-white w-6 h-6',
-                iconSize: [24, 24],
-                iconAnchor: [12, 12]
-            })
-        }).addTo(map);
-        let popupContent = `<b>${dest.name}</b><br>`;
-        if (dest.arrival_time) {
-            popupContent += `Arrival: ${dest.arrival_time}`;
-        } else if (dest.type === 'dropoff') {
-            popupContent += 'Drop-off location';
-        }
-        marker.bindPopup(popupContent);
-    });
-    // Add markers for waypoints
-    waypoints.forEach((point, index) => {
-        const marker = L.marker(point.location, {
-            icon: L.divIcon({
-                className: 'bg-red-500 rounded-full border-2 border-white',
-                iconSize: [16, 16],
-                iconAnchor: [8, 8],
-                html: `<div class="flex items-center justify-center h-full w-full text-white font-bold text-xs">${index + 1}</div>`
-            })
-        }).addTo(map);
-        let popupContent = `<b>${point.name}</b><br>`;
-        if (point.type === 'pickup') {
-            popupContent += 'Pickup location';
-        }
-        if (point.departure_time) {
-            popupContent += `Departure: ${point.departure_time}`;
-        }
-        marker.bindPopup(popupContent);
-    });
-    // Function to fetch route from OSRM
-    async function fetchRoadPath(start, end) {
-        const url = `https://router.project-osrm.org/route/v1/driving/${start[1]},${start[0]};${end[1]},${end[0]}?geometries=geojson&overview=full`;
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
-            if (data.code === 'Ok') {
-                return data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
-            }
-            return [start, end]; // Fallback to straight line
-        } catch (error) {
-            console.error('Error fetching road path:', error);
-            return [start, end]; // Fallback to straight line
-        }
-    }
-    // Function to calculate distance between two points
-    function calculateDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371; // Earth's radius in km
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180;
-        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                  Math.sin(dLon/2) * Math.sin(dLon/2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        return R * c; // Distance in km
-    }
-    // Function to sort destinations by distance from current position
-    function sortDestinationsByDistance(currentPosition, destinations) {
-        return destinations.map(dest => ({
-            ...dest,
-            distance: calculateDistance(
-                currentPosition[0], currentPosition[1],
-                parseFloat(dest.location[0]), parseFloat(dest.location[1])
-            )
-        })).sort((a, b) => a.distance - b.distance);
-    }
-    // Function to update route display
-    async function updateRoute(currentPosition) {
-        if (completedPath) map.removeLayer(completedPath);
-        if (pendingPath) map.removeLayer(pendingPath);
-
-        // Common function to get road path between two points
-        async function getRoadPath(start, end) {
-            const url = `https://router.project-osrm.org/route/v1/driving/${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`;
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                if (data.code === 'Ok') {
-                    return data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
-                }
-                return [start, end]; // Fallback to straight line
-            } catch (error) {
-                console.error('Error fetching road path:', error);
-                return [start, end]; // Fallback to straight line
-            }
-        }
-
+        // Add school markers
         if (currentRoute === 'morning') {
-            const unpickedStudents = waypoints.filter(wp => !wp.is_picked);
-            let currentPoint = currentPosition;
-            let allRoutePoints = [currentPosition];
-
-            // Calculate road paths to each student sequentially
-            for (const student of unpickedStudents) {
-                const roadPath = await getRoadPath(currentPoint, student.location);
-                allRoutePoints = [...allRoutePoints, ...roadPath.slice(1)];
-                currentPoint = student.location;
-            }
-
-            // After all students, calculate paths to schools
-            const unvisitedSchools = destinations
-                .filter(d => d.type === 'school' && !d.is_arrived)
-                .sort((a, b) => a.arrival_time.localeCompare(b.arrival_time));
-
-            for (const school of unvisitedSchools) {
-                const roadPath = await getRoadPath(currentPoint, school.location);
-                allRoutePoints = [...allRoutePoints, ...roadPath.slice(1)];
-                currentPoint = school.location;
-            }
-
-            // Draw the complete route with all road paths
-            if (allRoutePoints.length > 1) {
-                completedPath = L.polyline(allRoutePoints, {
-                    color: '#4C1D95',
-                    weight: 4,
-                    opacity: 0.8
-                }).addTo(map);
-
-                // Update markers with sequential numbering
-                let stopIndex = 1;
-                [...unpickedStudents, ...unvisitedSchools].forEach(stop => {
-                    const isSchool = stop.type === 'school';
-                    L.marker(stop.location, {
+            destinations.forEach(dest => {
+                if (dest.type === 'school') {
+                    // Add school marker
+                    L.marker(dest.location, {
                         icon: L.divIcon({
-                            className: `bg-${isSchool ? 'blue' : 'red'}-600 rounded-full border-2 border-white`,
-                            iconSize: [isSchool ? 24 : 16, isSchool ? 24 : 16],
-                            iconAnchor: [isSchool ? 12 : 8, isSchool ? 12 : 8],
-                            html: `<div class="flex items-center justify-center h-full w-full text-white font-bold text-xs">${stopIndex++}</div>`
+                            className: 'flex items-center justify-center bg-blue-600 rounded-full border-2 border-white',
+                            iconSize: [35, 35],
+                            iconAnchor: [17, 17],
+                            html: `<div class="w-full h-full flex items-center justify-center">
+                                <span class="text-white font-bold text-base leading-none">S</span>
+                            </div>`
                         })
-                    }).addTo(map)
-                    .bindPopup(`<b>${stop.name}</b><br>${isSchool ? 'School' : 'Student pickup'}`);
-                });
+                    }).addTo(map).bindPopup(`
+                        <div class="p-2">
+                            <h3 class="font-bold">${dest.name}</h3>
+                            <p class="text-sm">Target arrival: ${dest.arrival_time || 'N/A'}</p>
+                            <p class="text-sm ${dest.is_arrived ? 'text-green-600' : 'text-red-600'}">
+                                ${dest.is_arrived ? 'Arrived' : 'Not arrived'}
+                            </p>
+                        </div>
+                    `);
 
-                // Update map bounds to include all points
-                const bounds = L.latLngBounds([
-                    currentPosition,
-                    ...allRoutePoints
-                ]);
-                map.fitBounds(bounds, { padding: [50, 50] });
-            }
-        } else if (currentRoute === 'evening') {
-            // Get undropped students
-            const remainingDropoffs = destinations.filter(dest => !dest.is_dropped);
-            
-            if (remainingDropoffs.length > 0) {
-                // Calculate complete evening route
-                let currentPoint = currentPosition;
-                let allRoutePoints = [currentPosition];
-
-                for (const dropoff of remainingDropoffs) {
-                    const roadPath = await getRoadPath(currentPoint, dropoff.location);
-                    allRoutePoints = [...allRoutePoints, ...roadPath.slice(1)];
-                    currentPoint = dropoff.location;
+                    // Add school geofence circle
+                    L.circle(dest.location, {
+                        color: '#2563EB',
+                        fillColor: '#93C5FD',
+                        fillOpacity: 0.2,
+                        radius: 500,
+                        weight: 2
+                    }).addTo(map);
                 }
-
-                // Draw route
-                completedPath = L.polyline(allRoutePoints, {
-                    color: '#4C1D95',
-                    weight: 4,
-                    opacity: 0.8
-                }).addTo(map);
-
-                // Update markers
-                let stopIndex = 1;
-                remainingDropoffs.forEach(stop => {
-                    L.marker(stop.location, {
-                        icon: L.divIcon({
-                            className: 'bg-orange-600 rounded-full border-2 border-white',
-                            iconSize: [24, 24],
-                            iconAnchor: [12, 12],
-                            html: `<div class="flex items-center justify-center h-full w-full text-white font-bold text-xs">${stopIndex++}</div>`
-                        })
-                    }).addTo(map)
-                    .bindPopup(`<b>${stop.name}</b><br>Drop-off location`);
-                });
-
-                // Update map bounds
-                const bounds = L.latLngBounds([
-                    currentPosition,
-                    ...allRoutePoints
-                ]);
-                map.fitBounds(bounds, { padding: [50, 50] });
-            }
+            });
         }
-    }
-    // Update the updateBusLocation function in JavaScript
-    function updateBusLocation() {
-        if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition(function(position) {
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-                const speed = position.coords.speed || 0;
-                const currentPos = [lat, lng];
 
-                // Update speed display
-                document.getElementById('speed-value').textContent = 
-                    Math.round((speed * 3.6) || 0); // Convert m/s to km/h
+        // Handle student markers based on route type
+        if (currentRoute === 'morning') {
+            // Morning route pickup markers
+            waypoints.forEach((point, index) => {
+                L.marker(point.location, {
+                    icon: L.divIcon({
+                        className: 'flex items-center justify-center bg-red-500 rounded-full border-2 border-white',
+                        iconSize: [30, 30],
+                        iconAnchor: [15, 15],
+                        html: `<div class="w-full h-full flex items-center justify-center">
+                            <span class="text-white font-bold text-sm leading-none">${index + 1}</span>
+                        </div>`
+                    })
+                }).addTo(map).bindPopup(`
+                    <div class="p-2">
+                        <h3 class="font-bold">${point.name}</h3>
+                        <p class="text-sm">Pickup Point #${index + 1}</p>
+                        <p class="text-xs text-gray-600">Student Pickup Location</p>
+                    </div>
+                `);
 
-                // Update bus marker
-                if (!busMarker) {
-                    busMarker = L.marker(currentPos, {
+                // Add small radius around pickup points
+                L.circle(point.location, {
+                    color: '#EF4444',
+                    fillColor: '#FEE2E2',
+                    fillOpacity: 0.2,
+                    radius: 100,
+                    weight: 1
+                }).addTo(map);
+            });
+        } else if (currentRoute === 'evening') {
+            // Evening route dropoff markers
+            destinations.forEach((student, index) => {
+                if (!student.is_dropped) {
+                    const marker = L.marker(student.location, {
                         icon: L.divIcon({
-                            className: 'bus-marker',
-                            html: `<div class="animate-pulse">
-                                    <div class="relative">
-                                        <div class="bg-orange-500 rounded-full p-2 shadow-lg">🚌</div>
-                                        <div class="absolute inset-0 bg-orange-300 opacity-25 rounded-full animate-ping"></div>
-                                    </div>
-                                </div>`,
-                            iconSize: [40, 40],
-                            iconAnchor: [20, 20],
+                            className: 'flex items-center justify-center bg-red-500 rounded-full border-2 border-white',
+                            iconSize: [30, 30],
+                            iconAnchor: [15, 15],
+                            html: `<div class="w-full h-full flex items-center justify-center">
+                                <span class="text-white font-bold text-sm leading-none">${index + 1}</span>
+                            </div>`
                         })
                     }).addTo(map);
-                } else {
-                    busMarker.setLatLng(currentPos);
+
+                    // Store marker reference
+                    studentMarkers.set(`student_${student.child_id}`, marker);
+
+                    marker.bindPopup(`
+                        <div class="p-2">
+                            <h3 class="font-bold">${student.name}</h3>
+                            <p class="text-sm">Drop-off Point #${index + 1}</p>
+                            <p class="text-xs text-gray-600">Student Drop-off Location</p>
+                        </div>
+                    `);
+
+                    // Add circle around dropoff point
+                    L.circle(student.location, {
+                        color: '#EF4444',
+                        fillColor: '#FEE2E2',
+                        fillOpacity: 0.2,
+                        radius: 100,
+                        weight: 1
+                    }).addTo(map);
                 }
-                    
-                // Update route based on current position
-                updateRoute(currentPos);
-
-                // Send location update to server with route type
-                updateServer(lat, lng, speed);
-
-                // Check status updates based on route type
-                if (currentRoute === 'morning') {
-                    checkPickupUpdates();
-                } else if (currentRoute === 'evening') {
-                    checkDropoffUpdates();
-                }
-
-                // Update route details
-                updateRouteDetails(currentPos);
-            }, function(error) {
-                console.error("Error getting location:", error);
-            }, {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0
             });
         }
-    }
-    // Update the updateServer function in JavaScript
-    function updateServer(lat, lng, speed) {
-        const data = {
-            update_location: true,
-            latitude: lat,
-            longitude: lng,
-            speed: speed,
-            route_type: currentRoute,
-            device_time: new Date().toISOString()
-        };
 
-        fetch('bus_location_tracker.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: new URLSearchParams(data)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const now = new Date();
-                document.getElementById('last-updated').textContent = 
-                    'Last updated: ' + now.toLocaleTimeString();
-                document.getElementById('current-time').textContent = 
-                    now.toLocaleTimeString();
-
-                // Also update route display if needed
-                document.getElementById('route-display').textContent = 
-                    currentRoute === 'morning' ? 'Morning Route' : 
-                    currentRoute === 'evening' ? 'Evening Route' : 
-                    'No Active Route';
-            }
-        })
-        .catch(error => console.error('Error:', error));
-    }
-
-    // Add function to check pickup status updates
-    function checkPickupUpdates() {
-        fetch('check_pickups.php')
-        .then(response => response.json())
-        .then(data => {
-            if (data.updates) {
-                // Redraw route with updated waypoints
-                updateRoute(busMarker.getLatLng());
-            }
-        })
-        .catch(error => console.error('Error:', error));
-    }
-
-    // Add function to check dropoff status updates
-    function checkDropoffUpdates() {
-        fetch('check_dropoffs.php')
-        .then(response => response.json())
-        .then(data => {
-            if (data.updates) {
-                // Redraw route with updated destinations
-                updateRoute(busMarker.getLatLng());
-            }
-        })
-        .catch(error => console.error('Error:', error));
-    }
-
-    // Add function to mark student as dropped off
-    async function markStudentDropped(childId) {
-        try {
-            const response = await fetch('update_attendance.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({
-                    child_id: childId,
-                    status: 'drop', // Changed from 'dropped' to 'drop'
-                    date: new Date().toISOString().split('T')[0]
-                })
-            });
-            
-            if (response.ok) {
-                // Update local state
-                const dest = destinations.find(d => d.child_id === childId);
-                if (dest) {
-                    dest.is_dropped = true;
-                    // Refresh route
-                    if (busMarker) {
-                        updateRoute(busMarker.getLatLng());
+        // Handle marker removal when student is dropped
+        document.querySelectorAll('.mark-completed-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const stopId = this.dataset.stopId;
+                if (currentRoute === 'evening' && stopId.startsWith('dropoff_')) {
+                    const marker = studentMarkers.get(`student_${stopId.split('_')[1]}`);
+                    if (marker) {
+                        map.removeLayer(marker);
+                        studentMarkers.delete(`student_${stopId.split('_')[1]}`);
                     }
                 }
-            }
-        } catch (error) {
-            console.error('Error updating dropoff status:', error);
-        }
-    }
-
-    // Add function to mark school as arrived
-    async function markSchoolArrival(schoolId) {
-        try {
-            const response = await fetch('update_school_status.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({
-                    school_id: schoolId,
-                    status: 'arrived',
-                    date: new Date().toISOString().split('T')[0],
-                    arrival_time: new Date().toTimeString().split(' ')[0]
-                }),
             });
-            
-            if (response.ok) {
-                // Update local state
-                const school = destinations.find(d => d.type === 'school' && d.school_id === schoolId);
-                if (school) {
-                    school.is_arrived = true;
-                    // Refresh route
-                    if (busMarker) {
-                        updateRoute(busMarker.getLatLng());
-                    }
-                }
-            }
-        } catch (error) {
-            console.error('Error updating school arrival status:', error);
-        }
+        });
     }
 
-    // Add function to update route details
-    async function updateRouteDetails(currentPosition) {
-        const stopElements = document.querySelectorAll('[id^="stop-"]');
+    // Real-time location polling
+    async function updateBusLocation() {
+        if (!isTracking) return;
         
-        for (const stopElement of stopElements) {
-            const location = stopElement.dataset.location.split(',').map(Number);
-            const stopId = stopElement.id.replace('stop-', '');
-            const detailsElement = document.getElementById(`route-details-${stopId}`);
+        try {
+            const position = await getCurrentPosition();
+            const currentPos = [position.coords.latitude, position.coords.longitude];
             
-            // Calculate road distance and time using OSRM
-            const url = `https://router.project-osrm.org/route/v1/driving/${currentPosition[1]},${currentPosition[0]};${location[1]},${location[0]}`;
+            // Calculate rotation if we have a previous position
+            if (lastPos) {
+                const dx = currentPos[1] - lastPos[1];
+                const dy = currentPos[0] - lastPos[0];
+                if (dx !== 0 || dy !== 0) {
+                    const angle = Math.atan2(dx, dy) * (180 / Math.PI);
+                    const busImage = document.querySelector('.bus-marker .bus-image');
+                    if (busImage) {
+                        busImage.style.transform = `rotate(${angle}deg)`;
+                    }
+                }
+            }
             
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                
-                if (data.code === 'Ok') {
-                    const distance = (data.routes[0].distance / 1000).toFixed(1); // Convert to km
-                    const duration = Math.round(data.routes[0].duration / 60); // Convert to minutes
+            // Update bus marker position
+            if (!busMarker) {
+                busMarker = L.marker(currentPos, { icon: busIcon })
+                    .bindPopup('Current Location')
+                    .addTo(map);
+                map.setView(currentPos, 15);
+            } else {
+                busMarker.setLatLng(currentPos);
+            }
+            
+            lastPos = currentPos;
+
+            // Update speed display
+            const speed = position.coords.speed || 0;
+            document.getElementById('speed-value').textContent = Math.round(speed * 3.6);
+
+            // Save location to server
+            await saveLocation(currentPos[0], currentPos[1], speed * 3.6);
+
+            // Update route and estimates
+            await calculateRoute(currentPos);
+
+        } catch (error) {
+            console.error('Location update error:', error);
+        }
+    }
+
+    // Update route calculation function
+    async function calculateRoute(currentPos) {
+        try {
+            // Fade out existing path smoothly
+            if (routePath) {
+                routePath.setStyle({ opacity: 0 });
+                await new Promise(resolve => setTimeout(resolve, 500));
+                map.removeLayer(routePath);
+            }
+
+            const stops = currentRoute === 'morning' ? 
+                waypoints.filter(w => !w.is_picked) : 
+                destinations.filter(d => !d.is_dropped);
+
+            if (currentRoute === 'morning') {
+                const schools = destinations.filter(d => 
+                    d.type === 'school' && !d.is_arrived
+                );
+                stops.push(...schools);
+            }
+
+            if (stops.length === 0) return;
+
+            let totalDistance = 0;
+            let totalTime = 0;
+            let allPoints = [currentPos];
+            let currentPoint = currentPos;
+
+            // Calculate sequential routes
+            for (const stop of stops) {
+                try {
+                    const response = await fetch(
+                        `https://router.project-osrm.org/route/v1/driving/` +
+                        `${currentPoint[1]},${currentPoint[0]};${stop.location[1]},${stop.location[0]}` +
+                        `?overview=full&geometries=geojson`
+                    );
                     
-                    detailsElement.innerHTML = `
-                        <p class="text-sm font-medium">${duration} min</p>
-                        <p class="text-xs text-gray-500">${distance} km</p>
+                    if (!response.ok) continue;
+                    
+                    const data = await response.json();
+                    if (data.code === 'Ok') {
+                        const route = data.routes[0];
+                        const points = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                        allPoints = [...allPoints, ...points.slice(1)];
+
+                        // Update stop details
+                        const stopId = stop.type === 'school' ? 
+                            `school_${stop.school_id}` : 
+                            (currentRoute === 'morning' ? `pickup_${stop.child_id}` : `dropoff_${stop.child_id}`);
+
+                        const duration = Math.round(route.duration / 60);
+                        const distance = (route.distance / 1000).toFixed(1);
+                        const eta = new Date(Date.now() + (totalTime + route.duration) * 1000);
+
+                        const detailsElement = document.getElementById(`route-details-${stopId}`);
+                        if (detailsElement) {
+                            detailsElement.innerHTML = `
+                                <p class="text-sm font-medium">${duration} min</p>
+                                <p class="text-xs text-gray-500">${distance} km</p>
+                                <p class="text-xs text-yellow-600">ETA: ${eta.toLocaleTimeString()}</p>
+                            `;
+                        }
+
+                        totalDistance += route.distance;
+                        totalTime += route.duration;
+                        currentPoint = stop.location;
+                    }
+                } catch (error) {
+                    console.error('Route segment calculation error:', error);
+                }
+            }
+
+            // Create new animated route path
+            routePath = L.polyline(allPoints, {
+                className: 'route-path',
+                color: '#4C1D95',
+                weight: 4,
+                opacity: 0,
+                lineCap: 'round',
+                lineJoin: 'round'
+            }).addTo(map);
+
+            // Ensure opacity animation works
+            setTimeout(() => {
+                routePath.setStyle({ opacity: 0.8 });
+            }, 100);
+
+            // Update total time estimate
+            document.getElementById('estimated-time').textContent = 
+                `${Math.round(totalTime / 60)} min`;
+
+            // Smooth map bounds adjustment
+            const bounds = L.latLngBounds(allPoints);
+            map.flyToBounds(bounds, {
+                padding: [50, 50],
+                duration: 0.5
+            });
+
+        } catch (error) {
+            console.error('Route calculation error:', error);
+        }
+    }
+
+    // Attendance change checker
+    function checkAttendanceChanges() {
+        fetch('check_attendance_changes.php')
+            .then(response => response.json())
+            .then(async data => {
+                if (data.hasChanges) {
+                    // Save map state
+                    const mapState = {
+                        center: map.getCenter(),
+                        zoom: map.getZoom(),
+                        bounds: map.getBounds(),
+                        scroll: {
+                            x: window.scrollX,
+                            y: window.scrollY
+                        }
+                    };
+                    sessionStorage.setItem('mapState', JSON.stringify(mapState));
+
+                    // Create and show transition overlay
+                    const overlay = document.createElement('div');
+                    overlay.className = 'page-transition';
+                    overlay.innerHTML = `
+                        <div class="loader-content">
+                            <div class="relative flex items-center gap-4">
+                                <div class="flex items-center justify-center">
+                                    <div class="w-10 h-10">
+                                        <svg class="animate-spin" viewBox="0 0 50 50">
+                                            <circle 
+                                                cx="25" cy="25" r="20" 
+                                                fill="none" 
+                                                stroke="currentColor"
+                                                stroke-width="4"
+                                                stroke-linecap="round"
+                                                class="text-yellow-100"
+                                            />
+                                            <circle 
+                                                cx="25" cy="25" r="20" 
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="4"
+                                                stroke-linecap="round"
+                                                stroke-dasharray="80"
+                                                stroke-dashoffset="60"
+                                                class="text-yellow-500"
+                                            />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col">
+                                    <p class="text-yellow-800 font-medium text-sm tracking-wide">
+                                        Updating route information
+                                    </p>
+                                    <div class="flex items-center gap-1 mt-1.5">
+                                        <span class="inline-block w-16 h-0.5 rounded-full bg-gradient-to-r from-yellow-500 to-yellow-500 animate-shimmer"></span>
+                                        <span class="inline-block w-12 h-0.5 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-400 animate-shimmer [animation-delay:150ms]"></span>
+                                        <span class="inline-block w-8 h-0.5 rounded-full bg-gradient-to-r from-yellow-300 to-yellow-300 animate-shimmer [animation-delay:300ms]"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     `;
+                    document.body.appendChild(overlay);
+
+                    // Fade in overlay
+                    requestAnimationFrame(() => {
+                        overlay.style.opacity = '1';
+                        overlay.querySelector('.loader-content').style.transform = 'translateY(0)';
+                    });
+
+                    // Fade out map content
+                    const mapContainer = document.getElementById('map');
+                    mapContainer.style.transition = 'opacity 0.3s ease';
+                    mapContainer.style.opacity = '0.5';
+
+                    // Reload after animations
+                    await new Promise(resolve => setTimeout(resolve, 1700));
+                    window.location.reload();
                 }
-            } catch (error) {
-                console.error('Error calculating route details:', error);
+            })
+            .catch(error => console.error('Error checking attendance:', error));
+    }
+
+    // Add styles for loader
+    const loaderStyles = document.createElement('style');
+    loaderStyles.textContent = `
+        .page-transition {
+            position: fixed;
+            inset: 0;
+            background: rgba(251, 191, 36, 0.05);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            opacity: 0;
+            transition: all 0.4s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .loader-content {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1.5rem 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 8px 32px rgba(234, 88, 12, 0.1);
+            transform: translateY(20px);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+    `;
+    document.head.appendChild(loaderStyles);
+
+    // Add this to window load event
+    window.addEventListener('load', () => {
+        const savedState = sessionStorage.getItem('mapState');
+        if (savedState) {
+            const state = JSON.parse(savedState);
+            
+            // Restore scroll position
+            window.scrollTo({
+                left: state.scroll.x,
+                top: state.scroll.y,
+                behavior: 'smooth'
+            });
+
+            // Restore map state with animation
+            if (map && state.center) {
+                map.setView(
+                    [state.center.lat, state.center.lng],
+                    state.zoom,
+                    {
+                        animate: true,
+                        duration: 1,
+                        easeLinearity: 0.25
+                    }
+                );
             }
-        }
-    }
 
-    // Auto-refresh controls
-    const autoRefreshToggle = document.getElementById('auto-refresh');
-    const refreshIntervalSelect = document.getElementById('refresh-interval');
-    let locationUpdateInterval;
-    let isAutoRefreshEnabled = true;
-
-    function startLocationUpdates(interval) {
-        if (locationUpdateInterval) {
-            clearInterval(locationUpdateInterval);
-        }
-        // Initial update
-        updateBusLocation();
-        
-        // Set interval based on route type
-        const routeInterval = currentRoute === 'morning' ? interval : 
-                             currentRoute === 'evening' ? interval : 
-                             60000; // Default 1 minute for no active route
-
-        locationUpdateInterval = setInterval(updateBusLocation, routeInterval);
-    }
-
-    function stopLocationUpdates() {
-        if (locationUpdateInterval) {
-            clearInterval(locationUpdateInterval);
-        }
-    }
-
-    // Handle auto-refresh toggle
-    autoRefreshToggle.addEventListener('change', function() {
-        isAutoRefreshEnabled = this.checked;
-        if (isAutoRefreshEnabled) {
-            startLocationUpdates(parseInt(refreshIntervalSelect.value));
-        } else {
-            stopLocationUpdates();
+            sessionStorage.removeItem('mapState');
         }
     });
 
-    // Handle refresh interval changes
-    refreshIntervalSelect.addEventListener('change', function() {
-        if (isAutoRefreshEnabled) {
-            startLocationUpdates(parseInt(this.value));
-        }
-    });
+    // Helper functions
+    async function getCurrentPosition() {
+        return new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+                enableHighAccuracy: true,
+                maximumAge: 0,
+                timeout: 5000
+            });
+        });
+    }
 
-    // Initialize location updates with default interval
-    startLocationUpdates(parseInt(refreshIntervalSelect.value));
+    async function saveLocation(lat, lng, speed) {
+        return fetch('bus_location_tracker.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+                update_location: true,
+                latitude: lat,
+                longitude: lng,
+                speed: speed,
+                device_time: new Date().toISOString()
+            })
+        });
+    }
 
-    // Manual refresh button
-    document.getElementById('refresh-btn').addEventListener('click', function() {
-        const refreshIcon = this.querySelector('svg');
-        refreshIcon.classList.add('refresh-animation');
-        updateBusLocation();
-        setTimeout(() => {
-            refreshIcon.classList.remove('refresh-animation');
-        }, 1000);
-    });
+    // Initialize markers and start tracking
+    addStopMarkers();
+    updateBusLocation(); // Initial update
+
+    // Start real-time updates
+    setInterval(updateBusLocation, 20000); // Update every 10 seconds
+    setInterval(checkAttendanceChanges, 50000); // Check attendance changes every 30 seconds
+
+    // Handle refresh button clicks
+    document.getElementById('refresh-btn').addEventListener('click', updateBusLocation);
 });
     </script>
 </body>

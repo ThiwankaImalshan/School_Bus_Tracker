@@ -1,70 +1,50 @@
 <?php
-// Start session and include necessary files
+// Initialize session if not already started
 session_start();
-require_once 'config.php';
 
-// Enable error reporting for debugging
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+// Database connection
+require_once('../config/database.php');
 
-// Log incoming request data
-error_log('Update evening route request: ' . json_encode($_POST));
-
-// Check if the user is logged in
-if (!isset($_SESSION['parent_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Not authorized']);
-    exit;
-}
-
-// Check if required parameters are set
-if (!isset($_POST['child_id']) || !isset($_POST['not_returning'])) {
+// Check if required parameters are present
+if (!isset($_POST['child_id']) || !isset($_POST['notes'])) {
     echo json_encode(['success' => false, 'message' => 'Missing required parameters']);
     exit;
 }
 
-$childId = (int)$_POST['child_id'];
-$notReturning = (bool)$_POST['not_returning'];
+// Get parameters
+$childId = intval($_POST['child_id']);
+$notes = $_POST['notes'];
+$today = date('Y-m-d');
 
 try {
-    // Get today's date
-    $today = date('Y-m-d');
-    
-    // Check if the attendance record exists
-    $checkSql = "SELECT attendance_id FROM attendance WHERE child_id = ? AND attendance_date = ?";
-    $checkStmt = $pdo->prepare($checkSql);
-    $checkStmt->execute([$childId, $today]);
-    $attendanceExists = $checkStmt->fetch();
-    
-    if ($attendanceExists) {
-        // Update existing record
-        $sql = "UPDATE attendance SET notes = ? WHERE child_id = ? AND attendance_date = ?";
-        $stmt = $pdo->prepare($sql);
-        $notes = $notReturning ? 'Not returning by bus for evening route' : '';
-        $stmt->execute([$notes, $childId, $today]);
+    // Update the attendance record for today
+    $sql = "UPDATE attendance 
+            SET notes = ? 
+            WHERE child_id = ? AND attendance_date = ?";
+            
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$notes, $childId, $today]);
+
+    if ($stmt->rowCount() > 0) {
+        echo json_encode(['success' => true, 'message' => 'Evening route status updated successfully']);
     } else {
-        // Get bus_seat_id
-        $seatSql = "SELECT seat_id FROM child_reservation WHERE child_id = ? AND is_active = 1 ORDER BY reservation_date DESC LIMIT 1";
-        $seatStmt = $pdo->prepare($seatSql);
-        $seatStmt->execute([$childId]);
-        $seatData = $seatStmt->fetch();
-        $busSeatId = $seatData ? $seatData['seat_id'] : null;
+        // If no rows were affected, check if we need to insert a new record
+        $checkSql = "SELECT * FROM attendance WHERE child_id = ? AND attendance_date = ?";
+        $checkStmt = $pdo->prepare($checkSql);
+        $checkStmt->execute([$childId, $today]);
         
-        // Insert new record
-        $sql = "INSERT INTO attendance (child_id, bus_seat_id, attendance_date, status, notes) VALUES (?, ?, ?, 'pending', ?)";
-        $stmt = $pdo->prepare($sql);
-        $notes = $notReturning ? 'Not returning by bus for evening route' : '';
-        $stmt->execute([$childId, $busSeatId, $today, $notes]);
+        if ($checkStmt->rowCount() === 0) {
+            // Insert new attendance record
+            $insertSql = "INSERT INTO attendance (child_id, attendance_date, notes) VALUES (?, ?, ?)";
+            $insertStmt = $pdo->prepare($insertSql);
+            $insertStmt->execute([$childId, $today, $notes]);
+            
+            echo json_encode(['success' => true, 'message' => 'Evening route status created successfully']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Failed to update evening route status']);
+        }
     }
-    
-    // Log success
-    error_log('Evening route status updated successfully for child ' . $childId);
-    
-    echo json_encode(['success' => true]);
 } catch (PDOException $e) {
-    error_log('Database error in update_evening_route.php: ' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
-} catch (Exception $e) {
-    error_log('General error in update_evening_route.php: ' . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
 }
 ?>

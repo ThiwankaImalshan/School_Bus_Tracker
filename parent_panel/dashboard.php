@@ -666,7 +666,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                         <div>
                             <!-- Student Profile Details -->
                             <?php if ($selectedChild): ?>
-                            <div class="bg-white rounded-2xl shadow-enhanced border border-yellow-100 overflow-hidden mb-6">
+                            <div class="bg-white rounded-2xl shadow-enhanced border border-yellow-100 overflow-hidden mb-6 md:min-h-[650px]"> <!-- Changed to md:min-h-[650px] -->
                                 <div class="p-6 border-b border-gray-100">
                                     <h3 class="text-lg font-semibold heading-brown">Student Profile</h3>
                                 </div>
@@ -882,6 +882,7 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                                         <p class="text-xs text-gray-500">Update if child is not returning by bus</p>
                                                     </div>
                                                     <?php
+                                                    // Check if notes indicate not returning
                                                     $notReturning = (!empty($attendanceData['notes']) && strpos($attendanceData['notes'], 'Not returning') !== false);
                                                     $eveningStatusBg = $notReturning ? 'bg-orange-100' : 'bg-blue-100';
                                                     $eveningTextColor = $notReturning ? 'text-orange-800' : 'text-blue-800';
@@ -893,8 +894,39 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                                 </div>
                                             </div>
                                             
+                                            <!-- Evening Drop-off Location Selection -->
+                                            <div id="eveningDropoffDiv" class="bg-blue-50 rounded-xl p-4 mb-4" style="<?php echo $notReturning ? 'display: none;' : ''; ?>">
+                                                <div class="flex justify-between items-center mb-3">
+                                                    <div>
+                                                        <h4 class="text-sm font-medium text-gray-800">Evening Drop-off Location</h4>
+                                                        <p class="text-xs text-gray-500">Select drop-off location for today</p>
+                                                    </div>
+                                                </div>
+
+                                                <?php
+                                                // Fetch saved locations for this child
+                                                $locationsSql = "SELECT location_id, name, location FROM pickup_locations WHERE child_id = ? ORDER BY is_default DESC";
+                                                $locationsStmt = $pdo->prepare($locationsSql);
+                                                $locationsStmt->execute([$selectedChildId]);
+                                                $locations = $locationsStmt->fetchAll(PDO::FETCH_ASSOC);
+                                                ?>
+
+                                                <select id="dropoffLocation" onchange="updateDropoffLocation(<?php echo $selectedChildId; ?>, this.value)" 
+                                                        class="w-full mt-2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
+                                                        style="z-index: 10; position: relative;">
+                                                    <option value="">Select drop-off location</option>
+                                                    <?php foreach ($locations as $location): ?>
+                                                        <?php $selected = (!empty($attendanceData['notes']) && $attendanceData['notes'] === $location['name']) ? 'selected' : ''; ?>
+                                                        <option value="<?php echo htmlspecialchars($location['name']); ?>" <?php echo $selected; ?>>
+                                                            <?php echo htmlspecialchars($location['name']); ?>
+                                                        </option>
+                                                    <?php endforeach; ?>
+                                                </select>
+                                            </div>
+
                                             <div class="flex space-x-3 justify-end">
-                                                <button onclick="updateEveningRoute(<?php echo $selectedChildId; ?>, <?php echo $notReturning ? 'false' : 'true'; ?>)" class="py-2 px-4 bg-blue-500 text-white rounded-xl text-sm font-medium shadow-lg transform transition-all duration-200 hover:shadow-orange-200 hover:-translate-y-1 active:translate-y-0 active:shadow-inner border border-orange-600">
+                                                <button onclick="updateEveningRoute(<?php echo $selectedChildId; ?>, <?php echo $notReturning ? 'false' : 'true'; ?>)" 
+                                                        class="py-2 px-4 bg-blue-500 text-white rounded-xl text-sm font-medium shadow-lg transform transition-all duration-200 hover:shadow-orange-200 hover:-translate-y-1 active:translate-y-0 active:shadow-inner border border-orange-600">
                                                     <?php echo $notReturning ? 'Mark as Returning' : 'Not Returning Today'; ?>
                                                 </button>
                                             </div>
@@ -903,9 +935,39 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                     </div>
 
                                     <script>
-                                    // Function to update attendance status
+                                    function updateDropoffLocation(childId, locationName) {
+                                        fetch('update_dropoff_location.php', {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/x-www-form-urlencoded',
+                                            },
+                                            body: 'child_id=' + childId + '&location_name=' + encodeURIComponent(locationName)
+                                        })
+                                        .then(response => response.json())
+                                        .then(data => {
+                                            if (data.success) {
+                                                // Show success message
+                                                const successMessage = document.createElement('div');
+                                                successMessage.className = 'bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mt-2 rounded';
+                                                successMessage.textContent = 'Drop-off location updated successfully';
+                                                
+                                                const dropoffDiv = document.getElementById('eveningDropoffDiv');
+                                                dropoffDiv.appendChild(successMessage);
+                                                
+                                                setTimeout(() => {
+                                                    successMessage.remove();
+                                                }, 3000);
+                                            } else {
+                                                alert('Failed to update drop-off location: ' + data.message);
+                                            }
+                                        })
+                                        .catch(error => {
+                                            console.error('Error:', error);
+                                            alert('An error occurred while updating drop-off location');
+                                        });
+                                    }
+
                                     function updateAttendance(status, childId) {
-                                        // Create AJAX request
                                         fetch('update_attendance.php', {
                                             method: 'POST',
                                             headers: {
@@ -916,125 +978,65 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                                         .then(response => response.json())
                                         .then(data => {
                                             if (data.success) {
-                                                // Update UI based on status
-                                                const statusDiv = document.getElementById('attendanceStatus');
-                                                const label = document.getElementById('attendanceLabel');
-                                                const eveningRouteDiv = document.getElementById('eveningRouteDiv');
-                                                
-                                                if (status === 'present') {
-                                                    // Update to present
-                                                    statusDiv.className = 'bg-green-50 rounded-xl p-4 mb-4';
-                                                    label.className = 'bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium';
-                                                    label.textContent = 'Today\'s Present';
-                                                    
-                                                    // Show evening route div if it was hidden
-                                                    if (eveningRouteDiv) {
-                                                        eveningRouteDiv.style.display = 'block';
-                                                    } else {
-                                                        // Reload the page to regenerate the evening route div
-                                                        location.reload();
-                                                    }
-                                                    
-                                                    // Hide present button, show absent button
-                                                    updateAttendanceButtons('present');
-                                                    location.reload();
-                                                    
-                                                } else if (status === 'absent') {
-                                                    // Update to absent
-                                                    statusDiv.className = 'bg-red-50 rounded-xl p-4 mb-4';
-                                                    label.className = 'bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium';
-                                                    label.textContent = 'Today\'s Absent';
-                                                    
-                                                    // Hide evening route div
-                                                    if (eveningRouteDiv) {
-                                                        eveningRouteDiv.style.display = 'none';
-                                                    }
-                                                    
-                                                    // Hide absent button, show present button
-                                                    updateAttendanceButtons('absent');
-                                                }
+                                                location.reload();
                                             } else {
                                                 alert('Failed to update attendance: ' + data.message);
                                             }
                                         })
                                         .catch(error => {
                                             console.error('Error:', error);
-                                            alert('An error occurred while updating attendance. Please try again.');
+                                            alert('An error occurred while updating attendance');
                                         });
                                     }
 
-                                    // Function to update attendance buttons based on current status
-                                    function updateAttendanceButtons(currentStatus) {
-                                        const buttonsDiv = document.querySelector('.flex.space-x-3.justify-end.mb-4');
-                                        if (buttonsDiv) {
-                                            if (currentStatus === 'present') {
-                                                // Remove all buttons when status is present
-                                                buttonsDiv.innerHTML = '';
-                                            } else if (currentStatus === 'absent') {
-                                                // Start with 20 seconds
-                                                let timeLeft = 20;
-                                                
-                                                // Initial button render
-                                                buttonsDiv.innerHTML = `
-                                                    <button onclick="updateAttendance('present', <?php echo $selectedChildId; ?>)" class="py-2 px-4 bg-green-500 text-white rounded-xl text-sm font-medium shadow-lg transform transition-all duration-200 hover:shadow-green-200 hover:-translate-y-1 active:translate-y-0 active:shadow-inner border border-green-600">
-                                                        Undo (${timeLeft}s)
-                                                    </button>
-                                                `;
-                                                
-                                                // Update timer every second
-                                                const timer = setInterval(() => {
-                                                    timeLeft--;
-                                                    if (timeLeft > 0) {
-                                                        // Update button text with remaining time
-                                                        buttonsDiv.innerHTML = `
-                                                            <button onclick="updateAttendance('present', <?php echo $selectedChildId; ?>)" class="py-2 px-4 bg-green-500 text-white rounded-xl text-sm font-medium shadow-lg transform transition-all duration-200 hover:shadow-green-200 hover:-translate-y-1 active:translate-y-0 active:shadow-inner border border-green-600">
-                                                                Undo (${timeLeft}s)
-                                                            </button>
-                                                        `;
-                                                    } else {
-                                                        // Clear interval and remove button when time runs out
-                                                        clearInterval(timer);
-                                                        buttonsDiv.innerHTML = '';
-                                                    }
-                                                }, 1000); // Update every second
-                                            }
-                                        }
-                                    }
-
-                                    // Function to update evening route status
                                     function updateEveningRoute(childId, setNotReturning) {
-                                        // Create AJAX request
+                                        // When marking as returning, we want to clear the notes
+                                        const notes = setNotReturning ? 'Not returning' : '';
+                                        
                                         fetch('update_evening_route.php', {
                                             method: 'POST',
                                             headers: {
                                                 'Content-Type': 'application/x-www-form-urlencoded',
                                             },
-                                            body: 'child_id=' + childId + '&not_returning=' + (setNotReturning ? '1' : '0')
+                                            body: 'child_id=' + childId + '&notes=' + encodeURIComponent(notes)
                                         })
-                                        .then(response => response.json())
+                                        .then(response => {
+                                            if (!response.ok) {
+                                                throw new Error('Network response was not ok');
+                                            }
+                                            return response.json();
+                                        })
                                         .then(data => {
                                             if (data.success) {
-                                                // Update UI based on status
-                                                const statusDiv = document.getElementById('eveningRouteStatus');
+                                                const dropoffDiv = document.getElementById('eveningDropoffDiv');
                                                 const label = document.getElementById('eveningRouteLabel');
-                                                const button = statusDiv.nextElementSibling.querySelector('button');
+                                                const button = document.querySelector('button[onclick*="updateEveningRoute"]');
                                                 
                                                 if (setNotReturning) {
                                                     label.className = 'bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium';
                                                     label.textContent = 'Not Returning';
                                                     button.textContent = 'Mark as Returning';
+                                                    dropoffDiv.style.display = 'none';
                                                 } else {
                                                     label.className = 'bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium';
-                                                    label.textContent = 'Returning by Bus';
+                                                    label.textContent = 'Returning';
                                                     button.textContent = 'Not Returning Today';
+                                                    dropoffDiv.style.display = 'block';
+                                                    // Clear the dropdown selection when marking as returning
+                                                    const dropoffLocation = document.getElementById('dropoffLocation');
+                                                    if (dropoffLocation) {
+                                                        dropoffLocation.value = '';
+                                                    }
                                                 }
+                                                // Reload the page to reflect the changes
+                                                location.reload();
                                             } else {
-                                                alert('Failed to update evening route status: ' + data.message);
+                                                throw new Error(data.message || 'Failed to update evening route status');
                                             }
                                         })
                                         .catch(error => {
                                             console.error('Error:', error);
-                                            alert('An error occurred while updating evening route status. Please try again.');
+                                            alert('An error occurred: ' + error.message);
                                         });
                                     }
                                     </script>
@@ -2395,7 +2397,14 @@ $childDetails = $childStmt->fetch(PDO::FETCH_ASSOC);
                         <div class="flex-1">
                             <h4 class="font-medium text-gray-800 text-sm md:text-base"><?php echo htmlspecialchars($location['name']); ?></h4>
                             <p class="text-xs md:text-sm text-gray-500 mt-1 break-words">
-                                <?php echo $location['location']; ?>
+                                <?php
+                                $coords = explode(',', $location['location']);
+                                if (count($coords) == 2) {
+                                    echo number_format($coords[0], 4) . ', ' . number_format($coords[1], 4);
+                                } else {
+                                    echo $location['location'];
+                                }
+                                ?>
                             </p>
                         </div>
                     </div>

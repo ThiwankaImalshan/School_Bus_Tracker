@@ -384,9 +384,19 @@ if ($childDetails['bus_id']) {
 
 // Add this after getting childDetails
 $stmt = $pdo->prepare("
-    SELECT a.status, a.pickup_time, a.drop_time, c.pickup_location
+    SELECT 
+        a.status, 
+        a.pickup_time, 
+        a.drop_time, 
+        a.notes,
+        CASE 
+            WHEN (a.notes IS NOT NULL AND pl.location IS NOT NULL AND a.notes = pl.name) 
+            THEN pl.location 
+            ELSE c.pickup_location 
+        END as pickup_location
     FROM attendance a
     JOIN child c ON a.child_id = c.child_id
+    LEFT JOIN pickup_locations pl ON c.child_id = pl.child_id AND a.notes = pl.name
     WHERE a.child_id = ? AND DATE(a.last_updated) = ?
 ");
 $stmt->execute([$child_id, $selected_date]);
@@ -988,16 +998,19 @@ $attendance_status = $stmt->fetch(PDO::FETCH_ASSOC);
                 // Add pickup/drop markers if attendance data exists
                 <?php if ($attendance_status && $attendance_status['pickup_location']): ?>
                     const pickupCoords = '<?php echo $attendance_status['pickup_location']; ?>'.split(',');
+                    const pickupNoteLoc = '<?php echo $attendance_status['notes']; ?>';
                     
-                    // Add pickup marker
+                    // Add pickup marker with note information if available
                     const pickupIcon = L.divIcon({
                         className: 'status-marker',
                         html: `<div style="display: flex; flex-direction: column; align-items: center;">
-                                <div style=" border-radius: 50%; width: 30px; height: 30px; 
+                                <div style="border-radius: 50%; width: 30px; height: 30px; 
                                      display: flex; align-items: center; justify-content: center; padding: 5px;">
                                     <img src="../img/jump.gif" alt="Person" style="width: 50px; height:auto;">
                                 </div>
-                                <div style="color:rgb(2, 107, 46); font-weight: bold; font-size: 10px; margin-top: 5px;">Picked</div>
+                                <div style="color:rgb(2, 107, 46); font-weight: bold; font-size: 10px; margin-top: 5px;">
+                                    ${pickupNoteLoc ? pickupNoteLoc : 'Picked'}
+                                </div>
                             </div>`,
                         iconSize: [40, 45],
                         iconAnchor: [20, 45]

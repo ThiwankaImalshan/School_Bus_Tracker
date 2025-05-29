@@ -751,7 +751,7 @@ function canAccessMenu($menuItem, $userRole, $permissions) {
 
                                 <!-- Admins Table -->
                                 <div class="p-0">
-                                    <h3 class="text-xl font-semibold mb-4">Administrators</h3>
+                                    <h3 class="text-xl font-semibold mb-4 pl-6">Administrators</h3>
                                     <div class="overflow-x-auto relative shadow-md sm:rounded-lg">
                                         <div class="min-w-full inline-block align-middle">
                                             <div class="overflow-hidden">
