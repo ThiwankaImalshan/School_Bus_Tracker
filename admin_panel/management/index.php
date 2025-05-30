@@ -170,9 +170,34 @@ $content_file = $active_tab . '_management.php';
     <script>
         // Function to show delete confirmation modal
         function confirmDelete(entityId, entityType) {
-            if (confirm(`Are you sure you want to delete this ${entityType}?`)) {
-                window.location.href = `${entityType}_delete.php?id=${entityId}`;
-            }
+            // Create modal backdrop
+            const backdrop = document.createElement('div');
+            backdrop.className = 'fixed inset-0 bg-black bg-opacity-50 z-40';
+            
+            // Create modal content
+            const modal = document.createElement('div');
+            modal.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg p-6 shadow-xl z-50 w-96';
+            modal.innerHTML = `
+            <h3 class="text-lg font-semibold mb-4">Confirm Delete</h3>
+            <p class="text-gray-600 mb-6">Are you sure you want to delete this ${entityType}?</p>
+            <div class="flex justify-end space-x-3">
+                <button class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300" onclick="closeModal()">Cancel</button>
+                <button class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600" onclick="proceedDelete('${entityId}', '${entityType}')">Delete</button>
+            </div>
+            `;
+
+            // Add elements to body
+            document.body.appendChild(backdrop);
+            document.body.appendChild(modal);
+        }
+
+        function closeModal() {
+            document.querySelector('div[class*="fixed inset-0"]').remove();
+            document.querySelector('div[class*="fixed top-1/2"]').remove();
+        }
+
+        function proceedDelete(entityId, entityType) {
+            window.location.href = `${entityType}_delete.php?id=${entityId}`;
         }
 
         // Show success message with fade out effect

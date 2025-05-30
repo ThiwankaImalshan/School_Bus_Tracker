@@ -731,9 +731,7 @@ function canAccessMenu($menuItem, $userRole, $permissions) {
                                     <!-- Password Change Button -->
                                     <a href="forgot_password.html" class="block">
                                         <button class="w-full bg-yellow-500 text-white py-3 rounded-lg hover:bg-yellow-600 transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-2">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2-2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                            </svg>
+                                            <i class="fas fa-key h-6 w-6 mt-2"></i>
                                             <span class="text-xs sm:text-sm">Change Password</span>
                                         </button>
                                     </a>
@@ -741,9 +739,7 @@ function canAccessMenu($menuItem, $userRole, $permissions) {
                                     <!-- Register New Admin Button -->
                                     <a href="register_admin.php" class="block">
                                         <button class="w-full bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-2">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                                            </svg>
+                                            <i class="fas fa-user-plus h-6 w-6 mt-2"></i>
                                             <span class="text-xs sm:text-sm">Register New Admin</span>
                                         </button>
                                     </a>
@@ -849,9 +845,36 @@ function canAccessMenu($menuItem, $userRole, $permissions) {
 
                             <script>
                                 function confirmDelete(adminId) {
-                                    if (confirm('Are you sure you want to delete this administrator?')) {
-                                        window.location.href = 'delete_admin.php?id=' + adminId;
-                                    }
+                                    // Create overlay
+                                    const overlay = document.createElement('div');
+                                    overlay.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center';
+
+                                    // Create popup
+                                    const popup = document.createElement('div');
+                                    popup.className = 'bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl';
+                                    popup.innerHTML = `
+                                        <h3 class="text-lg font-bold text-gray-900 mb-4">Confirm Deletion</h3>
+                                        <p class="text-gray-600 mb-6">Are you sure you want to delete this administrator? This action cannot be undone.</p>
+                                        <div class="flex justify-end space-x-3">
+                                            <button class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" onclick="this.closest('.fixed').remove()">
+                                                Cancel
+                                            </button>
+                                            <button class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors" onclick="window.location.href='delete_admin.php?id=${adminId}'">
+                                                Delete
+                                            </button>
+                                        </div>
+                                    `;
+
+                                    // Add popup to overlay and overlay to body
+                                    overlay.appendChild(popup);
+                                    document.body.appendChild(overlay);
+
+                                    // Close on outside click
+                                    overlay.addEventListener('click', (e) => {
+                                        if (e.target === overlay) {
+                                            overlay.remove();
+                                        }
+                                    });
                                 }
                             </script>
 

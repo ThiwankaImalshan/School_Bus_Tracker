@@ -1136,7 +1136,28 @@ $attendance_status = $stmt->fetch(PDO::FETCH_ASSOC);
                         this.classList.add('bg-blue-200');
                         document.getElementById('show-evening-route').classList.remove('bg-yellow-200');
                     } else {
-                        alert('No morning route data available for this date');
+                        // Show styled popup for no morning route
+                        const popup = document.createElement('div');
+                        popup.className = 'fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50';
+                        popup.innerHTML = `
+                            <div class="bg-white rounded-lg p-6 max-w-sm mx-4 shadow-xl transform transition-all">
+                                <div class="flex items-center mb-4">
+                                    <div class="bg-yellow-100 rounded-full p-2 mr-3">
+                                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                    <h3 class="text-lg font-medium text-gray-900">No Route Data</h3>
+                                </div>
+                                <p class="text-gray-600 mb-4">No morning route data available for this date.</p>
+                                <div class="flex justify-end">
+                                    <button class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors" onclick="this.parentElement.parentElement.parentElement.remove()">
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        document.body.appendChild(popup);
                     }
                 });
 
@@ -1148,7 +1169,28 @@ $attendance_status = $stmt->fetch(PDO::FETCH_ASSOC);
                         this.classList.add('bg-yellow-200');
                         document.getElementById('show-morning-route').classList.remove('bg-blue-200');
                     } else {
-                        alert('No evening route data available for this date');
+                        // Show styled popup for no evening route
+                        const popup = document.createElement('div');
+                        popup.className = 'fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50';
+                        popup.innerHTML = `
+                            <div class="bg-white rounded-lg p-6 max-w-sm mx-4 shadow-xl transform transition-all">
+                                <div class="flex items-center mb-4">
+                                    <div class="bg-yellow-100 rounded-full p-2 mr-3">
+                                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                    <h3 class="text-lg font-medium text-gray-900">No Route Data</h3>
+                                </div>
+                                <p class="text-gray-600 mb-4">No evening route data available for this date.</p>
+                                <div class="flex justify-end">
+                                    <button class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors" onclick="this.parentElement.parentElement.parentElement.remove()">
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        document.body.appendChild(popup);
                     }
                 });
             <?php endif; ?>
